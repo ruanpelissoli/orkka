@@ -49,6 +49,9 @@ the **caller's own** connections (their runner polls with their token, so the ti
 are the ones assigned to them — the caller becomes the source's owner), a scope (Jira project /
 ADO project) and:
 
+- An optional **board** (`boardId` + `boardName`, see Boards below) — intake limited to one board
+  of the scope; empty = the whole project (every board).
+
 - **Intake statuses** (`intakeStatuses`, default `["To Do"]`; ADO: the Proposed states) — where a
   ticket must be to become a task. Only intake: a ticket that moves on keeps being tracked.
 - **Scope mode** — `All` (every ticket assigned to the owner in an intake status; no epic needed)
@@ -77,9 +80,48 @@ status like "In Progress" / "Doing" / "Active" / "Committed" (else the first in-
 opened = the first like "Review" (else for ADO the first Resolved state); the rest unmapped;
 intake = "To Do" (ADO: Proposed states).
 
-Everything the settings page shows — test, scopes, epics, statuses, "N tickets would be picked
-up" (the intake query) — is asked of the owner's runner live: `POST /api/trackers/connections/{id}/query`
+Everything the settings page shows — test, scopes, boards, epics, statuses, "N tickets would be
+picked up" (the intake query) — is asked of the owner's runner live: `POST /api/trackers/connections/{id}/query`
 → `/internal/runner/tracker-query` → runner `TrackerQuery`. Runner offline → `Supported: false`.
+
+### Boards — one board per project
+
+A scope (a Jira project, an ADO project) often holds several teams' work, and different boards
+touch different repositories. A source may name ONE board of its scope
+(`ProjectTrackerConfig.BoardId` / `BoardName`, migration `TrackerBoard`; `boardId`/`boardName` on
+`PUT/GET /api/projects/{id}/tracker`, on the `preview` query and on `TrackerPollAssignment`); empty
+is exactly the old behaviour, the whole project.
+
+- **Jira Cloud** — a board is an agile board of the project. The `boards` query lists them
+  (`GET /rest/agile/1.0/board?projectKeyOrId={key}&maxResults=50&startAt=…`, paged, by name);
+  `BoardId` is the board id. On every preview and poll the runner reads the board's filter live
+  (`GET /rest/agile/1.0/board/{id}/configuration` → `filter.id`, then `GET /rest/api/3/filter/{id}`
+  → `jql`) and ANDs it onto the intake JQL as `(<filter JQL>)` — its trailing `ORDER BY …` cut off
+  at the top level, never inside a quoted string (`JiraQueries.StripOrderBy` /
+  `BoardFilterClause`; a filter that is only an ordering adds nothing).
+- **Azure DevOps** — a board belongs to a team. The `boards` query lists the project's teams
+  (`GET {org}/_apis/projects/{project}/teams?$top=500&api-version=7.1`, the PAT's *Project and
+  Team (Read)* scope); `BoardId` is the team id and the UI shows "<Team> board". On every preview
+  and poll the runner reads the team's field values live
+  (`GET {org}/{project}/{team}/_apis/work/teamsettings/teamfieldvalues?api-version=7.1` →
+  `field.referenceName` (normally `System.AreaPath`), `values[{value, includeChildren}]`,
+  `defaultValue`) and ANDs `([field] UNDER 'x' OR [field] = 'y' …)` onto the intake WIQL —
+  `UNDER` when a value includes its children, WIQL quotes doubled, the default value when the team
+  lists none (`AdoQueries.TeamFieldCondition`).
+- **Intake only**, exactly like the extra clause: the tracking read (tracked keys, children of
+  intake tickets) is not narrowed, so a ticket that leaves the board keeps syncing. The board
+  clause comes before the extra clause in the query.
+- **Never widened.** A board that is gone (Jira configuration 404, ADO team 404) fails the preview
+  and the poll — "The board 'X' was not found in <project> — pick another board in the ticket
+  source settings." — recorded as `LastPollError`; a Jira filter the account cannot read and an
+  ADO team with no area paths fail the same way. A runner too old to know boards never receives a
+  board-limited source: the runner sends `TrackerSyncRequest.Features = ["boards"]`
+  (`TrackerSyncFeatures.Boards`), and without it `SyncAsync` withholds the source and records
+  "…too old to know boards — update Orkka…". The `boards` query and a preview with a board need
+  the runner capability `tracker-boards`; the relay answers "Your runner does not know boards
+  yet — update Orkka" otherwise.
+- The board id and name are non-secret settings; the token stays on the runner as for every
+  other tracker call.
 
 ## Polling and ingestion
 
@@ -93,8 +135,9 @@ up" (the intake query) — is asked of the owner's runner live: `POST /api/track
    that drop out get `TrackingEndedAt`.
 2. The runner (protocol v5) runs two reads:
    - **intake** — assigned to the developer, in an intake status (none set: Jira status category
-     "To Do", ADO Proposed states), in the scope, under the epics in Epics mode, plus the extra
-     clause; epics/features themselves are skipped;
+     "To Do", ADO Proposed states), in the scope, on the board when one is set (resolved first,
+     live — see Boards), under the epics in Epics mode, plus the extra clause; epics/features
+     themselves are skipped;
    - **tracking** — the tracked keys whatever their status or assignee (Jira `key in (…)`, 100 a
      query; a key Jira says does not exist is dropped and the batch asked again; ADO work items
      by id, `errorPolicy=Omit`), plus the children of intake tickets (reported for the stories
