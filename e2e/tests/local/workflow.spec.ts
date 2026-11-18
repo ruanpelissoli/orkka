@@ -173,8 +173,8 @@ test.describe("the developer's workflow on the local stack @workflow", () => {
     const p = await api.projects.get(pid());
     await api.projects.patch(pid(), { settings: { ...p.settings, autoApprovePlan: true, autoApproveCodeReview: true } as never });
     fake.jira.addIssue({ key: "SHOP-20", type: "Story", summary: "Math helpers for the api service", descriptionHtml: "<p>Two helpers in the <b>api</b> service's src/math.js, one per sub-task.</p>" });
-    fake.jira.addIssue({ key: "SHOP-21", type: "Sub-task", parent: "SHOP-20", summary: "Add div(a, b) to the api service math module", descriptionHtml: "<p>In the api service add <code>export function div(a, b)</code> to src/math.js with a unit test.</p>" });
-    fake.jira.addIssue({ key: "SHOP-22", type: "Sub-task", parent: "SHOP-20", summary: "Add neg(a) to the api service math module", descriptionHtml: "<p>In the api service add <code>export function neg(a)</code> to src/math.js with a unit test.</p>" });
+    fake.jira.addIssue({ key: "SHOP-21", type: "Sub-task", parent: "SHOP-20", assignee: "me", status: "To Do", summary: "Add div(a, b) to the api service math module", descriptionHtml: "<p>In the api service add <code>export function div(a, b)</code> to src/math.js with a unit test.</p>" });
+    fake.jira.addIssue({ key: "SHOP-22", type: "Sub-task", parent: "SHOP-20", assignee: "me", status: "To Do", summary: "Add neg(a) to the api service math module", descriptionHtml: "<p>In the api service add <code>export function neg(a)</code> to src/math.js with a unit test.</p>" });
     const first = await waitForTicketTask(api, pid(), "SHOP-21");
     const second = await waitForTicketTask(api, pid(), "SHOP-22");
     expect(first.groupId).toBeTruthy();

@@ -315,6 +315,8 @@ export type KnownCaseId =
   | "TING-021"
   | "TING-022"
   | "TING-023"
+  | "TING-024"
+  | "TING-025"
   | "TWB-001"
   | "TWB-002"
   | "TWB-003"
