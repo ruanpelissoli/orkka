@@ -223,7 +223,7 @@ public interface ITasksApi
     // ── Stories (a tracker Story worked as ordered members on one shared branch) ──
 
     /// <summary>
-    /// Creates (or returns, idempotently on the Story's key) the Story group and one member per
+    /// Creates (or returns, idempotently on the Story's key — a cancelled one aside) the Story group and one member per
     /// sub-task and repository, in order: <c>StoryOrder</c> 1…n, <c>BranchName</c> = the shared
     /// branch, and a dependency from each member on the one before. Members run on the owner's
     /// runner.
@@ -242,6 +242,23 @@ public interface ITasksApi
     /// <summary>The Story groups' progress, for status write-back. Missing ids are absent.</summary>
     Task<IReadOnlyList<TrackerGroupState>> GetTrackerGroupStatesAsync(
         IReadOnlyCollection<Ulid> groupIds, CancellationToken ct = default);
+
+    /// <summary>
+    /// A Story member whose sub-task is not the developer's to work (assigned to someone else, or
+    /// already under way in the tracker): when nothing has started it is archived and taken out
+    /// of the Story — its dependents rewired to its predecessor, its own story-order edges and
+    /// story branch dropped — with <paramref name="reason"/> posted on it, and
+    /// <see cref="TrackerTaskRetirement.Archived"/> is returned. Started work is left exactly as
+    /// it is (<see cref="TrackerTaskRetirement.Held"/>, nothing posted — the caller decides what
+    /// to say). A member taken out can join the Story again through
+    /// <see cref="AppendStoryMemberAsync"/> once it is revived.
+    /// </summary>
+    Task<TrackerTaskRetirement> ReleaseStoryMemberAsync(Ulid taskId, string reason, CancellationToken ct = default);
+
+    /// <summary>A Story left with no member to work and nothing landed or published: the group is
+    /// cancelled, so the Story ticket can be worked as a task of its own (or become a Story again
+    /// later, as a new group).</summary>
+    Task CancelStoryAsync(Ulid groupId, CancellationToken ct = default);
 
     /// <summary>Sub-tasks the last poll saw under the Story that have no member yet.</summary>
     Task SetStoryPendingChildrenAsync(Ulid groupId, int count, CancellationToken ct = default);

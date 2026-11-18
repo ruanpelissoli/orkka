@@ -234,6 +234,84 @@ public sealed class StoryTasksTests : IDisposable
     }
 
     [Fact]
+    public async Task AReleasedMember_IsArchived_TakenOutOfTheStory_AndItsDependentsRewired()
+    {
+        var story = await CreateStoryAsync(Sub("SHOP-11", Api), Sub("SHOP-12", Api), Sub("SHOP-13", Api));
+        var members = await MembersAsync();
+
+        var outcome = await _api.ReleaseStoryMemberAsync(members[1].Id, "SHOP-12 is not assigned to you in Jira.");
+
+        outcome.Should().Be(TrackerTaskRetirement.Archived);
+        var released = await _db.Tasks.SingleAsync(t => t.Id == members[1].Id);
+        released.IsArchived.Should().BeTrue();
+        released.Status.Should().Be(TaskStatus.Archived);
+        released.GroupId.Should().BeNull("it is out of the story");
+        released.StoryOrder.Should().BeNull();
+        released.BranchName.Should().BeNull();
+        var edges = await _db.TaskDependencies.ToListAsync();
+        edges.Should().ContainSingle().Which.Should().Match<TaskDependency>(e =>
+            e.TaskId == members[2].Id && e.DependsOnTaskId == members[0].Id, "the third sub-task now waits on the first");
+        (await _api.GetTrackerGroupStatesAsync([story.GroupId])).Single().Members.Select(m => m.SubTaskKey)
+            .Should().Equal("SHOP-11", "SHOP-13");
+        (await _db.TaskMessages.SingleAsync(m => m.TaskId == members[1].Id)).Content
+            .Should().Contain("not assigned to you").And.Contain("taken out of the story");
+    }
+
+    [Fact]
+    public async Task AReleasedMember_ThatStarted_IsHeld_AndUntouched()
+    {
+        await CreateStoryAsync(Sub("SHOP-11", Api), Sub("SHOP-12", Api));
+        var members = await MembersAsync();
+        members[1].CurrentLane = Lane.Planning;
+        members[1].StartedAt = DateTimeOffset.UtcNow;
+        await _db.SaveChangesAsync();
+
+        (await _api.ReleaseStoryMemberAsync(members[1].Id, "not yours")).Should().Be(TrackerTaskRetirement.Held);
+
+        var held = await _db.Tasks.SingleAsync(t => t.Id == members[1].Id);
+        held.IsArchived.Should().BeFalse();
+        held.GroupId.Should().NotBeNull();
+        (await _db.TaskMessages.CountAsync()).Should().Be(0, "the tracker side decides what to say about started work");
+    }
+
+    [Fact]
+    public async Task AReleasedMember_RevivedAndAppended_RejoinsAtTheEnd()
+    {
+        var story = await CreateStoryAsync(Sub("SHOP-11", Api, Web), Sub("SHOP-12", Api));
+        var members = await MembersAsync();
+        foreach (var m in members.Where(m => m.ExternalKey == "SHOP-11"))
+            await _api.ReleaseStoryMemberAsync(m.Id, "not yours");
+
+        // The tracker side revives the sub-task's link task (its first repository) first.
+        await _api.ReviveTrackerTaskAsync(members[0].Id, "yours again");
+        var appended = await _api.AppendStoryMemberAsync(story.GroupId, Sub("SHOP-11", Api, Web));
+
+        appended.Members.Select(m => m.TaskId).Should().Equal(members[0].Id, members[1].Id);
+        var after = await MembersAsync();
+        after.Select(m => (m.ExternalKey, m.RepoId, m.StoryOrder, m.IsArchived)).Should().Equal(
+            ("SHOP-12", (Ulid?)Api, (int?)3, false), ("SHOP-11", Api, 4, false), ("SHOP-11", Web, 5, false));
+        after[1].Dependencies.Single().DependsOnTaskId.Should().Be(after[0].Id);
+        after[2].Dependencies.Single().DependsOnTaskId.Should().Be(after[1].Id);
+        after.Should().OnlyContain(m => m.GroupId == story.GroupId && m.BranchName == Branch);
+    }
+
+    [Fact]
+    public async Task AnArchivedTask_IsNeverAdoptedIntoAStory()
+    {
+        var first = await CreateStoryAsync(Sub("SHOP-11", Api));
+        var member = (await MembersAsync()).Single();
+        await _api.ReleaseStoryMemberAsync(member.Id, "not yours");
+        await _api.CancelStoryAsync(first.GroupId);
+
+        var second = await CreateStoryAsync(Sub("SHOP-11", Api));
+
+        second.Created.Should().BeTrue("a cancelled story is not the Story's group any more");
+        second.GroupId.Should().NotBe(first.GroupId);
+        second.Members.Should().BeEmpty("the archived task stays archived until the tracker side revives it");
+        (await _db.TaskGroups.SingleAsync(g => g.Id == first.GroupId)).Status.Should().Be(TaskGroupStatus.Cancelled);
+    }
+
+    [Fact]
     public void AnArchivedBlocker_CountsAsMet()
     {
         TaskDependencyQueries.IsUnmetItem(Item(nameof(TaskStatus.Archived), merged: false, sameGroup: false)).Should().BeFalse();

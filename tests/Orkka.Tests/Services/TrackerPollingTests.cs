@@ -327,7 +327,7 @@ public sealed class JiraTicketFetchTests
             .On(HttpMethod.Get, "/rest/api/3/myself", Myself)
             .On(HttpMethod.Get, "/rest/api/3/field", "[]")
             .On(HttpMethod.Post, "/rest/api/3/search/jql", body => IsTracking(body)
-                ? Json($$"""{"issues":[{{Issue("SHOP-21", "SHOP-20", parentType: "Story", parentLevel: 0, type: "Sub-task", level: -1)}},{{Issue("SHOP-22", "SHOP-20", parentType: "Story", parentLevel: 0, type: "Sub-task", level: -1)}}],"isLast":true}""")
+                ? Json($$"""{"issues":[{{Issue("SHOP-21", "SHOP-20", parentType: "Story", parentLevel: 0, type: "Sub-task", level: -1, status: "In Progress", category: "indeterminate")}},{{Issue("SHOP-22", "SHOP-20", parentType: "Story", parentLevel: 0, type: "Sub-task", level: -1, assignee: "acc-priya")}}],"isLast":true}""")
                 : Json($$"""{"issues":[{{Issue("SHOP-20", "SHOP-100", subtasks: subtasks)}}],"isLast":true}"""));
         var client = new JiraCloudClient(new HttpClient(handler));
 
@@ -341,6 +341,12 @@ public sealed class JiraTicketFetchTests
         sub.ParentKey.Should().Be("SHOP-20");
         sub.ParentType.Should().Be("Story");
         sub.EpicKey.Should().BeNull("its parent is a story, not an epic");
+        // What the host decides Story membership on: a tracked sub-task's own assignee and status category.
+        sub.AssignedToMe.Should().BeTrue("assigned to the token's owner");
+        sub.StatusCategory.Should().Be("inprogress");
+        var teammates = tickets.Single(t => t.Key == "SHOP-22");
+        teammates.AssignedToMe.Should().BeFalse("assigned to someone else");
+        teammates.StatusCategory.Should().Be("todo");
     }
 
     [Fact]
@@ -567,6 +573,53 @@ public sealed class AdoTicketFetchTests
         intakeWiql.Should().Contain("[System.State] IN ('New', 'Approved')").And.NotContain("[System.Id] IN");
         var trackingBatch = JsonDocument.Parse(handler.Requests.Where(r => r.Url.Contains("workitemsbatch", StringComparison.Ordinal)).ElementAt(1).Body!).RootElement;
         trackingBatch.GetProperty("ids").EnumerateArray().Select(i => i.GetInt32()).Should().BeEquivalentTo([20, 11, 12]);
+    }
+
+    [Fact]
+    public async Task AStorysTrackedTasks_CarryTheirOwnAssignee_AndStateCategory()
+    {
+        const string types = """
+            {"value":[
+              {"name":"User Story","states":[{"name":"New","category":"Proposed"},{"name":"Active","category":"InProgress"},{"name":"Closed","category":"Completed"}]},
+              {"name":"Task","states":[{"name":"To Do","category":"Proposed"},{"name":"In Progress","category":"InProgress"},{"name":"In Test","category":"Resolved"},{"name":"Done","category":"Completed"}]}]}
+            """;
+        var handler = new FakeTrackerHandler()
+            .On(HttpMethod.Get, "/_apis/connectionData", ConnectionData)
+            .On(HttpMethod.Get, "/_apis/wit/workitemtypes?", types)
+            .On(HttpMethod.Get, "/_apis/wit/workitemtypecategories", Categories)
+            .On(HttpMethod.Post, "/_apis/wit/wiql", """{"workItems":[{"id":10}]}""")
+            .On(HttpMethod.Post, "/_apis/wit/workitemsbatch", body =>
+            {
+                var ids = JsonDocument.Parse(body).RootElement.GetProperty("ids").EnumerateArray().Select(i => i.GetInt32()).ToList();
+                return ids.SequenceEqual([10])
+                    ? Json("""
+                        {"value":[{"id":10,"fields":{"System.Title":"Checkout story","System.WorkItemType":"User Story","System.State":"New","System.TeamProject":"Shop"},
+                          "relations":[
+                            {"rel":"System.LinkTypes.Hierarchy-Forward","url":"https://dev.azure.com/contoso/_apis/wit/workItems/11"},
+                            {"rel":"System.LinkTypes.Hierarchy-Forward","url":"https://dev.azure.com/contoso/_apis/wit/workItems/12"},
+                            {"rel":"System.LinkTypes.Hierarchy-Forward","url":"https://dev.azure.com/contoso/_apis/wit/workItems/13"}]}]}
+                        """)
+                    : Json("""
+                        {"value":[
+                          {"id":11,"fields":{"System.Title":"Mine","System.WorkItemType":"Task","System.State":"To Do","System.TeamProject":"Shop",
+                             "System.AssignedTo":{"id":"ME-0001","uniqueName":"someone-else@contoso.com"}}},
+                          {"id":12,"fields":{"System.Title":"QA's now","System.WorkItemType":"Task","System.State":"In Test","System.TeamProject":"Shop",
+                             "System.AssignedTo":{"id":"qa-team","uniqueName":"qa@contoso.com"}}},
+                          {"id":13,"fields":{"System.Title":"Unassigned","System.WorkItemType":"Task","System.State":"To Do","System.TeamProject":"Shop"}}]}
+                        """);
+            });
+        var client = new AzureDevOpsClient(new HttpClient(handler));
+
+        var tickets = await client.FetchTicketsAsync(Credential,
+            new TrackerPollAssignment("cfg", "ado-contoso", TrackerKinds.AzureDevOps, "Shop", [], null, false, [], TrackerScopeModes.All, ["New"]),
+            CancellationToken.None);
+
+        tickets.Single(t => t.Key == "10").AssignedToMe.Should().BeTrue("the intake query is @Me");
+        tickets.Single(t => t.Key == "11").Should().Match<RawTicket>(t => t.AssignedToMe && !t.InIntake && t.StatusCategory == "todo",
+            "matched on the identity id, case-insensitively");
+        tickets.Single(t => t.Key == "12").Should().Match<RawTicket>(t => !t.AssignedToMe && t.StatusCategory == "inprogress",
+            "a Resolved-category state is under way");
+        tickets.Single(t => t.Key == "13").AssignedToMe.Should().BeFalse("nobody is assigned");
     }
 
     [Fact]

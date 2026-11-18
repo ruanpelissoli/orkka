@@ -237,7 +237,7 @@ public sealed class TrackerIngestionEndToEndTests(OrkkaApiFactory factory)
 
         TrackerTicket Child(string key, string title) => new(
             key, key, $"https://acme.atlassian.net/browse/{key}", null, $"h-{key}", Body(title), [],
-            Status: "To Do", StatusCategory: "todo", AssignedToMe: false, InIntake: false, ParentKey: "SHOP-10", ParentType: "Story");
+            Status: "To Do", StatusCategory: "todo", AssignedToMe: true, InIntake: false, ParentKey: "SHOP-10", ParentType: "Story");
         var story = new TrackerTicket("SHOP-10", "10010", "https://acme.atlassian.net/browse/SHOP-10", null, "h-10",
             Body("Checkout v2") with { Type = "Story" }, [],
             Status: "To Do", StatusCategory: "todo", AssignedToMe: true, InIntake: true, ChildKeys: ["SHOP-11", "SHOP-12"]);

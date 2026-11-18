@@ -19,7 +19,8 @@ public sealed record StorySubTaskSpec(
     IReadOnlyList<Ulid> RepoIds,
     string? Subpath = null);
 
-/// <summary>A tracker Story assigned to the developer with at least one open sub-task.</summary>
+/// <summary>A tracker Story assigned to the developer with at least one sub-task assigned to them
+/// that has not been started.</summary>
 /// <param name="BranchName">The shared branch every member commits on, rendered from the
 /// source's branch template for the Story's key.</param>
 public sealed record TrackerStorySpec(

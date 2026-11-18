@@ -9,21 +9,29 @@ using Orkka.Modules.Trackers.Domain;
 
 /// <summary>
 /// Stories (the project's <c>StoryMode</c> on): a ticket assigned to the developer, in intake,
-/// with at least one open sub-task becomes a Story — a task group whose members are its
-/// sub-tasks in tracker order, worked one after another on one shared branch per repository
-/// and published as one pull request. The Story link points at the group; each sub-task link at
-/// its member.
+/// with at least one sub-task for the developer to do becomes a Story — a task group whose
+/// members are those sub-tasks in tracker order, worked one after another on one shared branch
+/// per repository and published as one pull request. The Story link points at the group; each
+/// sub-task link at its member.
 ///
-/// Sub-tasks the tracker adds later join at the end of the chain (turning a ready pull request
-/// back into a draft until they land); once the Story's pull request merged or closed they are
-/// worked on their own, with the Story's context. A sub-task assigned to the developer whose
-/// Story is someone else's is a task of its own with the Story's title and description as
-/// "Parent story context". A Story with no open sub-tasks is just a task.
+/// Orkka only ever works tickets assigned to the developer: a sub-task is a member only while it
+/// is assigned to them and not under way (<see cref="IsMemberCandidate"/>). Sub-tasks of
+/// teammates, unassigned ones and ones already in progress / resolved / in test never become
+/// members; a Story with none for the developer is worked as a task of its own. A member whose
+/// sub-task stops being the developer's is taken out of the Story while nothing has started
+/// (<see cref="ReleaseNotMineMembersAsync"/>), and joins its end again if it comes back.
+///
+/// Sub-tasks the tracker adds (or gives the developer) later join at the end of the chain
+/// (turning a ready pull request back into a draft until they land); once the Story's pull
+/// request merged or closed they are worked on their own, with the Story's context. A sub-task
+/// assigned to the developer whose Story is someone else's is a task of its own with the Story's
+/// title and description as "Parent story context".
 /// </summary>
 internal sealed partial class TrackersApi
 {
     /// <summary>One report, indexed for the Story pass.</summary>
-    private sealed class StoryReport(IReadOnlyList<TrackerTicket> tickets, Dictionary<string, TicketLink> links)
+    private sealed class StoryReport(
+        IReadOnlyList<TrackerTicket> tickets, Dictionary<string, TicketLink> links, IReadOnlyCollection<string> intakeStatuses)
     {
         public Dictionary<string, TrackerTicket> ByKey { get; } = tickets
             .GroupBy(t => t.Key, StringComparer.OrdinalIgnoreCase)
@@ -31,27 +39,49 @@ internal sealed partial class TrackersApi
 
         public Dictionary<string, TicketLink> Links { get; } = links;
 
+        /// <summary>The source's intake statuses: a sub-task in one of them is not under way.</summary>
+        public IReadOnlyCollection<string> IntakeStatuses { get; } = intakeStatuses;
+
         /// <summary>Keys linked by the Story pass this poll — the main pass leaves them alone.</summary>
         public HashSet<string> JustImported { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-        /// <summary>The Story's sub-tasks this report carries with their text, not done, in order.</summary>
-        public List<TrackerTicket> OpenChildren(TrackerTicket story)
+        public bool IsCandidate(TrackerTicket child) => IsMemberCandidate(child, IntakeStatuses);
+
+        /// <summary>The Story's sub-tasks this report carries with their text that are the
+        /// developer's to do (<see cref="IsMemberCandidate"/>), in order.</summary>
+        public List<TrackerTicket> MemberChildren(TrackerTicket story)
             => [.. (story.ChildKeys ?? [])
                 .Select(k => ByKey.TryGetValue(k, out var c) ? c : null)
                 .OfType<TrackerTicket>()
-                .Where(c => c.Body is not null && c.StatusCategory != "done")];
+                .Where(c => c.Body is not null && IsCandidate(c))];
 
         /// <summary>
-        /// Sub-tasks with no member yet that are not known to be done: reported open (their
-        /// member could not be made), or new under the Story and not read yet — asked for by key
-        /// on the next poll. A key asked for last time and still not reported does not exist.
+        /// Sub-tasks with no member yet that the Story still waits for: reported and the
+        /// developer's to do (their member could not be made), or new under the Story and not
+        /// read yet — asked for by key on the next poll, then judged like the rest. A sub-task
+        /// read and not the developer's never becomes a member, so it is not waited for. A key
+        /// asked for last time and still not reported does not exist.
         /// </summary>
         public int PendingCount(TrackerTicket story, IReadOnlyCollection<string> previousChildren)
             => (story.ChildKeys ?? []).Count(k => !Links.ContainsKey(k)
                 && (ByKey.TryGetValue(k, out var c)
-                    ? c.StatusCategory != "done"
+                    ? IsCandidate(c)
                     : !previousChildren.Contains(k, StringComparer.OrdinalIgnoreCase)));
     }
+
+    /// <summary>
+    /// A sub-task Orkka may work as a Story member: assigned to the developer and not under way —
+    /// its status in the tracker's to-do category (Jira "To Do", ADO Proposed), or one of the
+    /// source's intake statuses. In progress, resolved, in test, in review and done are not.
+    /// </summary>
+    internal static bool IsMemberCandidate(TrackerTicket child, IReadOnlyCollection<string> intakeStatuses)
+        => child.AssignedToMe && child.StatusCategory != "done" && NotUnderWay(child, intakeStatuses);
+
+    /// <summary>The ticket's status is in the to-do category, or one of the intake statuses.</summary>
+    internal static bool NotUnderWay(TrackerTicket ticket, IReadOnlyCollection<string> intakeStatuses)
+        => ticket.StatusCategory == "todo"
+            || ((ticket.Status ?? ticket.Body?.Status) is { } status
+                && intakeStatuses.Contains(status.Trim(), StringComparer.OrdinalIgnoreCase));
 
     private async Task<int> IngestStoriesAsync(ImportContext router, StoryReport stories, string tracker, CancellationToken ct)
     {
@@ -61,9 +91,9 @@ internal sealed partial class TrackersApi
             if (stories.Links.ContainsKey(ticket.Key) || !ticket.InIntake || !ticket.AssignedToMe
                 || ticket.ChildKeys is not { Length: > 0 })
                 continue;
-            var open = stories.OpenChildren(ticket);
+            var open = stories.MemberChildren(ticket);
             if (open.Count == 0)
-                continue; // a Story with nothing open to do is worked as a task of its own
+                continue; // nothing under it for the developer to do: the main pass imports it as a task of its own
 
             try
             {
@@ -79,10 +109,14 @@ internal sealed partial class TrackersApi
         foreach (var link in stories.Links.Values.Where(l => l.Role == TicketRole.Story && l.TrackingEndedAt == null
                      && l.GroupId is not null && !stories.JustImported.Contains(l.TicketKey)).ToList())
         {
-            if (!stories.ByKey.TryGetValue(link.TicketKey, out var ticket))
-                continue;
             try
             {
+                // Members whose sub-task is not the developer's to do leave first, so the Story's
+                // order and pending count never wait for them.
+                if (await ReleaseNotMineMembersAsync(link, stories, tracker, ct))
+                    continue; // nothing of the developer's left: the Story ticket is a task of its own
+                if (!stories.ByKey.TryGetValue(link.TicketKey, out var ticket))
+                    continue;
                 count += await SyncStoryChildrenAsync(router, link, ticket, stories, tracker, ct);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
@@ -103,8 +137,13 @@ internal sealed partial class TrackersApi
         router.Repos ??= await projectsApi.ListReposAsync(config.ProjectId, ct);
 
         var specs = new List<StorySubTaskSpec>(open.Count);
+        var revived = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var child in open)
+        {
             specs.Add(await SubTaskSpecAsync(router, child, ct));
+            if (await ReviveReleasedAsync(child, ticket.Key, stories, tracker, ct))
+                revived.Add(child.Key);
+        }
 
         var branch = TrackerBranchName.Render(config.BranchTemplate, MapType(body.Type), ticket.Key, body.Title)
             ?? $"orkka/{ticket.Key}";
@@ -112,7 +151,13 @@ internal sealed partial class TrackersApi
             config.OrgId, config.ProjectId, config.OwnerUserId, ticket.Key, ticket.Url,
             TaskTitle(ticket.Key, body.Title), TaskDescription(body), branch, specs, EpicLabel(config, ticket)), ct);
         if (result.Members.Count == 0)
+        {
+            // Every sub-task was already work of its own that cannot join (started, or archived
+            // by a person): no story — an empty group would only linger on the board.
+            if (result.Created)
+                await tasksApi.CancelStoryAsync(result.GroupId, ct);
             return false;
+        }
 
         var storyLink = NewLink(router, ticket, body, result.Members[0].TaskId, TicketRole.Story, null, null);
         storyLink.GroupId = result.GroupId;
@@ -127,19 +172,21 @@ internal sealed partial class TrackersApi
             var members = result.Members
                 .Where(m => string.Equals(m.SubTaskKey, child.Key, StringComparison.OrdinalIgnoreCase)).ToList();
             if (members.Count > 0)
-                await LinkSubTaskAsync(router, child, members, result.GroupId, stories, tracker, ct);
+                await LinkSubTaskAsync(router, child, members, result.GroupId, stories, tracker, ct, revived.Contains(child.Key));
         }
 
         await tasksApi.SetStoryPendingChildrenAsync(result.GroupId, stories.PendingCount(ticket, []), ct);
         await tasksApi.AddTaskMessageAsync(result.Members[0].TaskId, "system",
-            $"{ticket.Key} is a Story with {open.Count} open sub-task(s) in {tracker}. They are worked in order on "
+            $"{ticket.Key} is a Story with {open.Count} sub-task(s) assigned to you in {tracker} that have not been started "
+            + "(sub-tasks of other people, and ones already under way, are left alone). Yours are worked in order on "
             + $"`{branch}`, one pull request for the whole story: a draft after the first lands, ready for review "
             + "after the last.",
             MessageType.SystemEvent, ct: ct);
         return true;
     }
 
-    /// <summary>A Story Orkka already works: sub-tasks added since join at the end.</summary>
+    /// <summary>A Story Orkka already works: sub-tasks added since — or given to the developer
+    /// since — join at the end.</summary>
     private async Task<int> SyncStoryChildrenAsync(
         ImportContext router, TicketLink link, TrackerTicket ticket, StoryReport stories, string tracker, CancellationToken ct)
     {
@@ -151,13 +198,16 @@ internal sealed partial class TrackersApi
         var added = 0;
         foreach (var key in ticket.ChildKeys ?? [])
         {
-            if (stories.Links.ContainsKey(key)
-                || !stories.ByKey.TryGetValue(key, out var child)
-                || child.Body is null || child.StatusCategory == "done")
+            if (!stories.ByKey.TryGetValue(key, out var child) || child.Body is null || !stories.IsCandidate(child))
+                continue;
+            // Linked already: tracked, or archived by a person (left alone). Only a sub-task Orkka
+            // itself let go of (taken out of the story, or retired) comes back.
+            if (stories.Links.TryGetValue(key, out var known) && (known.TrackingEndedAt is null || known.AssignedToOwner))
                 continue;
 
             router.Repos ??= await projectsApi.ListReposAsync(router.Config.ProjectId, ct);
             var spec = await SubTaskSpecAsync(router, child, ct);
+            var revived = await ReviveReleasedAsync(child, link.TicketKey, stories, tracker, ct);
             var appended = await tasksApi.AppendStoryMemberAsync(groupId, spec, ct);
 
             if (appended.Closed)
@@ -165,6 +215,20 @@ internal sealed partial class TrackersApi
                 // The Story's pull request already merged or closed: the new sub-task is its own
                 // task, carrying the Story's context.
                 var story = await tasksApi.GetStoryAsync(groupId, ct);
+                if (known is not null)
+                {
+                    // Its task exists (just revived): it is worked on its own from here.
+                    known.Role = TicketRole.Standalone;
+                    known.GroupId = null;
+                    known.ParentKey = link.TicketKey;
+                    known.ParentTitle = Truncate(story?.Title ?? link.TicketKey, 490);
+                    known.ParentDescription = Truncate(story?.Description, 19_000);
+                    known.TrackingEndedAt = null;
+                    known.AssignedToOwner = true;
+                    stories.JustImported.Add(key);
+                    added++;
+                    continue;
+                }
                 if (await ImportAsync(router, child, ct, (link.TicketKey, story?.Title, story?.Description)) is { } standalone)
                 {
                     db.TicketLinks.Add(standalone);
@@ -197,7 +261,7 @@ internal sealed partial class TrackersApi
                     MessageType.SystemEvent, ct: ct);
             }
 
-            await LinkSubTaskAsync(router, child, appended.Members, groupId, stories, tracker, ct);
+            await LinkSubTaskAsync(router, child, appended.Members, groupId, stories, tracker, ct, revived);
             added++;
         }
 
@@ -207,16 +271,21 @@ internal sealed partial class TrackersApi
 
     private async Task LinkSubTaskAsync(
         ImportContext router, TrackerTicket child, IReadOnlyList<StoryMemberRef> members, Ulid groupId,
-        StoryReport stories, string tracker, CancellationToken ct)
+        StoryReport stories, string tracker, CancellationToken ct, bool revived = false)
     {
         var config = router.Config;
         if (stories.Links.TryGetValue(child.Key, out var existing))
         {
-            // Imported on its own before its Story was the developer's, and adopted untouched.
+            // Imported on its own before its Story was the developer's and adopted untouched, or
+            // a sub-task Orkka let go of earlier that is the developer's again.
             existing.Role = TicketRole.SubTask;
             existing.GroupId = groupId;
+            existing.TaskId = members[0].TaskId;
+            existing.ParentKey = child.ParentKey ?? existing.ParentKey;
             existing.ParentTitle = null;
             existing.ParentDescription = null;
+            existing.TrackingEndedAt = null;
+            existing.AssignedToOwner = true;
         }
         else
         {
@@ -228,7 +297,8 @@ internal sealed partial class TrackersApi
         }
         stories.JustImported.Add(child.Key);
 
-        foreach (var member in members.Where(m => m.Created))
+        // A revived member is back in Drafting like a new one, so it is submitted like one.
+        foreach (var member in members.Where(m => m.Created || revived))
         {
             if (member.RepoId is null)
             {
@@ -246,6 +316,122 @@ internal sealed partial class TrackersApi
                         MessageType.SystemEvent, ct: ct);
             }
         }
+    }
+
+    /// <summary>
+    /// A sub-task Orkka let go of earlier (taken out of its Story, or retired: tracking ended,
+    /// <see cref="TicketLink.AssignedToOwner"/> false) that is the developer's to do again: its
+    /// task comes back to Drafting so it can rejoin the Story. False when there is nothing to revive.
+    /// </summary>
+    private async Task<bool> ReviveReleasedAsync(
+        TrackerTicket child, string storyKey, StoryReport stories, string tracker, CancellationToken ct)
+    {
+        if (!stories.Links.TryGetValue(child.Key, out var link) || link.TrackingEndedAt is null || link.AssignedToOwner)
+            return false;
+        await tasksApi.ReviveTrackerTaskAsync(link.TaskId,
+            $"{child.Key} is assigned to you in {tracker} and not started — it joins the story {storyKey} again.", ct);
+        return true;
+    }
+
+    /// <summary>
+    /// Orkka only works what is the developer's: a member whose sub-task is not assigned to them
+    /// (or, for a ticket Orkka never moved itself, is already under way in the tracker) leaves the
+    /// Story while nothing has started — archived and taken out of the chain, its dependents
+    /// rewired to its predecessor, its link no longer tracked (and back when the sub-task is the
+    /// developer's again). Started work is never touched: a member not assigned to the developer
+    /// gets one note instead. When no member is left and nothing landed or was published, the
+    /// Story group is cancelled and its link removed, so the Story ticket is worked as a task of
+    /// its own — in this same poll, when it is still in intake and assigned to the developer.
+    /// True when the Story was dissolved.
+    /// </summary>
+    private async Task<bool> ReleaseNotMineMembersAsync(TicketLink storyLink, StoryReport stories, string tracker, CancellationToken ct)
+    {
+        var groupId = storyLink.GroupId!.Value;
+        var subLinks = stories.Links.Values
+            .Where(l => l.Role == TicketRole.SubTask && l.GroupId == groupId && l.TrackingEndedAt == null)
+            .ToList();
+        TrackerGroupState? group = null;
+        var released = false;
+        foreach (var link in subLinks)
+        {
+            if (!stories.ByKey.TryGetValue(link.TicketKey, out var child) || child.StatusCategory == "done")
+                continue; // not read this poll, or done (the main pass retires it if nothing started)
+
+            var mine = child.AssignedToMe;
+            // Orkka's own write-back moves a member's ticket along, so its status only says
+            // "someone else started this" while Orkka never moved it.
+            var notUnderWay = link.SyncedPhase != TrackerPhase.None || link.PendingPhase is not null
+                || NotUnderWay(child, stories.IntakeStatuses);
+            if (mine && notUnderWay)
+            {
+                link.AssignedToOwner = true; // the developer's again: a later reassignment is noted again
+                continue;
+            }
+
+            group ??= (await tasksApi.GetTrackerGroupStatesAsync([groupId], ct)).FirstOrDefault();
+            if (group is null)
+                return false;
+            var members = MembersFor(link, group);
+            if (members.Any(m => !m.IsArchived && m.Planning))
+            {
+                if (!mine && link.AssignedToOwner)
+                {
+                    link.AssignedToOwner = false;
+                    await tasksApi.AddTaskMessageAsync(link.TaskId, "system",
+                        $"{link.TicketKey} is not assigned to you in {tracker}; Orkka will not pick up more of it — "
+                        + "archive this task if it isn't yours.",
+                        MessageType.SystemEvent, ct: ct);
+                }
+                continue;
+            }
+
+            var reason = mine
+                ? $"{link.TicketKey} is already under way in {tracker} (“{child.Status ?? child.Body?.Status}”), so it is not Orkka's to start."
+                : $"{link.TicketKey} is not assigned to you in {tracker} — Orkka only works tickets assigned to you.";
+            var held = false;
+            IEnumerable<Ulid> taskIds = members.Count > 0 ? members.Select(m => m.TaskId) : [link.TaskId];
+            foreach (var taskId in taskIds)
+                held |= await tasksApi.ReleaseStoryMemberAsync(taskId, reason, ct) == TrackerTaskRetirement.Held;
+            if (held)
+                continue; // it started just now; the next poll treats it as started work
+
+            link.TrackingEndedAt = DateTimeOffset.UtcNow;
+            link.AssignedToOwner = false;
+            link.Role = TicketRole.Standalone;
+            link.GroupId = null;
+            link.ParentKey = storyLink.TicketKey;
+            link.ParentTitle = ""; // revived on its own later, it reads the Story for its context
+            link.ParentDescription = null;
+            link.PendingPhase = null;
+            link.PendingSince = null;
+            released = true;
+        }
+        if (!released)
+            return false;
+
+        group = (await tasksApi.GetTrackerGroupStatesAsync([groupId], ct)).FirstOrDefault();
+        if (group is null)
+            return false;
+        var live = group.Members.Where(m => !m.IsArchived).OrderBy(m => m.StoryOrder).ToList();
+        if (live.Count > 0)
+        {
+            // The Story ticket's notes and comments land on its first member: never on one taken out.
+            if (!group.Members.Any(m => m.TaskId == storyLink.TaskId))
+                storyLink.TaskId = live[0].TaskId;
+            return false;
+        }
+
+        // Nothing of the developer's left. Work that landed or was published stays a Story and
+        // ends the way an all-archived story does; otherwise the group goes.
+        if (!stories.ByKey.ContainsKey(storyLink.TicketKey) || group.Members.Any(m => m.Landed)
+            || group.ReadyAt is not null || group.Branches.Any(b => b.ForgePrUrl is not null))
+            return false;
+        await tasksApi.CancelStoryAsync(groupId, ct);
+        db.TicketLinks.Remove(storyLink);
+        stories.Links.Remove(storyLink.TicketKey);
+        // Saved now, so the key is free for the Story ticket's own link later in this poll.
+        await db.SaveChangesAsync(ct);
+        return true;
     }
 
     private async Task<StorySubTaskSpec> SubTaskSpecAsync(ImportContext router, TrackerTicket child, CancellationToken ct)
@@ -320,14 +506,19 @@ internal sealed partial class TrackersApi
     }
 
     /// <summary>Keys to read on the next poll that no tracked link covers: a Story's sub-tasks
-    /// with no member yet, and the Story of a sub-task worked on its own whose context is wanted.</summary>
+    /// with no member yet — new ones, ones not the developer's (yet), and ones Orkka let go of
+    /// that may become the developer's again — and the Story of a sub-task worked on its own
+    /// whose context is wanted.</summary>
     internal async Task<IReadOnlyList<string>> ExtraKnownKeysAsync(Ulid configId, CancellationToken ct)
     {
         var rows = await db.TicketLinks.IgnoreQueryFilters().AsNoTracking()
             .Where(l => l.ConfigId == configId)
-            .Select(l => new { l.TicketKey, l.Role, l.ChildKeysJson, l.ParentKey, l.ParentTitle, l.TrackingEndedAt })
+            .Select(l => new { l.TicketKey, l.Role, l.ChildKeysJson, l.ParentKey, l.ParentTitle, l.TrackingEndedAt, l.AssignedToOwner })
             .ToListAsync(ct);
-        var linked = rows.Select(r => r.TicketKey).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        // A link Orkka itself ended (AssignedToOwner false) does not cover its key; one a person
+        // archived, or that merged, does.
+        var linked = rows.Where(r => r.TrackingEndedAt == null || r.AssignedToOwner)
+            .Select(r => r.TicketKey).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var live = rows.Where(r => r.TrackingEndedAt == null).ToList();
 
         return [.. live.Where(r => r.Role == TicketRole.Story).SelectMany(r => ParseKeys(r.ChildKeysJson))

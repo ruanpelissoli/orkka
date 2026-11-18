@@ -19,7 +19,8 @@ public sealed partial class TasksApi
     {
         var existing = await _db.TaskGroups.IgnoreQueryFilters()
             .FirstOrDefaultAsync(g => g.OrgId == spec.OrgId && g.ProjectId == spec.ProjectId
-                && g.Kind == TaskGroupKind.Story && g.ExternalKey == spec.StoryKey, ct);
+                && g.Kind == TaskGroupKind.Story && g.ExternalKey == spec.StoryKey
+                && g.Status != TaskGroupStatus.Cancelled, ct);
         if (existing is not null)
             return new TrackerStoryResult(existing.Id, await MemberRefsAsync(existing.Id, ct), Created: false);
 
@@ -55,7 +56,8 @@ public sealed partial class TasksApi
             _db.ChangeTracker.Clear();
             var winner = await _db.TaskGroups.IgnoreQueryFilters().AsNoTracking()
                 .FirstAsync(g => g.OrgId == spec.OrgId && g.ProjectId == spec.ProjectId
-                    && g.Kind == TaskGroupKind.Story && g.ExternalKey == spec.StoryKey, ct);
+                    && g.Kind == TaskGroupKind.Story && g.ExternalKey == spec.StoryKey
+                && g.Status != TaskGroupStatus.Cancelled, ct);
             return new TrackerStoryResult(winner.Id, await MemberRefsAsync(winner.Id, ct), Created: false);
         }
 
@@ -148,6 +150,7 @@ public sealed partial class TasksApi
         var number = newCount > 0 ? await taskNumbers.ReserveRangeAsync(group.ProjectId, newCount, ct) - newCount + 1 : 0;
         var order = startOrder;
         var knownRepos = group.Branches.Select(b => b.RepoId).ToHashSet();
+        var adoptedLive = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var (sub, repo, index) in slots)
         {
@@ -157,9 +160,24 @@ public sealed partial class TasksApi
             if (existingByRef.TryGetValue(externalRef, out var adopt))
             {
                 // Imported on its own earlier (before its Story was the developer's). Untouched
-                // work joins the story; anything already started stays standalone.
+                // work joins the story; anything already started stays standalone, and an archived
+                // task stays archived — the tracker side revives a sub-task it took out itself
+                // before appending it, and that brings the sub-task's other repositories along.
                 if (adopt.GroupId is not null || !NotStarted(adopt))
                     continue;
+                if (adopt.IsArchived)
+                {
+                    if (index == 0 || !adoptedLive.Contains(sub.Key))
+                        continue;
+                    adopt.IsArchived = false;
+                    adopt.ArchivedAt = null;
+                    adopt.CurrentLane = Lane.Drafting;
+                    adopt.Status = TaskStatus.Draft;
+                }
+                else if (index == 0)
+                {
+                    adoptedLive.Add(sub.Key);
+                }
                 member = adopt;
                 member.GroupId = group.Id;
                 member.BranchName = group.BranchName;
@@ -350,6 +368,58 @@ public sealed partial class TasksApi
         if (group is null || group.PendingChildCount == count)
             return;
         group.PendingChildCount = count;
+        await _db.SaveChangesAsync(ct);
+    }
+
+    public async Task<TrackerTaskRetirement> ReleaseStoryMemberAsync(Ulid taskId, string reason, CancellationToken ct = default)
+    {
+        var task = await _db.Tasks.IgnoreQueryFilters().FirstOrDefaultAsync(t => t.Id == taskId, ct);
+        if (task is null)
+            return TrackerTaskRetirement.Gone;
+        if (!NotStarted(task))
+            return TrackerTaskRetirement.Held;
+
+        var wasArchived = task.IsArchived;
+        if (!wasArchived)
+        {
+            task.IsArchived = true;
+            task.ArchivedAt = DateTimeOffset.UtcNow;
+            task.Status = TaskStatus.Archived;
+        }
+
+        if (task.GroupId is { } groupId)
+        {
+            // Whatever waited on it waits on its predecessor; its own place in the order goes.
+            await RewireStoryDependentsAsync(task, ct);
+            var own = await _db.TaskDependencies.IgnoreQueryFilters()
+                .Where(d => d.TaskId == task.Id && d.DependsOnTask.GroupId == groupId)
+                .ToListAsync(ct);
+            _db.TaskDependencies.RemoveRange(own);
+            task.GroupId = null;
+            task.StoryOrder = null;
+            task.BranchName = null;
+        }
+
+        await _db.SaveChangesAsync(ct);
+        await AddTaskMessageAsync(taskId, "system",
+            $"{reason} Nothing had started, so the task was archived and taken out of the story — it joins the story "
+            + "again if the sub-task becomes yours to do.",
+            MessageType.SystemEvent, ct: ct);
+        if (!wasArchived)
+            await taskNotifier.SendTaskUpdatedAsync(task.ProjectId, new TaskUpdatedEvent(
+                task.Id, Title: null, Priority: null, Status: task.Status.ToString(), CurrentLane: null,
+                IsArchived: true, DateTimeOffset.UtcNow));
+        return TrackerTaskRetirement.Archived;
+    }
+
+    public async Task CancelStoryAsync(Ulid groupId, CancellationToken ct = default)
+    {
+        var group = await _db.TaskGroups.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(g => g.Id == groupId && g.Kind == TaskGroupKind.Story, ct);
+        if (group is null || group.Status == TaskGroupStatus.Cancelled)
+            return;
+        group.Status = TaskGroupStatus.Cancelled;
+        group.SettledAt ??= DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync(ct);
     }
 

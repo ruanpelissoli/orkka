@@ -271,7 +271,8 @@ internal sealed partial class TrackersApi(
 
         // Stories first: a Story and its sub-tasks arrive in one report in any order, and a
         // sub-task must become a member of its Story rather than a task of its own.
-        var stories = new StoryReport(report.Tickets, links);
+        var stories = new StoryReport(report.Tickets, links,
+            Features.ProjectConfig.ProjectTrackerMappers.ParseIntakeStatuses(config.IntakeStatusesJson));
         if (config.StoryMode != 0)
             created += await IngestStoriesAsync(router, stories, tracker, ct);
 
@@ -371,8 +372,8 @@ internal sealed partial class TrackersApi(
         if ((ticket.Status ?? ticket.Body?.Status) is { } status)
             link.RemoteStatus = Truncate(status, 200);
 
-        // A Story's sub-task is worked because the Story is the developer's, whoever the sub-task
-        // itself is assigned to: only closing it before work started retires its member.
+        // A Story's sub-task's assignment and status are judged by the Story pass
+        // (ReleaseNotMineMembersAsync); here only closing it before work started retires it.
         var subTask = link.Role == TicketRole.SubTask;
         if (subTask)
         {
