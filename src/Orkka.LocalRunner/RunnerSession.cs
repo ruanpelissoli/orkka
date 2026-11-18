@@ -348,6 +348,7 @@ public sealed class RunnerSession(
                 RunnerCapabilities.TrackerPoll,
                 RunnerCapabilities.RepoDiscovery,
                 RunnerCapabilities.TrackerConnect,
+                RunnerCapabilities.TrackerBoards,
                 RunnerCapabilities.Stories,
             ],
             DaemonVersion: Cli.OrkkaVersion.Current(),

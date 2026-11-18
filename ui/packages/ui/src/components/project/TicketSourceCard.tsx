@@ -33,6 +33,7 @@ import type {
   ProjectRepo,
   ProjectTrackerConfig,
   SaveProjectTrackerRequest,
+  TrackerBoard,
   TrackerConnection,
   TrackerDefaults,
   TrackerEpic,
@@ -172,6 +173,9 @@ export function TicketSourceCard({
   const ruleKinds = routingRuleKindsFor(kind);
 
   const [scope, setScope] = useState(initialConfig?.scope ?? "");
+  // "" = the whole project (every board).
+  const [boardId, setBoardId] = useState(initialConfig?.boardId ?? "");
+  const [boardName, setBoardName] = useState(initialConfig?.boardName ?? "");
   const [scopeMode, setScopeMode] = useState<TrackerScopeMode>(initialConfig?.scopeMode ?? "All");
   const [intakeStatuses, setIntakeStatuses] = useState<string[]>(
     initialConfig?.intakeStatuses?.length ? initialConfig.intakeStatuses : [...TRACKER_DEFAULT_INTAKE_STATUSES]
@@ -200,6 +204,7 @@ export function TicketSourceCard({
   );
 
   const [scopes, setScopes] = useState<TrackerScope[]>([]);
+  const [boards, setBoards] = useState<TrackerBoard[]>([]);
   const [statuses, setStatuses] = useState<TrackerStatus[]>([]);
   const [epicSearch, setEpicSearch] = useState("");
   const [epicResults, setEpicResults] = useState<TrackerEpic[] | null>(null);
@@ -255,6 +260,18 @@ export function TicketSourceCard({
       cancelled = true;
     };
   }, [connectionId, query]);
+
+  // The board list follows the scope.
+  useEffect(() => {
+    if (!connectionId || !scope) return;
+    let cancelled = false;
+    void query({ kind: "boards", scope }).then((answer) => {
+      if (!cancelled && answer?.result.ok) setBoards(answer.result.boards ?? []);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [connectionId, scope, query]);
 
   // Statuses (intake + status sync) follow the scope, and bring the defaults with them: a new
   // source takes them whole; a saved one only fills a Developing / PR-opened step left empty
@@ -358,6 +375,13 @@ export function TicketSourceCard({
     setRules((prev) => prev.map((r, i) => (i === index ? { ...r, ...patch } : r)));
   }
 
+  /** A board belongs to one scope (and one connection): changing either forgets it. */
+  function clearBoard() {
+    setBoards([]);
+    setBoardId("");
+    setBoardName("");
+  }
+
   function toggleIntake(name: string) {
     setIntakeStatuses((prev) =>
       prev.some((s) => s.toLowerCase() === name.toLowerCase())
@@ -386,6 +410,8 @@ export function TicketSourceCard({
       epicKeys: scopeMode === "Epics" ? rows.map((r) => r.epicKey) : undefined,
       extraClause: extraClause.trim() || undefined,
       includeDescendants,
+      boardId: boardId || undefined,
+      boardName: boardId ? boardName || undefined : undefined,
     });
     setPreview(answer?.result.ok ? answer.result : null);
     setBusy(null);
@@ -411,6 +437,8 @@ export function TicketSourceCard({
       intakeStatuses,
       defaultRepoId: defaultRepoId || null,
       storyMode: storyMode ? 1 : 0,
+      boardId: boardId || null,
+      boardName: boardId ? boardName || null : null,
       extraClause: extraClause.trim() || null,
       includeDescendants,
       autoSubmit,
@@ -449,6 +477,7 @@ export function TicketSourceCard({
       setRows([]);
       setRules([]);
       setScope("");
+      clearBoard();
       setPreview(null);
       setConfirmingRemove(false);
       setNotice({ kind: "ok", text: t("removed") });
@@ -463,6 +492,10 @@ export function TicketSourceCard({
   // they load, or when the runner is offline, so nothing reads as blank.
   const scopeOptions =
     scope && !scopes.some((s) => s.key === scope) ? [{ key: scope, name: scope }, ...scopes] : scopes;
+  const boardOptions: TrackerBoard[] =
+    boardId && !boards.some((b) => b.id === boardId)
+      ? [{ id: boardId, name: boardName || boardId }, ...boards]
+      : boards;
   const statusNames = statuses.map((s) => s.name);
   for (const value of Object.values(statusMap)) {
     if (value && !statusNames.includes(value)) statusNames.push(value);
@@ -532,6 +565,7 @@ export function TicketSourceCard({
                 setQueryErrors({});
                 setScopes([]);
                 setStatuses([]);
+                clearBoard();
                 setTestResult(null);
                 setPreview(null);
               }}
@@ -606,6 +640,7 @@ export function TicketSourceCard({
             onChange={(e) => {
               setScope(e.target.value);
               setStatuses([]);
+              clearBoard();
               setPreview(null);
             }}
             data-testid="ticket-source-scope"
@@ -614,6 +649,28 @@ export function TicketSourceCard({
             {scopeOptions.map((s) => (
               <option key={s.key} value={s.key}>
                 {s.name === s.key ? s.key : `${s.name} (${s.key})`}
+              </option>
+            ))}
+          </Select>
+
+          {/* Board — narrows intake to one board of the scope (a Jira board, an ADO team) */}
+          <Select
+            label={t("boardLabel")}
+            hint={t("boardHint")}
+            value={boardId}
+            disabled={!scope}
+            onChange={(e) => {
+              const picked = boardOptions.find((b) => b.id === e.target.value);
+              setBoardId(picked?.id ?? "");
+              setBoardName(picked?.name ?? "");
+              setPreview(null);
+            }}
+            data-testid="ticket-source-board"
+          >
+            <option value="">{t("boardWhole")}</option>
+            {boardOptions.map((b) => (
+              <option key={b.id} value={b.id}>
+                {kind === "ado" ? t("boardOptionAdo", { team: b.name }) : b.name}
               </option>
             ))}
           </Select>

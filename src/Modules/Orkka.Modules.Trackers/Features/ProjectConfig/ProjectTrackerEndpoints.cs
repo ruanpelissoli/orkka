@@ -55,7 +55,10 @@ public sealed record ProjectTrackerConfigResponse(
     string[] IntakeStatuses,
     TrackerRoutingRuleDto[] RoutingRules,
     Ulid? DefaultRepoId,
-    int StoryMode);
+    int StoryMode,
+    // The board intake is limited to (Jira board id / Azure DevOps team id); null = every board.
+    string? BoardId = null,
+    string? BoardName = null);
 
 public sealed record SaveProjectTrackerRequest(
     Ulid TrackerConnectionId,
@@ -72,7 +75,10 @@ public sealed record SaveProjectTrackerRequest(
     string[]? IntakeStatuses = null,
     TrackerRoutingRuleDto[]? RoutingRules = null,
     Ulid? DefaultRepoId = null,
-    int StoryMode = 1);
+    int StoryMode = 1,
+    // Null or empty = every board in the scope.
+    string? BoardId = null,
+    string? BoardName = null);
 
 public sealed class SaveProjectTrackerValidator : Validator<SaveProjectTrackerRequest>
 {
@@ -84,6 +90,8 @@ public sealed class SaveProjectTrackerValidator : Validator<SaveProjectTrackerRe
             .NotEmpty().WithMessage("Pick the Jira project or Azure DevOps project the tickets live in.")
             .MaximumLength(256).WithMessage("Pick the Jira project or Azure DevOps project the tickets live in.");
         RuleFor(x => x.ExtraClause).MaximumLength(2000);
+        RuleFor(x => x.BoardId).MaximumLength(128).WithMessage("Pick a board from the list.");
+        RuleFor(x => x.BoardName).MaximumLength(256).WithMessage("Pick a board from the list.");
         RuleFor(x => x.PollIntervalSeconds)
             .InclusiveBetween(ProjectTrackerConfig.MinPollIntervalSeconds, ProjectTrackerConfig.MaxPollIntervalSeconds)
             .WithMessage($"Check for tickets every {ProjectTrackerConfig.MinPollIntervalSeconds}–{ProjectTrackerConfig.MaxPollIntervalSeconds} seconds.");
@@ -213,7 +221,9 @@ internal static class ProjectTrackerMappers
             [.. c.Epics.Where(e => e.Kind != TrackerRuleKind.Epic && e.RepoId is not null).OrderBy(e => e.Position)
                 .Select(e => new TrackerRoutingRuleDto(RuleKindName(e.Kind), e.EpicKey, e.RepoId!.Value, e.Subpath))],
             c.DefaultRepoId,
-            c.StoryMode);
+            c.StoryMode,
+            c.BoardId,
+            c.BoardId is null ? null : c.BoardName);
     }
 
     /// <summary>The stored intake statuses; an empty or unreadable list means "To Do".</summary>
@@ -364,6 +374,10 @@ public sealed class SaveProjectTrackerEndpoint(
         config.TrackerConnectionId = connection.Id;
         config.Scope = req.Scope.Trim();
         config.ExtraClause = string.IsNullOrWhiteSpace(req.ExtraClause) ? null : req.ExtraClause.Trim();
+        config.BoardId = string.IsNullOrWhiteSpace(req.BoardId) ? null : req.BoardId.Trim();
+        config.BoardName = config.BoardId is null
+            ? null
+            : string.IsNullOrWhiteSpace(req.BoardName) ? config.BoardId : req.BoardName.Trim();
         config.IncludeDescendants = req.IncludeDescendants;
         config.AutoSubmit = req.AutoSubmit;
         config.PollIntervalSeconds = req.PollIntervalSeconds;
@@ -424,7 +438,8 @@ public sealed class SaveProjectTrackerEndpoint(
 
         await audit.RecordAsync(AgentAuditRecord.ByUser(
             currentUser.OrgId, currentUser.UserId, AgentAuditEventType.TrackerConfigChanged,
-            $"Ticket source {(created ? "set" : "changed")}: {connection.Kind} {connection.SiteUrl} / {config.Scope}, "
+            $"Ticket source {(created ? "set" : "changed")}: {connection.Kind} {connection.SiteUrl} / {config.Scope}"
+                + (config.BoardId is null ? ", " : $" (board {config.BoardName}), ")
                 + $"{config.ScopeMode}, {epics.Length} epic(s), {routingRules.Length} routing rule(s)",
             projectId: projectId,
             metadata: new
@@ -432,6 +447,7 @@ public sealed class SaveProjectTrackerEndpoint(
                 connection = connection.ConnectionKey,
                 connection.Kind,
                 config.Scope,
+                board = config.BoardId is null ? null : new { id = config.BoardId, name = config.BoardName },
                 scopeMode = config.ScopeMode.ToString(),
                 epics = epics.Select(e => e.EpicKey).ToArray(),
                 intakeStatuses = ProjectTrackerMappers.ParseIntakeStatuses(config.IntakeStatusesJson),

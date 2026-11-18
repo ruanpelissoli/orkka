@@ -63,7 +63,10 @@ public sealed record TrackerQueryBody(
     bool IncludeDescendants = false,
     string[]? IntakeStatuses = null,
     // "All" or "Epics" (case-insensitive); null = All.
-    string? ScopeMode = null);
+    string? ScopeMode = null,
+    // Preview: the board intake is limited to (Jira board id / Azure DevOps team id).
+    string? BoardId = null,
+    string? BoardName = null);
 
 /// <summary>Supported=false means the caller's runner could not answer — offline, or too old
 /// for tracker connections. The settings page says so instead of showing an error.</summary>
@@ -77,7 +80,8 @@ public sealed record TrackerDefaultsDto(
 /// <summary>
 /// Asks the tracker something on the caller's behalf, through the caller's own runner — the
 /// only place the token exists. What the "Ticket source" settings are built from: test the
-/// connection, list projects, search epics, list statuses, preview what would be picked up.
+/// connection, list projects, list a project's boards, search epics, list statuses, preview what
+/// would be picked up.
 /// </summary>
 public sealed class TrackerQueryEndpoint(
     TrackersDbContext db,
@@ -92,7 +96,7 @@ public sealed class TrackerQueryEndpoint(
     private static readonly HashSet<string> Kinds =
     [
         TrackerQueryKinds.Test, TrackerQueryKinds.Scopes, TrackerQueryKinds.Epics,
-        TrackerQueryKinds.Statuses, TrackerQueryKinds.Preview,
+        TrackerQueryKinds.Statuses, TrackerQueryKinds.Preview, TrackerQueryKinds.Boards,
     ];
 
     public override void Configure() => Post("/api/trackers/connections/{connectionId:ulid}/query");
@@ -130,7 +134,9 @@ public sealed class TrackerQueryEndpoint(
             req.IntakeStatuses?.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToArray(),
             string.Equals(req.ScopeMode?.Trim(), "epics", StringComparison.OrdinalIgnoreCase)
                 ? TrackerScopeModes.Epics
-                : TrackerScopeModes.All);
+                : TrackerScopeModes.All,
+            string.IsNullOrWhiteSpace(req.BoardId) ? null : req.BoardId.Trim(),
+            string.IsNullOrWhiteSpace(req.BoardId) || string.IsNullOrWhiteSpace(req.BoardName) ? null : req.BoardName.Trim());
 
         try
         {

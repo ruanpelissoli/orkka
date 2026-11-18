@@ -158,6 +158,42 @@ test.describe("fake Jira Cloud @offline", () => {
     expect(restricted.json.transitions.map((t: { to: { name: string } }) => t.to.name)).toEqual(["In Review"]);
   });
 
+  test("boards: a project's boards, a board's filter, its JQL (ORDER BY stripped) AND-ed onto intake; a gone board 404s", async ({ fakeTracker: s }) => {
+    jiraSeed(s);
+    s.jira.update("SHOP-10", { components: ["Web"] });
+    s.jira.update("SHOP-20", { components: ["Api"] });
+    const a = s.jira.authorization;
+    const web = s.jira.addBoard({ name: "Web board", jql: "project = SHOP AND component = Web ORDER BY Rank ASC" });
+    s.jira.addBoard({ name: "Api board", jql: "project = SHOP AND component in (Api) ORDER BY Rank ASC", type: "kanban" });
+    s.jira.addBoard({ name: "Other", jql: "project = OPS", project: "OPS" });
+
+    // The runner's Board select: GET /rest/agile/1.0/board, paged by startAt.
+    const page1 = await call(s, "GET", "/rest/agile/1.0/board?projectKeyOrId=SHOP&maxResults=1&startAt=0", a);
+    expect(page1.json).toMatchObject({ isLast: false, values: [{ id: web.id, name: "Web board", type: "scrum" }] });
+    const page2 = await call(s, "GET", "/rest/agile/1.0/board?projectKeyOrId=SHOP&maxResults=1&startAt=1", a);
+    expect(page2.json).toMatchObject({ isLast: true, values: [{ name: "Api board", type: "kanban" }] });
+
+    // Each poll: board configuration → filter → its JQL.
+    const conf = await call(s, "GET", `/rest/agile/1.0/board/${web.id}/configuration`, a);
+    expect(conf.json.filter.id).toBe(web.filterId);
+    const filter = await call(s, "GET", `/rest/api/3/filter/${web.filterId}`, a);
+    expect(filter.json.jql).toBe("project = SHOP AND component = Web ORDER BY Rank ASC");
+
+    // The intake query the runner builds with the board's clause (JiraQueries.IntakeJql).
+    const intake = await call(s, "POST", "/rest/api/3/search/jql", a, {
+      jql: `project = "SHOP" AND assignee = currentUser() AND statusCategory = "To Do" AND (project = SHOP AND component = Web) ORDER BY key ASC`,
+      fields: ["summary"],
+      maxResults: 100,
+    });
+    expect(intake.json.issues.map((i: { key: string }) => i.key)).toEqual(["SHOP-10"]);
+
+    s.jira.removeBoard(web.id);
+    expect((await call(s, "GET", `/rest/agile/1.0/board/${web.id}/configuration`, a)).status).toBe(404);
+    const hidden = s.jira.addBoard({ name: "Private", jql: "project = SHOP", shared: false });
+    expect((await call(s, "GET", `/rest/api/3/filter/${hidden.filterId}`, a)).status).toBe(404);
+    expect((await call(s, "GET", "/rest/agile/1.0/board?projectKeyOrId=SHOP&maxResults=50&startAt=0", basicOf(s.jira.email, "wrong"))).status).toBe(401);
+  });
+
   test("failure injection and an outage", async ({ fakeTracker: s }) => {
     const a = s.jira.authorization;
     s.injectFailure({ tracker: "jira", path: /\/search\/jql$/, status: 500, times: 1 });
@@ -252,5 +288,43 @@ test.describe("fake Azure DevOps @offline", () => {
     expect(invalid.status).toBe(400);
     expect(invalid.json.message).toMatch(/TF401320/);
     expect(s.transitions).toMatchObject([{ tracker: "ado", key: "10", from: "New", to: "Active" }]);
+  });
+
+  test("boards: the project's teams; a team's area paths become the intake WIQL condition; a gone team 404s", async ({ fakeTracker: s }) => {
+    seed(s);
+    const a = s.ado.authorization;
+    s.ado.update(10, { areaPath: "Shop\\Web\\Checkout" });
+    s.ado.update(11, { areaPath: "Shop\\Shared" });
+    const web = s.ado.addTeam({ name: "Web", values: [{ value: "Shop\\Web", includeChildren: true }, { value: "Shop\\Shared", includeChildren: false }] });
+
+    // The runner's Board select: GET {org}/_apis/projects/{project}/teams.
+    const teams = await call(s, "GET", `${site(s)}/_apis/projects/Shop/teams?$top=500&api-version=7.1`, a);
+    expect(teams.json.value.map((t: { name: string }) => t.name).sort()).toEqual(["Shop Team", "Web"]);
+    expect(teams.json.value.find((t: { name: string }) => t.name === "Web").id).toBe(web.id);
+
+    // Each poll: the team's field values, by id (or name).
+    const values = await call(s, "GET", `${site(s)}/Shop/${web.id}/_apis/work/teamsettings/teamfieldvalues?api-version=7.1`, a);
+    expect(values.json).toMatchObject({
+      field: { referenceName: "System.AreaPath" },
+      defaultValue: "Shop\\Web",
+      values: [{ value: "Shop\\Web", includeChildren: true }, { value: "Shop\\Shared", includeChildren: false }],
+    });
+    expect((await call(s, "GET", `${site(s)}/Shop/Web/_apis/work/teamsettings/teamfieldvalues?api-version=7.1`, a)).status).toBe(200);
+
+    // Work items carry their area path; the board's condition (AdoQueries.TeamFieldCondition) filters intake.
+    const batch = await call(s, "POST", `${site(s)}/_apis/wit/workitemsbatch?api-version=7.1`, a, { ids: [10], $expand: "Relations", errorPolicy: "Omit" });
+    expect(batch.json.value[0].fields["System.AreaPath"]).toBe("Shop\\Web\\Checkout");
+    const wiql = (query: string) => call(s, "POST", `${site(s)}/Shop/_apis/wit/wiql?api-version=7.1`, a, { query });
+    const board = "([System.AreaPath] UNDER 'Shop\\Web' OR [System.AreaPath] = 'Shop\\Shared')";
+    const onBoard = await wiql(`SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = @project AND [System.Id] IN (10, 11, 12, 13) AND ${board} ORDER BY [System.Id]`);
+    expect(onBoard.json.workItems.map((w: { id: number }) => w.id)).toEqual([10, 11]);
+    const exact = await wiql("SELECT [System.Id] FROM WorkItems WHERE [System.AreaPath] = 'Shop\\Web' ORDER BY [System.Id]");
+    expect(exact.json.workItems).toEqual([]);
+
+    s.ado.removeTeam(web.id);
+    const gone = await call(s, "GET", `${site(s)}/Shop/${web.id}/_apis/work/teamsettings/teamfieldvalues?api-version=7.1`, a);
+    expect(gone.status).toBe(404);
+    expect(gone.json.message).toMatch(/TF400299/);
+    expect((await call(s, "GET", `${site(s)}/_apis/projects/Nope/teams?$top=500&api-version=7.1`, a)).status).toBe(404);
   });
 });

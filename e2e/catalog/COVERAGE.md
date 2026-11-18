@@ -1,6 +1,6 @@
 # Catalogue coverage
 
-Generated 2026-11-18T17:38:36.410Z. 708 cases in 37 files; 34 linked to a spec.
+Generated 2026-11-18T19:25:17.702Z. 713 cases in 37 files; 34 linked to a spec.
 
 | Area | Title | Cases | P0 | Linked | P0 linked | automated | planned | manual | blocked |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -36,9 +36,9 @@ Generated 2026-11-18T17:38:36.410Z. 708 cases in 37 files; 34 linked to a spec.
 | SKL | Skills — project skill library (SKILL.md playbooks) | 12 | 1 | 0 | 0 | 0 | 12 | 0 | 0 |
 | TCLI | Tracker CLI — `./orkka tracker add|list|test|remove` | 13 | 4 | 5 | 3 | 5 | 6 | 2 | 0 |
 | TEAM | Team — agent roster, configuration, chat | 35 | 2 | 0 | 0 | 0 | 35 | 0 | 0 |
-| TING | Tracker polling and ingestion — tickets become tasks | 20 | 4 | 0 | 0 | 2 | 16 | 2 | 0 |
+| TING | Tracker polling and ingestion — tickets become tasks | 23 | 4 | 0 | 0 | 2 | 19 | 2 | 0 |
 | TSK | Tasks — list, create form, detail, actions, sidebar cards | 52 | 6 | 0 | 0 | 0 | 52 | 0 | 0 |
-| TSRC | Ticket source — a project's Jira / Azure DevOps configuration | 22 | 9 | 9 | 7 | 10 | 10 | 2 | 0 |
+| TSRC | Ticket source — a project's Jira / Azure DevOps configuration | 24 | 9 | 9 | 7 | 10 | 12 | 2 | 0 |
 | TWB | Tracker status write-back — Started, PR opened, Merged | 13 | 4 | 0 | 0 | 3 | 10 | 0 | 0 |
 | WSP | Workspaces — one Orkka org per job, switcher, X-Orkka-Workspace isolation | 13 | 5 | 7 | 5 | 7 | 5 | 1 | 0 |
 
@@ -50,4 +50,4 @@ Generated 2026-11-18T17:38:36.410Z. 708 cases in 37 files; 34 linked to a spec.
 | hybrid-folder | 51 |
 | hybrid-repo | 225 |
 | offline | 17 |
-| tracker | 68 |
+| tracker | 73 |

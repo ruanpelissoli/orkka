@@ -48,6 +48,10 @@ public static class TrackerQueryKinds
 
     /// <summary>How many tickets the configuration would pick up right now, with a few examples.</summary>
     public const string Preview = "preview";
+
+    /// <summary>The boards of a scope — Jira agile boards of the project, Azure DevOps teams (a
+    /// team's board is its area paths); answers <see cref="TrackerQueryResult.Boards"/>.</summary>
+    public const string Boards = "boards";
 }
 
 /// <param name="ConnectionId">A <see cref="RunnerTrackerConnection.Id"/> on this runner.</param>
@@ -63,6 +67,9 @@ public static class TrackerQueryKinds
 /// in to be picked up (empty = the tracker's "to do" category).</param>
 /// <param name="ScopeMode">Preview: a <see cref="TrackerScopeModes"/> value — every ticket in the
 /// scope, or only those under <see cref="EpicKeys"/>.</param>
+/// <param name="BoardId">Preview: the board intake is limited to (a Jira board id, an Azure
+/// DevOps team id); null = every board in the scope.</param>
+/// <param name="BoardName">Preview: the board's name, for the error when it is gone.</param>
 public sealed record TrackerQueryRequest(
     string ConnectionId,
     string Kind,
@@ -72,7 +79,9 @@ public sealed record TrackerQueryRequest(
     string? ExtraClause = null,
     bool IncludeDescendants = false,
     string[]? IntakeStatuses = null,
-    string? ScopeMode = null);
+    string? ScopeMode = null,
+    string? BoardId = null,
+    string? BoardName = null);
 
 /// <summary>Which tickets of a scope a source picks up.</summary>
 public static class TrackerScopeModes
@@ -98,9 +107,16 @@ public sealed record TrackerQueryResult(
     int? MatchCount = null,
     TrackerTicketPreview[]? Sample = null,
     // The query the preview actually ran (JQL / WIQL), so the settings page can show it.
-    string? EffectiveQuery = null);
+    string? EffectiveQuery = null,
+    TrackerBoard[]? Boards = null);
 
 public sealed record TrackerScope(string Key, string Name);
+
+/// <summary>A board a ticket source can be limited to.</summary>
+/// <param name="Id">Jira: the agile board id. Azure DevOps: the team id.</param>
+/// <param name="Name">Jira: the board's name. Azure DevOps: the team's name.</param>
+/// <param name="Type">Jira: "scrum" / "kanban" / "simple"; Azure DevOps: null.</param>
+public sealed record TrackerBoard(string Id, string Name, string? Type = null);
 
 public sealed record TrackerEpic(string Key, string Title, string? Status, string? Url);
 
@@ -123,7 +139,18 @@ public sealed record TrackerTicketPreview(
 /// </summary>
 /// <param name="ConnectionIds">The <see cref="RunnerTrackerConnection.Id"/>s this machine holds.</param>
 /// <param name="InstanceId">The runner process's id (the Hello's InstanceId), the lease holder.</param>
-public sealed record TrackerSyncRequest(string[] ConnectionIds, string InstanceId);
+/// <param name="Features">What this runner's poll understands beyond protocol v5
+/// (<see cref="TrackerSyncFeatures"/>). The host never hands a source to a runner that would
+/// ignore part of it — an old runner ignoring <see cref="TrackerPollAssignment.BoardId"/> would
+/// silently widen intake to the whole project.</param>
+public sealed record TrackerSyncRequest(string[] ConnectionIds, string InstanceId, string[]? Features = null);
+
+/// <summary>Values of <see cref="TrackerSyncRequest.Features"/>.</summary>
+public static class TrackerSyncFeatures
+{
+    /// <summary>Honours <see cref="TrackerPollAssignment.BoardId"/>: intake limited to one board.</summary>
+    public const string Boards = "boards";
+}
 
 /// <param name="Transitions">Ticket status moves due on this runner's connections — the only
 /// thing Orkka ever writes to a tracker. Applied with the developer's token, then acknowledged
@@ -181,7 +208,9 @@ public sealed record TrackerPrState(string CheckId, string? State, string? Error
 /// what new tasks are made from. <b>Tracking</b>: every key in <see cref="Known"/>, whatever
 /// its status or assignee, so a ticket that moved to In Progress keeps syncing its comments
 /// and status. The epics are sent in both modes: in "all" mode they only say which epic a
-/// ticket sits under (routing), not whether it is picked up.
+/// ticket sits under (routing), not whether it is picked up. <see cref="BoardId"/> narrows
+/// intake only, like the extra clause: a tracked ticket that leaves the board keeps syncing.
+/// A board that no longer exists fails the poll — it never widens to the whole scope.
 /// </remarks>
 public sealed record TrackerPollAssignment(
     string ConfigId,
@@ -197,7 +226,12 @@ public sealed record TrackerPollAssignment(
     TrackerKnownTicket[] Known,
     string ScopeMode = TrackerScopeModes.All,
     // Empty = the tracker's "to do" category (Jira statusCategory "To Do", ADO Proposed states).
-    string[]? IntakeStatuses = null);
+    string[]? IntakeStatuses = null,
+    // The board intake is limited to (Jira board id: its filter's JQL is AND-ed on; Azure DevOps
+    // team id: its area paths, read live each poll). Null = every board in the scope.
+    string? BoardId = null,
+    // The board's name, for the error when it is gone.
+    string? BoardName = null);
 
 public sealed record TrackerKnownTicket(string Key, string? ContentHash, DateTimeOffset? LastCommentAt);
 

@@ -23,6 +23,16 @@ public sealed class ProjectTrackerConfig : TenantEntity
     /// <summary>Jira project key / Azure DevOps project name.</summary>
     public required string Scope { get; set; }
 
+    /// <summary>The board intake is limited to — a Jira board id (its filter's JQL is AND-ed onto
+    /// the intake query) or an Azure DevOps team id (the team's area paths). Null = every board in
+    /// <see cref="Scope"/>. Resolved by the runner on every poll; a board that is gone fails the
+    /// poll rather than widening it. Intake only, like <see cref="ExtraClause"/>.</summary>
+    public string? BoardId { get; set; }
+
+    /// <summary>The board's name when it was picked (the team's name in Azure DevOps) — what the
+    /// settings page and a "board not found" error show.</summary>
+    public string? BoardName { get; set; }
+
     /// <summary>Optional JQL (Jira) or WIQL condition (Azure DevOps) AND-ed onto the generated
     /// query — "labels = backend", "[System.Tags] CONTAINS 'api'".</summary>
     public string? ExtraClause { get; set; }

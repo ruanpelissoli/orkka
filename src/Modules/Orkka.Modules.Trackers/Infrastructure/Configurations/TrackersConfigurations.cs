@@ -32,6 +32,8 @@ public sealed class ProjectTrackerConfigConfiguration : IEntityTypeConfiguration
         builder.Property(c => c.OwnerUserId).HasMaxLength(128);
         builder.Property(c => c.Scope).HasMaxLength(256);
         builder.Property(c => c.ExtraClause).HasMaxLength(2000);
+        builder.Property(c => c.BoardId).HasMaxLength(128);
+        builder.Property(c => c.BoardName).HasMaxLength(256);
         builder.Property(c => c.BranchTemplate).HasMaxLength(200);
         builder.Property(c => c.LastPollError).HasMaxLength(2000);
         builder.Property(c => c.LeaseHolder).HasMaxLength(100);

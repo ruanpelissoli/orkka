@@ -144,9 +144,12 @@ public sealed class TrackerService(
                     return new TrackerQueryResult(true, Epics: await client.EpicsAsync(credential, RequireScope(request), request.Search, ct));
                 case TrackerQueryKinds.Statuses:
                     return new TrackerQueryResult(true, Statuses: await client.StatusesAsync(credential, RequireScope(request), ct));
+                case TrackerQueryKinds.Boards:
+                    return new TrackerQueryResult(true, Boards: await client.BoardsAsync(credential, RequireScope(request), ct));
                 case TrackerQueryKinds.Preview:
                     var preview = await client.PreviewAsync(credential, RequireScope(request), request.EpicKeys ?? [],
-                        request.ExtraClause, request.IncludeDescendants, request.IntakeStatuses, request.ScopeMode, ct);
+                        request.ExtraClause, request.IncludeDescendants, request.IntakeStatuses, request.ScopeMode, ct,
+                        TrackerBoardRef.From(request.BoardId, request.BoardName));
                     return new TrackerQueryResult(true, MatchCount: preview.MatchCount, Sample: preview.Sample,
                         EffectiveQuery: preview.EffectiveQuery);
                 default:

@@ -224,7 +224,7 @@ public sealed class TrackerPollerService(
         TrackerSyncResponse? sync;
         try
         {
-            sync = await hub.SyncAsync(new TrackerSyncRequest(connectionIds, hub.InstanceId), ct);
+            sync = await hub.SyncAsync(new TrackerSyncRequest(connectionIds, hub.InstanceId, [TrackerSyncFeatures.Boards]), ct);
         }
         catch (Exception ex) when (IsMissingMethod(ex))
         {

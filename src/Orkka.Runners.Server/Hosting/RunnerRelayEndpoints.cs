@@ -262,6 +262,14 @@ public static class RunnerRelayEndpoints
             var (connected, hello) = link.Status;
             if (!connected || hello?.Capabilities?.Contains(RunnerCapabilities.TrackerConfig) is not true)
                 return Results.Json(new RelayTrackerQueryResponse(false, null), Json);
+            // An older runner would answer "unknown query", or preview the whole project while
+            // the page says one board.
+            if ((req.Query.Kind == TrackerQueryKinds.Boards || !string.IsNullOrWhiteSpace(req.Query.BoardId))
+                && hello.Capabilities.Contains(RunnerCapabilities.TrackerBoards) is not true)
+            {
+                return Results.Json(new RelayTrackerQueryResponse(true, new TrackerQueryResult(false,
+                    "Your runner does not know boards yet — update Orkka (`git pull`, then `./orkka start`).")), Json);
+            }
 
             try
             {

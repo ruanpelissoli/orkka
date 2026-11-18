@@ -42,16 +42,35 @@ public sealed record TrackerIdentity(string? AccountId, string? DisplayName);
 
 public sealed record TrackerPreview(int MatchCount, TrackerTicketPreview[] Sample, string EffectiveQuery);
 
-/// <summary>One tracker's API, behind the five <see cref="TrackerQueryKinds"/>.</summary>
+/// <summary>The board a ticket source is limited to: a Jira board id or an Azure DevOps team id,
+/// plus the name it was saved with (only for messages).</summary>
+public sealed record TrackerBoardRef(string Id, string? Name)
+{
+    public string Label => string.IsNullOrWhiteSpace(Name) ? Id : Name.Trim();
+
+    /// <summary>Null when no board is set — the whole scope.</summary>
+    public static TrackerBoardRef? From(string? id, string? name)
+        => string.IsNullOrWhiteSpace(id) ? null : new TrackerBoardRef(id.Trim(), name);
+
+    /// <summary>What a poll or a preview says when the board is gone: it fails, and never falls
+    /// back to the whole scope.</summary>
+    public TrackerException NotFound(string scope)
+        => new($"The board '{Label}' was not found in {scope} — pick another board in the ticket source settings.");
+}
+
+/// <summary>One tracker's API, behind the <see cref="TrackerQueryKinds"/>.</summary>
 public interface ITrackerClient
 {
     Task<TrackerIdentity> TestAsync(TrackerCredential credential, CancellationToken ct);
     Task<TrackerScope[]> ScopesAsync(TrackerCredential credential, CancellationToken ct);
     Task<TrackerEpic[]> EpicsAsync(TrackerCredential credential, string scope, string? search, CancellationToken ct);
     Task<TrackerStatus[]> StatusesAsync(TrackerCredential credential, string scope, CancellationToken ct);
-    /// <summary>What the intake query would pick up now.</summary>
+    /// <summary>The boards of the scope: Jira agile boards of the project, Azure DevOps teams.</summary>
+    Task<TrackerBoard[]> BoardsAsync(TrackerCredential credential, string scope, CancellationToken ct);
+    /// <summary>What the intake query would pick up now — on <paramref name="board"/> only, when set.</summary>
     Task<TrackerPreview> PreviewAsync(TrackerCredential credential, string scope, string[] epicKeys,
-        string? extraClause, bool includeDescendants, string[]? intakeStatuses, string? scopeMode, CancellationToken ct);
+        string? extraClause, bool includeDescendants, string[]? intakeStatuses, string? scopeMode, CancellationToken ct,
+        TrackerBoardRef? board = null);
 }
 
 /// <summary>Shared HTTP plumbing for the tracker clients.</summary>

@@ -351,6 +351,10 @@
       "ado": "Projeto do Azure DevOps"
     },
     "scopePlaceholder": "Escolha um projeto",
+    "boardLabel": "Quadro",
+    "boardWhole": "Projeto inteiro (todos os quadros)",
+    "boardHint": "Só os tickets deste quadro são trazidos. Deixe vazio para usar todos os quadros do projeto.",
+    "boardOptionAdo": "Quadro {team}",
     "epicsTitle": "Épicos",
     "epicSearchPlaceholder": "Busque épicos por título ou chave",
     "noEpicsFound": "Nenhum épico corresponde.",

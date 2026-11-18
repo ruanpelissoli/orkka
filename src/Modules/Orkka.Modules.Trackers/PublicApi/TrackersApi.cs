@@ -95,6 +95,9 @@ internal sealed partial class TrackersApi(
     /// "Merged" is not mapped, nothing else would end it).</summary>
     internal static readonly TimeSpan TrackAfterPrOpenedFor = TimeSpan.FromDays(30);
 
+    internal const string OldRunnerBoardError =
+        "This ticket source is limited to a board, and the Orkka polling it is too old to know boards — update Orkka on that machine (`git pull`, then `./orkka start`).";
+
     public async Task<TrackerSyncResponse> SyncAsync(
         Ulid orgId, string userId, TrackerSyncRequest request, CancellationToken ct = default,
         bool supersedesOtherInstances = false)
@@ -117,6 +120,7 @@ internal sealed partial class TrackersApi(
             .ToListAsync(ct);
 
         var assignments = new List<TrackerPollAssignment>();
+        var knowsBoards = request.Features?.Contains(TrackerSyncFeatures.Boards, StringComparer.Ordinal) is true;
         foreach (var config in candidates)
         {
             var due = config.LastPolledAt is not { } last
@@ -125,6 +129,18 @@ internal sealed partial class TrackersApi(
             // A source limited to epics with none configured has nothing to ask for.
             if (!due || (config.ScopeMode == TrackerScopeMode.Epics && epicRules.Count == 0))
                 continue;
+
+            // A runner that predates boards would ignore the board and pick up the whole project.
+            // It gets nothing; the settings page says why.
+            if (config.BoardId is not null && !knowsBoards)
+            {
+                await db.ProjectConfigs.IgnoreQueryFilters()
+                    .Where(c => c.Id == config.Id)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(c => c.LastPollError, OldRunnerBoardError)
+                        .SetProperty(c => c.LastPolledAt, now), ct);
+                continue;
+            }
 
             // The lease is taken with a conditional update: two machines asking at once both
             // read "free", only one write lands. It outlives a couple of missed polls so a
@@ -160,7 +176,9 @@ internal sealed partial class TrackersApi(
                 [.. epicRules.OrderBy(e => e.Position).Select(e => e.EpicKey)], config.ExtraClause, config.IncludeDescendants,
                 known,
                 config.ScopeMode == TrackerScopeMode.Epics ? TrackerScopeModes.Epics : TrackerScopeModes.All,
-                Features.ProjectConfig.ProjectTrackerMappers.ParseIntakeStatuses(config.IntakeStatusesJson)));
+                Features.ProjectConfig.ProjectTrackerMappers.ParseIntakeStatuses(config.IntakeStatusesJson),
+                config.BoardId,
+                config.BoardId is null ? null : config.BoardName));
         }
 
         var (transitions, prChecks) = await PlanWriteBackAsync(orgId, userId, connections, ct);
