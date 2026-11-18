@@ -194,12 +194,26 @@ current one).
 
 ## Stories — one branch, one pull request
 
-With `storyMode` on, a ticket **assigned to me, in intake, with at least one open sub-task** is a
-Story (`TrackersApi.Stories`, `TasksApi.Stories`):
+With `storyMode` on, a ticket **assigned to me, in intake, with at least one open sub-task assigned
+to me that has not been started** is a Story (`TrackersApi.Stories`, `TasksApi.Stories`):
+
+- **Members are mine and not started — USER RULE: Orkka only ever works tickets assigned to the
+  developer.** The tracking read carries the children of every intake ticket whoever they are
+  assigned to, each with its own `AssignedToMe` (Jira: the sub-task's assignee accountId vs
+  `/myself`; ADO: `System.AssignedTo` id or uniqueName vs `connectionData`) and its normalized
+  `StatusCategory` (`todo` = Jira "new" / ADO Proposed; `inprogress` = Jira "indeterminate" / ADO
+  InProgress and Resolved; `done`; null = ADO Removed). A child is a member candidate
+  (`TrackersApi.IsMemberCandidate`) only when it is assigned to me AND not under way: its category
+  is `todo` or its status is one of the source's intake statuses. A teammate's sub-task, an
+  unassigned one and one already in progress / resolved / in test (work done long ago, now with
+  QA) is never a member and never a task. A ticket with children but none of them mine to do is
+  not a Story: the main pass imports it as a plain task. The pending count
+  (`group.PendingChildCount`, which holds the Story's last landing back) counts only children not
+  read yet and candidates without a member — a child read and not mine is never waited for.
 
 - **Intake.** `CreateTrackerStoryAsync` makes a `TaskGroup` with `Kind = Story` (`branch_name` =
   `TrackerBranchName.Render` of the Story's key, `external_key/url`; merge policy Independent) and
-  one member task per open sub-task in tracker order (`story_order`, `BranchName` = the group's
+  one member task per candidate sub-task in tracker order (`story_order`, `BranchName` = the group's
   branch, a Manual `TaskDependency` on the previous member). The repo router places each
   sub-task; one in several repos is one member per repo in strict global order, and each repo
   gets a `tasks.group_branches` row (same branch, its own pull request). A member nobody could
@@ -209,7 +223,8 @@ Story (`TrackersApi.Stories`, `TasksApi.Stories`):
   members moved down and the chain re-linked through the new ones), each repository gets its row,
   and — when the source auto-submits — every new member is submitted too. Links: role **Story** (→
   the group; its `TaskId` is the first member, where the Story's comments land; `ChildKeysJson`)
-  and **SubTask** (→ its member; its assignee is not watched). A Story with no open sub-task is a
+  and **SubTask** (→ its member; its assignee and status are judged by the cleanup below, not by
+  the plain-ticket retire rules). A Story with no candidate sub-task is a
   plain task; a sub-task assigned to me whose Story is not mine is a plain task whose Story is
   read by key on the next poll and carried as **"Parent story context"** (`ParentTitle`/
   `ParentDescription`, `TaskTicketContext.Parent*`). Story members are neither split nor
@@ -274,8 +289,28 @@ Story (`TrackersApi.Stories`, `TasksApi.Stories`):
   so every sub-task and the Story move to Code Review together; **Merged** when every story pull
   request merged (checked per PR from the Story's link, check id `g:{group}:{repo}`, stored on
   `group_branches.forge_state`).
+- **Cleanup of members that are not mine** (`ReleaseNotMineMembersAsync`, every poll, before the
+  late-sub-task pass). A live SubTask link whose child is not assigned to me — or, while Orkka has
+  never moved that ticket itself (`SyncedPhase` None, nothing pending; a write-back move to
+  In Progress is Orkka's own), is under way in the tracker — is judged by its members: none
+  started (`Planning` false: still Drafting / Ready, no run) → `ReleaseStoryMemberAsync` archives
+  each, rewires its dependents to its predecessor, drops its own story-order edges and takes it
+  out of the group (`GroupId`, `StoryOrder`, `BranchName` cleared), posting the reason; the link
+  ends (`TrackingEndedAt`, `AssignedToOwner` false, role Standalone, `ParentTitle` ""), and the
+  Story link's `TaskId` moves to the first remaining member if it pointed at it. Started → left
+  running; when it is not mine one note is posted ("… is not assigned to you in …; Orkka will not
+  pick up more of it — archive this task if it isn't yours"), once (`AssignedToOwner` false marks
+  it; it resets when the child is mine again). When no member is left and nothing landed, was
+  readied or published, the group is cancelled (`CancelStoryAsync`; `CreateTrackerStoryAsync`
+  ignores cancelled groups) and the Story link is deleted, so the main pass of the same poll
+  imports the Story ticket as a plain task when it is still in intake and assigned to me (if the
+  report carried it without its text, on the next poll). A child Orkka let go of is still read by
+  key every poll (`ExtraKnownKeysAsync` skips only links that are live or that a person ended);
+  when it becomes mine and not started again, its task is revived and appended at the end
+  (`AppendStoryMemberAsync` adopts it, its other repositories' members too) and submitted.
 - **Late sub-tasks** (a new child key on a tracked Story is read by key next poll, pending until
-  then): before ready it joins the end; ready and still open → it joins, the pull requests go
+  then; a child that is not mine is not pending, and joins only once it is assigned to me and not
+  started): before ready it joins the end; ready and still open → it joins, the pull requests go
   back to draft (`gh pr ready --undo`, `az repos pr update --draft true`, `glab mr update
   --draft`) and are readied again at the end (the tracker status is not moved back); after the
   story's pull request merged or closed → a plain task with the Story as parent context. In a

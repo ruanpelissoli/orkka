@@ -318,8 +318,8 @@
       "prOpened": "Der Pull Request ist veröffentlicht (bei einer Story: wenn die ganze Story fertig ist).",
       "merged": "Der Pull Request wurde gemergt."
     },
-    "storyMode": "Die Unteraufgaben einer Story der Reihe nach auf einem Branch bearbeiten",
-    "storyModeHint": "Die Unteraufgaben einer Story werden nacheinander auf einem einzigen Branch bearbeitet und als ein Pull Request veröffentlicht.",
+    "storyMode": "Deine Unteraufgaben einer Story der Reihe nach auf einem Branch bearbeiten",
+    "storyModeHint": "Die Unteraufgaben einer Story, die dir zugewiesen und noch nicht begonnen sind, werden nacheinander auf einem einzigen Branch bearbeitet und als ein Pull Request veröffentlicht. Unteraufgaben anderer Personen und bereits laufende bleiben unberührt.",
     "advanced": "Erweitert",
     "errors": {
       "connection": "Wähle eine deiner Tracker-Verbindungen.",

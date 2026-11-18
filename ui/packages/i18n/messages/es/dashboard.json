@@ -318,8 +318,8 @@
       "prOpened": "El pull request está publicado (en una Story: cuando toda la story está lista).",
       "merged": "El pull request se fusionó."
     },
-    "storyMode": "Trabajar las subtareas de una Story en orden en una sola rama",
-    "storyModeHint": "Las subtareas de una Story se hacen una tras otra en una única rama y se publican como un solo pull request.",
+    "storyMode": "Trabajar en orden tus subtareas de una Story en una sola rama",
+    "storyModeHint": "Las subtareas de una Story asignadas a ti y aún sin empezar se hacen una tras otra en una única rama y se publican como un solo pull request. Las subtareas de otras personas, y las que ya están en curso, no se tocan.",
     "advanced": "Avanzado",
     "errors": {
       "connection": "Elige una de tus conexiones con trackers.",
