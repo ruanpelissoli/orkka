@@ -1,4 +1,18 @@
 {
+  "teamModel": {
+    "title": "Definir o modelo de todos os agentes",
+    "hint": "Coloca a equipe inteira em um único modelo de uma vez. Só aparecem os modelos que o seu runner tem prontos; depois, cada agente ainda pode ser alterado individualmente.",
+    "modelLabel": "Modelo para todos os agentes",
+    "apply": "Aplicar a todos os agentes",
+    "noReadyModels": "Nenhum modelo está pronto no seu runner ainda. Entre em uma CLI de IA nesta máquina e volte aqui.",
+    "confirmTitle": "Definir o modelo de todos os agentes?",
+    "confirmMessage": "Todos os agentes deste projeto vão usar {model}. Os modelos atuais serão substituídos.",
+    "confirmQaNote": "O QA mantém o modelo dele: {model} não consegue controlar as ferramentas de navegador que o QA usa nos testes.",
+    "confirm": "Definir modelo",
+    "done": "{count, plural, =0 {Nenhum agente mudou: todos já usam {model}.} one {# agente agora usa {model}.} other {# agentes agora usam {model}.}}",
+    "skippedQa": "{count, plural, one {# agente de QA manteve o modelo.} other {# agentes de QA mantiveram o modelo.}}",
+    "error": "Não foi possível alterar o modelo da equipe"
+  },
   "agentConfig": {
     "updateError": "Não foi possível atualizar o agente",
     "deleteError": "Não foi possível excluir o agente",

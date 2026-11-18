@@ -29,6 +29,14 @@ All available agents are seeded with every project — always (`AgentSeeder.Crea
 
 Users can rename agents, change their model, update instructions, disable them, or add duplicates (e.g., two backend devs for parallel work).
 
+### Default models per provider
+
+Where the system picks a model (agent seeding, merge resolution, utility one-shots) it reads the tier defaults: `ProviderModelDefaults` (Fast / Utility / Capable per provider, QA is provider-independent), seeded into `agents.ai_tier_defaults` by `AiModelSeeder` and read through `ModelCatalogSnapshot.TierModel`. Seeding gives PM the Fast tier, QA the QA model (always Claude — the QA phase drives Playwright MCP through the Claude Agent SDK) and everyone else the Capable tier.
+
+- **GitHub Copilot uses `copilot/auto` on every tier** (since 2026-11-18): Copilot Auto lets Copilot pick the model and bills discounted premium requests on the developer's Copilot plan. Nothing is lost against a pinned Copilot model — every `copilot/*` row has `SupportsMcp: false` (no Copilot model can run the QA browser lane, so QA stays on Claude either way) and the CLI call differs only in `--model auto` (`CopilotAgentInvoker.ToCliModel`). The migration `CopilotAutoTierDefaults` moves existing databases' Copilot Utility/Capable rows from `copilot/claude-sonnet-5`.
+- **A new default never rewrites an agent.** Agents keep the model they were seeded with or that the user picked; a changed default only reaches agents seeded afterwards.
+- **Set every agent's model** (Team page, above the grid; `TeamModelControl`): one select listing the models the developer's runner has ready, an Apply button and a confirm. It calls `PUT /api/projects/{id}/agents/model {model}` (`SetAgentsModelEndpoint`, AgentsConfigure like the per-agent update): the model must be pickable (`ModelCatalogSnapshot.IsSelectable` — an enabled catalog chat row or a runner-discovered Ollama/OpenCode id), QA agents are skipped when the model has no MCP support, and each agent that actually changed gets its own `AgentConfigChanged` audit event (`bulk: true` in the metadata). Returns `{updatedCount, unchangedCount, skippedQaCount}`. Not on MCP (the per-agent model update is not either).
+
 ---
 
 ## Sign-in modes (Claude Code, Codex, Copilot)
@@ -836,6 +844,8 @@ GET    /api/projects/{id}/agents              # List all agents in the pod
 GET    /api/projects/{id}/agents/{agentId}    # Get agent details + stats
 POST   /api/projects/{id}/agents              # Add a new agent to the pod
 PUT    /api/projects/{id}/agents/{agentId}    # Update name, instructions, model, avatar
+PUT    /api/projects/{id}/agents/model        # Set one model on every agent (QA skipped without MCP)
+POST   /api/projects/{id}/agents/switch-provider  # Remap every agent to a provider's tier defaults
 PATCH  /api/projects/{id}/agents/{agentId}/toggle  # Enable/disable agent
 DELETE /api/projects/{id}/agents/{agentId}    # Remove agent (cannot remove last dev agent)
 

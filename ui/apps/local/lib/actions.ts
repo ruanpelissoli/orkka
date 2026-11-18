@@ -329,6 +329,13 @@ export async function updateAgent(projectId: string, agentId: string, formData: 
   refreshData();
 }
 
+/** Pins one model on every agent of the project; returns what changed. */
+export async function setAgentsModel(projectId: string, model: string) {
+  const result = await api.agents.setModel(projectId, model, token);
+  refreshData();
+  return result;
+}
+
 export async function deleteAgent(projectId: string, agentId: string) {
   await api.agents.delete(projectId, agentId, token);
   refreshData();

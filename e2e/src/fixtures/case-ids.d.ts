@@ -370,6 +370,7 @@ export type KnownCaseId =
   | "TEAM-035"
   | "TEAM-036"
   | "TEAM-037"
+  | "TEAM-038"
   | "DSN-001"
   | "DSN-002"
   | "DSN-003"

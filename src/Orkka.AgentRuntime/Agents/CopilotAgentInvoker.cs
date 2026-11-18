@@ -33,7 +33,7 @@ public sealed class CopilotAgentInvoker(
 {
     protected override AiProvider Provider => AiProvider.GitHubCopilot;
     protected override string CliName => "copilot";
-    protected override string DefaultModel => "copilot/claude-sonnet-5";
+    protected override string DefaultModel => "copilot/auto";
 
     protected override string InstallHint =>
         "install it with `npm install -g @github/copilot`, then sign in with `copilot login`";

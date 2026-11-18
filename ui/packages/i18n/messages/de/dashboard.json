@@ -1,4 +1,18 @@
 {
+  "teamModel": {
+    "title": "Modell für alle Agenten festlegen",
+    "hint": "Stellt das ganze Team in einem Schritt auf ein Modell um. Angezeigt werden nur Modelle, die dein Runner bereit hat; danach lässt sich jeder Agent weiterhin einzeln ändern.",
+    "modelLabel": "Modell für alle Agenten",
+    "apply": "Auf alle Agenten anwenden",
+    "noReadyModels": "Auf deinem Runner ist noch kein Modell bereit. Melde dich auf diesem Rechner bei einer KI-CLI an und komm dann zurück.",
+    "confirmTitle": "Modell für alle Agenten festlegen?",
+    "confirmMessage": "Alle Agenten dieses Projekts verwenden dann {model}. Ihre bisherigen Modelle werden ersetzt.",
+    "confirmQaNote": "QA behält sein Modell: {model} kann die Browser-Werkzeuge, mit denen QA testet, nicht steuern.",
+    "confirm": "Modell festlegen",
+    "done": "{count, plural, =0 {Kein Agent wurde geändert: alle verwenden bereits {model}.} one {# Agent verwendet jetzt {model}.} other {# Agenten verwenden jetzt {model}.}}",
+    "skippedQa": "{count, plural, one {# QA-Agent hat sein Modell behalten.} other {# QA-Agenten haben ihr Modell behalten.}}",
+    "error": "Das Modell des Teams konnte nicht geändert werden"
+  },
   "agentConfig": {
     "updateError": "Agent konnte nicht aktualisiert werden",
     "deleteError": "Agent konnte nicht gelöscht werden",

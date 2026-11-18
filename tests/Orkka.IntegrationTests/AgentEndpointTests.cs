@@ -8,7 +8,9 @@ using Orkka.Modules.Agents.Contracts;
 using Orkka.Modules.Agents.Domain;
 using Orkka.Modules.Agents.Features.Agents;
 using Orkka.Modules.Projects.Features.Projects;
+using Orkka.Modules.Agents.Infrastructure;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
@@ -166,5 +168,81 @@ public sealed class AgentEndpointTests(OrkkaApiFactory factory)
 
         agents.Should().NotBeEmpty();
         agents.Should().OnlyContain(a => a.Billed == null);
+    }
+
+    // ── Team-wide model ("Set every agent's model") ──────────────────────
+
+    [Fact]
+    public async Task SetAgentsModel_MovesEveryAgent_ExceptQaOnANonMcpModel_AndAuditsEachChange()
+    {
+        var projectId = await CreateProjectAsync();
+        var otherProjectId = await CreateProjectAsync();
+        var before = await ListAgentsAsync(projectId);
+        var otherBefore = await ListAgentsAsync(otherProjectId);
+
+        var resp = await _client.PutAsJsonAsync(
+            $"/api/projects/{projectId}/agents/model", new SetAgentsModelRequest("copilot/auto"));
+
+        resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await resp.Content.ReadFromJsonAsync<SetAgentsModelResponse>(TestJsonOptions.Default);
+        // QA drives Playwright MCP through the Claude SDK — Copilot models can't, so it stays.
+        result!.SkippedQaCount.Should().Be(1);
+        result.UpdatedCount.Should().Be(before.Count - 1);
+        result.UnchangedCount.Should().Be(0);
+
+        var after = await ListAgentsAsync(projectId);
+        after.Where(a => a.Role != "QA").Should().AllSatisfy(a => a.Model.Should().Be("copilot/auto"));
+        after.Single(a => a.Role == "QA").Model.Should().Be(before.Single(a => a.Role == "QA").Model);
+
+        // Another project's team is untouched.
+        (await ListAgentsAsync(otherProjectId)).Select(a => (a.Id, a.Model))
+            .Should().BeEquivalentTo(otherBefore.Select(a => (a.Id, a.Model)));
+
+        // One AgentConfigChanged event per agent that changed, like the per-agent update.
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AgentsDbContext>();
+        var events = await db.AgentAuditEvents.IgnoreQueryFilters().AsNoTracking()
+            .Where(e => e.ProjectId == projectId && e.EventType == AgentAuditEventType.AgentConfigChanged)
+            .ToListAsync();
+        events.Should().HaveCount(before.Count - 1);
+        events.Should().AllSatisfy(e => e.MetadataJson.Should().Contain("copilot/auto"));
+
+        // Running it again changes nothing and audits nothing.
+        var again = await (await _client.PutAsJsonAsync(
+                $"/api/projects/{projectId}/agents/model", new SetAgentsModelRequest("copilot/auto")))
+            .Content.ReadFromJsonAsync<SetAgentsModelResponse>(TestJsonOptions.Default);
+        again!.UpdatedCount.Should().Be(0);
+        again.UnchangedCount.Should().Be(before.Count - 1);
+    }
+
+    [Fact]
+    public async Task SetAgentsModel_ToAnMcpModel_IncludesQa()
+    {
+        var projectId = await CreateProjectAsync();
+        await ListAgentsAsync(projectId);
+
+        var result = await (await _client.PutAsJsonAsync(
+                $"/api/projects/{projectId}/agents/model", new SetAgentsModelRequest("claude-opus-5")))
+            .Content.ReadFromJsonAsync<SetAgentsModelResponse>(TestJsonOptions.Default);
+
+        result!.SkippedQaCount.Should().Be(0);
+        (await ListAgentsAsync(projectId)).Should().AllSatisfy(a => a.Model.Should().Be("claude-opus-5"));
+    }
+
+    [Theory]
+    [InlineData("no-such-model")]
+    [InlineData("copilot/claude-sonnet-4.5")] // retired: resolvable, never pickable
+    [InlineData("")]
+    public async Task SetAgentsModel_RejectsAModelThatCannotBePicked(string model)
+    {
+        var projectId = await CreateProjectAsync();
+        var before = await ListAgentsAsync(projectId);
+
+        var resp = await _client.PutAsJsonAsync(
+            $"/api/projects/{projectId}/agents/model", new SetAgentsModelRequest(model));
+
+        resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await ListAgentsAsync(projectId)).Select(a => a.Model)
+            .Should().Equal(before.Select(a => a.Model));
     }
 }

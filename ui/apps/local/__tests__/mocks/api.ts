@@ -307,6 +307,7 @@ export const mockApi = {
     update: vi.fn(),
     delete: vi.fn(),
     switchProvider: vi.fn().mockResolvedValue({ switchedCount: 0, skippedQaCount: 0 }),
+    setModel: vi.fn().mockResolvedValue({ updatedCount: 0, unchangedCount: 0, skippedQaCount: 0 }),
   },
   apiKeys: {
     list: vi.fn().mockResolvedValue([]),
