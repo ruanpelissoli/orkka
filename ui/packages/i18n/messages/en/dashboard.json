@@ -351,6 +351,10 @@
       "ado": "Azure DevOps project"
     },
     "scopePlaceholder": "Pick a project",
+    "boardLabel": "Board",
+    "boardWhole": "Whole project (every board)",
+    "boardHint": "Only tickets on this board are picked up. Leave empty to use every board in the project.",
+    "boardOptionAdo": "{team} board",
     "epicsTitle": "Epics",
     "epicSearchPlaceholder": "Search epics by title or key",
     "noEpicsFound": "No epics match.",

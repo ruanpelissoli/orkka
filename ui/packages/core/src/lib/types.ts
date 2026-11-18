@@ -2654,7 +2654,7 @@ export interface TrackerConnection {
   checkedAt: string | null;
 }
 
-export type TrackerQueryKind = "test" | "scopes" | "epics" | "statuses" | "preview";
+export type TrackerQueryKind = "test" | "scopes" | "boards" | "epics" | "statuses" | "preview";
 
 /** POST /api/trackers/connections/{id}/query */
 export interface TrackerQueryRequest {
@@ -2673,11 +2673,25 @@ export interface TrackerQueryRequest {
   intakeStatuses?: string[];
   /** Preview: every ticket assigned to the caller ("All") or only the epics' ("Epics"). */
   scopeMode?: TrackerScopeMode;
+  /** Preview: the board intake is limited to (Jira board id / Azure DevOps team id). */
+  boardId?: string;
+  /** Preview: the board's name, for the error when it is gone. */
+  boardName?: string;
 }
 
 export interface TrackerScope {
   key: string;
   name: string;
+}
+
+/** A board of a scope: a Jira agile board, or an Azure DevOps team (its board is its area paths). */
+export interface TrackerBoard {
+  /** Jira board id / Azure DevOps team id. */
+  id: string;
+  /** Jira board name / Azure DevOps team name. */
+  name: string;
+  /** Jira: "scrum" | "kanban" | "simple"; Azure DevOps: null. */
+  type?: string | null;
 }
 
 export interface TrackerEpic {
@@ -2710,6 +2724,7 @@ export interface TrackerQueryResult {
   error?: string | null;
   connection?: TrackerConnection | null;
   scopes?: TrackerScope[] | null;
+  boards?: TrackerBoard[] | null;
   epics?: TrackerEpic[] | null;
   statuses?: TrackerStatus[] | null;
   matchCount?: number | null;
@@ -2833,6 +2848,10 @@ export interface ProjectTrackerConfig {
   defaultRepoId: string | null;
   /** 1 = work a Story's sub-tasks in order on one branch; 0 = each ticket on its own. */
   storyMode: number;
+  /** The board intake is limited to (Jira board id / Azure DevOps team id); null = every board. */
+  boardId?: string | null;
+  /** The board's name (the team's name in Azure DevOps). */
+  boardName?: string | null;
 }
 
 /** PUT /api/projects/{id}/tracker — the caller becomes the owner and must own the connection. */
@@ -2846,6 +2865,9 @@ export interface SaveProjectTrackerRequest {
   intakeStatuses?: string[];
   defaultRepoId?: string | null;
   storyMode?: number;
+  /** Null / empty = every board in the scope. */
+  boardId?: string | null;
+  boardName?: string | null;
   extraClause?: string | null;
   includeDescendants?: boolean;
   autoSubmit?: boolean;

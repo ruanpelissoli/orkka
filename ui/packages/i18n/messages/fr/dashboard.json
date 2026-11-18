@@ -351,6 +351,10 @@
       "ado": "Projet Azure DevOps"
     },
     "scopePlaceholder": "Choisissez un projet",
+    "boardLabel": "Tableau",
+    "boardWhole": "Projet entier (tous les tableaux)",
+    "boardHint": "Seuls les tickets de ce tableau sont récupérés. Laissez vide pour utiliser tous les tableaux du projet.",
+    "boardOptionAdo": "Tableau {team}",
     "epicsTitle": "Epics",
     "epicSearchPlaceholder": "Rechercher des epics par titre ou clé",
     "noEpicsFound": "Aucune epic ne correspond.",

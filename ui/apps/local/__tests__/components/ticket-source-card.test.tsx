@@ -92,7 +92,17 @@ function runnerAnswers(
 ) {
   mockApi.trackers.query.mockImplementation((_id: string, req: TrackerQueryRequest) => {
     const answers: Record<string, unknown> = {
-      scopes: { ok: true, scopes: [{ key: "ACME", name: "Acme" }] },
+      scopes: { ok: true, scopes: [{ key: "ACME", name: "Acme" }, { key: "OPS", name: "Ops" }] },
+      boards: {
+        ok: true,
+        boards:
+          req.scope === "OPS"
+            ? [{ id: "77", name: "Ops board", type: "kanban" }]
+            : [
+                { id: "12", name: "Web board", type: "scrum" },
+                { id: "13", name: "API board", type: "kanban" },
+              ],
+      },
       statuses: { ok: true, statuses: STATUSES },
       epics: { ok: true, epics: [{ key: "ACME-7", title: "Search", status: "To Do", url: null }] },
       preview: {
@@ -291,6 +301,8 @@ describe("TicketSourceCard", () => {
           intakeStatuses: ["To Do"],
           defaultRepoId: null,
           storyMode: 1,
+          boardId: null,
+          boardName: null,
           extraClause: null,
           includeDescendants: false,
           autoSubmit: true,
@@ -432,6 +444,90 @@ describe("TicketSourceCard", () => {
       },
       ""
     );
+  });
+
+  describe("board", () => {
+    const boardSelect = () => screen.getByTestId("ticket-source-board");
+
+    it("loads the scope's boards, with the whole project as the empty choice", async () => {
+      show();
+
+      await waitFor(() =>
+        expect(within(boardSelect()).getByRole("option", { name: "Web board" })).toBeInTheDocument()
+      );
+      expect(mockApi.trackers.query).toHaveBeenCalledWith("conn-1", { kind: "boards", scope: "ACME" }, "");
+      const options = within(boardSelect()).getAllByRole("option");
+      expect(options.map((o) => o.textContent)).toEqual(["boardWhole", "Web board", "API board"]);
+      expect(options[0]).toHaveValue("");
+      expect(boardSelect()).toHaveValue("");
+      expect(screen.getByText("boardHint")).toBeInTheDocument();
+    });
+
+    it("names an Azure DevOps board after its team", async () => {
+      const ado = { ...connection, id: "conn-ado", kind: "ado", siteUrl: "https://dev.azure.com/contoso" };
+      show({ connections: [ado], initialConfig: config({ trackerConnectionId: "conn-ado", connection: ado }) });
+
+      await waitFor(() =>
+        expect(within(boardSelect()).getAllByRole("option", { name: "boardOptionAdo" })).toHaveLength(2)
+      );
+    });
+
+    it("saves and previews the picked board, and saves no board for the whole project", async () => {
+      mockApi.trackers.saveProjectConfig.mockResolvedValue(config());
+      show();
+      await waitFor(() =>
+        expect(within(boardSelect()).getByRole("option", { name: "API board" })).toBeInTheDocument()
+      );
+
+      fireEvent.change(boardSelect(), { target: { value: "13" } });
+      fireEvent.click(screen.getByRole("button", { name: "preview" }));
+      await waitFor(() =>
+        expect(mockApi.trackers.query).toHaveBeenCalledWith(
+          "conn-1",
+          expect.objectContaining({ kind: "preview", boardId: "13", boardName: "API board" }),
+          ""
+        )
+      );
+      fireEvent.click(screen.getByRole("button", { name: "save" }));
+      await waitFor(() => expect(mockApi.trackers.saveProjectConfig).toHaveBeenCalledTimes(1));
+      expect(mockApi.trackers.saveProjectConfig.mock.calls[0][1]).toMatchObject({ boardId: "13", boardName: "API board" });
+
+      fireEvent.change(boardSelect(), { target: { value: "" } });
+      fireEvent.click(screen.getByRole("button", { name: "save" }));
+      await waitFor(() => expect(mockApi.trackers.saveProjectConfig).toHaveBeenCalledTimes(2));
+      expect(mockApi.trackers.saveProjectConfig.mock.calls[1][1]).toMatchObject({ boardId: null, boardName: null });
+    });
+
+    it("keeps a saved board selectable before the list loads", () => {
+      mockApi.trackers.query.mockReturnValue(new Promise(() => {}));
+      show({ initialConfig: config({ boardId: "12", boardName: "Web board" }) });
+
+      expect(boardSelect()).toHaveValue("12");
+      expect(within(boardSelect()).getByRole("option", { name: "Web board" })).toBeInTheDocument();
+    });
+
+    it("is cleared, and reloaded, when the project changes", async () => {
+      show({ initialConfig: config({ boardId: "12", boardName: "Web board" }) });
+      await waitFor(() =>
+        expect(within(boardSelect()).getByRole("option", { name: "API board" })).toBeInTheDocument()
+      );
+      expect(boardSelect()).toHaveValue("12");
+
+      fireEvent.change(screen.getByTestId("ticket-source-scope"), { target: { value: "OPS" } });
+
+      expect(boardSelect()).toHaveValue("");
+      await waitFor(() =>
+        expect(within(boardSelect()).getByRole("option", { name: "Ops board" })).toBeInTheDocument()
+      );
+      expect(within(boardSelect()).queryByRole("option", { name: "Web board" })).toBeNull();
+      expect(mockApi.trackers.query).toHaveBeenCalledWith("conn-1", { kind: "boards", scope: "OPS" }, "");
+    });
+
+    it("is disabled until a project is picked", () => {
+      show({ initialConfig: null });
+
+      expect(boardSelect()).toBeDisabled();
+    });
   });
 
   it("previews all assigned tickets without epic keys in All mode", async () => {
