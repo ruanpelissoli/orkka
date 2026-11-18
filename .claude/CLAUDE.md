@@ -220,7 +220,7 @@ One SQLite file holds the platform database. Orkka holds no customer-app databas
 ```
 
 **Key rules:**
-- Modular monolith: each module owns its tables in the one file, with its own `__EFMigrationsHistory_{module}`; Orkka.Local applies them one module after another at startup (`ApplyModuleMigrationsAsync`); each module has a single `Initial` migration (regenerated for SQLite 2026-11; no database predates it). Cross-module references are plain ULID columns — no cross-module FKs.
+- Modular monolith: each module owns its tables in the one file, with its own `__EFMigrationsHistory_{module}`; Orkka.Local applies them one module after another at startup (`ApplyModuleMigrationsAsync`); each module starts from one `Initial` migration (regenerated for SQLite 2026-11; no database predates it), later changes are migrations on top of it. Cross-module references are plain ULID columns — no cross-module FKs.
 - Every platform entity has `OrgId`, enforced by EF Core global query filter (in `ModuleDbContext`)
 - One writer at a time: never write through another context (another module's API, the audit log) inside an open transaction; task numbers are reserved before a Tasks transaction opens (DATABASE.md → Concurrency)
 - `DateTimeOffset` is stored as UTC ticks, ids as ULID-ordered text, JSON as text — conventions in `ModuleDbContext`

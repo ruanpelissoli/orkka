@@ -25,6 +25,14 @@ namespace Orkka.Modules.Trackers.Infrastructure.Migrations
                     b.Property<bool>("AutoSubmit")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("BoardId")
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BoardName")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("BranchTemplate")
                         .IsRequired()
                         .HasMaxLength(200)

@@ -74,7 +74,7 @@ public static class AdoQueries
     /// project's own condition.
     /// </summary>
     public static string IntakeWiql(IEnumerable<string> intakeStates, IEnumerable<string> containerTypes,
-        IEnumerable<int>? candidateIds, string? extraClause)
+        IEnumerable<int>? candidateIds, string? extraClause, string? boardCondition = null)
     {
         var states = intakeStates.Select(s => s.Trim()).Where(s => s.Length > 0)
             .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
@@ -87,10 +87,46 @@ public static class AdoQueries
             wiql += $" AND [System.WorkItemType] NOT IN ({string.Join(", ", containers.Select(Literal))})";
         if (candidateIds is not null)
             wiql += $" AND [System.Id] IN ({string.Join(", ", candidateIds)})";
+        if (!string.IsNullOrWhiteSpace(boardCondition))
+            wiql += $" AND {boardCondition.Trim()}";
         if (!string.IsNullOrWhiteSpace(extraClause))
             wiql += $" AND ({extraClause.Trim()})";
         return wiql;
     }
+
+    /// <summary>
+    /// A team's board as a WIQL condition: the team's field values (normally area paths) from
+    /// <c>teamsettings/teamfieldvalues</c> — <c>[field] UNDER 'x'</c> for a value that includes its
+    /// children, <c>[field] = 'y'</c> otherwise, OR-ed and parenthesized. The team's default value
+    /// stands in when it lists none. Null when it has nothing at all.
+    /// </summary>
+    public static string? TeamFieldCondition(string? fieldReferenceName,
+        IEnumerable<(string Value, bool IncludeChildren)> values, string? defaultValue = null)
+    {
+        var field = string.IsNullOrWhiteSpace(fieldReferenceName) ? "System.AreaPath" : fieldReferenceName.Trim();
+        // A reference name is letters, digits, dots and underscores; anything else would be
+        // WIQL text taken from the response, not a field.
+        if (!field.All(ch => char.IsAsciiLetterOrDigit(ch) || ch is '.' or '_'))
+            throw new TrackerException($"Azure DevOps named an unexpected team field '{field}'.");
+        var terms = values
+            .Where(v => !string.IsNullOrWhiteSpace(v.Value))
+            .Select(v => (Value: v.Value.Trim(), v.IncludeChildren))
+            .DistinctBy(v => (v.Value.ToUpperInvariant(), v.IncludeChildren))
+            .Select(v => v.IncludeChildren ? $"[{field}] UNDER {Literal(v.Value)}" : $"[{field}] = {Literal(v.Value)}")
+            .ToList();
+        if (terms.Count == 0 && !string.IsNullOrWhiteSpace(defaultValue))
+            terms.Add($"[{field}] UNDER {Literal(defaultValue.Trim())}");
+        return terms.Count == 0 ? null : $"({string.Join(" OR ", terms)})";
+    }
+
+    /// <summary><see cref="TeamFieldCondition(string?, IEnumerable{ValueTuple{string, bool}}, string?)"/>
+    /// from a <c>teamfieldvalues</c> response.</summary>
+    public static string? TeamFieldCondition(JsonElement teamFieldValues)
+        => TeamFieldCondition(
+            teamFieldValues.Prop("field").Str("referenceName"),
+            teamFieldValues.Prop("values").Items()
+                .Select(v => (v.Str("value") ?? "", v.Prop("includeChildren").ValueKind == JsonValueKind.True)),
+            teamFieldValues.Str("defaultValue"));
 
     /// <summary>Children in backlog order: StackRank / BacklogPriority ascending (unranked
     /// last), then id.</summary>
@@ -172,10 +208,40 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
         return states.Statuses;
     }
 
+    /// <summary>A board in Azure DevOps belongs to a team: the project's teams, by name.</summary>
+    public async Task<TrackerBoard[]> BoardsAsync(TrackerCredential c, string scope, CancellationToken ct)
+    {
+        var doc = await GetAsync(c, $"{c.SiteUrl}/_apis/projects/{Uri.EscapeDataString(scope)}/teams?$top=500&{ApiVersion}",
+            $"the teams of {scope}", ct);
+        return [.. doc.Prop("value").Items()
+            .Select(t => (Id: t.Str("id"), Name: t.Str("name")))
+            .Where(t => t.Id is not null && t.Name is not null)
+            .OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(t => new TrackerBoard(t.Id!, t.Name!))];
+    }
+
+    /// <summary>
+    /// The WIQL condition for the team's board, read live from the team's settings so a change to
+    /// its area paths applies on the next poll. A team that is gone fails — the source is never
+    /// widened to the whole project.
+    /// </summary>
+    internal async Task<string?> BoardConditionAsync(TrackerCredential c, string scope, TrackerBoardRef? board, CancellationToken ct)
+    {
+        if (board is null)
+            return null;
+        var url = $"{c.SiteUrl}/{Uri.EscapeDataString(scope)}/{Uri.EscapeDataString(board.Id)}/_apis/work/teamsettings/teamfieldvalues?{ApiVersion}";
+        var doc = await GetOrNullAsync(c, url, $"the board '{board.Label}'", ct) ?? throw board.NotFound(scope);
+        return AdoQueries.TeamFieldCondition(doc)
+            ?? throw new TrackerException(
+                $"The board '{board.Label}' in {scope} has no area paths — give the team its area paths in Azure DevOps, or pick another board in the ticket source settings.");
+    }
+
     public async Task<TrackerPreview> PreviewAsync(TrackerCredential c, string scope, string[] epicKeys,
-        string? extraClause, bool includeDescendants, string[]? intakeStatuses, string? scopeMode, CancellationToken ct)
+        string? extraClause, bool includeDescendants, string[]? intakeStatuses, string? scopeMode, CancellationToken ct,
+        TrackerBoardRef? board = null)
     {
         var epicsMode = TrackerScopeModes.IsEpics(scopeMode);
+        var boardCondition = await BoardConditionAsync(c, scope, board, ct);
         string? linkQuery = null;
         List<int>? candidates = null;
         if (epicsMode)
@@ -199,8 +265,8 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
         }
 
         var states = await StatesAsync(c, scope, ct);
-        var wiql = AdoQueries.IntakeWiql(IntakeStates(intakeStatuses, states), states.ContainerTypes, candidates, extraClause)
-            + " ORDER BY [System.ChangedDate] DESC";
+        var wiql = AdoQueries.IntakeWiql(IntakeStates(intakeStatuses, states), states.ContainerTypes, candidates, extraClause,
+            boardCondition) + " ORDER BY [System.ChangedDate] DESC";
         var matches = await WiqlIdsAsync(c, scope, wiql, top: null, ct);
         var sample = await BatchAsync(c, matches.Take(SampleSize).ToList(), ct);
         return new TrackerPreview(
@@ -292,6 +358,8 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
             : [.. a.EpicKeys.Select(AdoQueries.AsWorkItemId).OfType<int>()];
         var epicSet = epics.ToHashSet();
         var scope = a.Scope;
+        // Intake only, like the extra clause: tracked tickets are read by id below, on the board or not.
+        var boardCondition = await BoardConditionAsync(c, scope, TrackerBoardRef.From(a.BoardId, a.BoardName), ct);
 
         var parentOf = new Dictionary<int, int>();
         List<int>? candidates = null;
@@ -321,8 +389,8 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
         List<int> intakeIds = [];
         if (candidates is not { Count: 0 })
         {
-            var wiql = AdoQueries.IntakeWiql(IntakeStates(a.IntakeStatuses, states), states.ContainerTypes, candidates, a.ExtraClause)
-                + " ORDER BY [System.Id]";
+            var wiql = AdoQueries.IntakeWiql(IntakeStates(a.IntakeStatuses, states), states.ContainerTypes, candidates, a.ExtraClause,
+                boardCondition) + " ORDER BY [System.Id]";
             intakeIds = await WiqlIdsAsync(c, scope, wiql, top: null, ct);
         }
 
@@ -671,9 +739,21 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
     private Task<JsonElement> PostAsync(TrackerCredential c, string url, object body, string what, CancellationToken ct)
         => SendAsync(c, TrackerHttp.Request(HttpMethod.Post, url, c, body), what, ct);
 
+    /// <summary>A GET whose 404 means "not there" (null) rather than an error.</summary>
+    private async Task<JsonElement?> GetOrNullAsync(TrackerCredential c, string url, string what, CancellationToken ct)
+    {
+        var (status, body, mediaType) = await TrackerHttp.SendAsync(http, TrackerHttp.Request(HttpMethod.Get, url, c), Name, ct);
+        return status == HttpStatusCode.NotFound ? null : Interpret(c, status, body, mediaType, what);
+    }
+
     private async Task<JsonElement> SendAsync(TrackerCredential c, HttpRequestMessage request, string what, CancellationToken ct)
     {
         var (status, body, mediaType) = await TrackerHttp.SendAsync(http, request, Name, ct);
+        return Interpret(c, status, body, mediaType, what);
+    }
+
+    private static JsonElement Interpret(TrackerCredential c, HttpStatusCode status, string body, string? mediaType, string what)
+    {
         // A bad or missing PAT is answered with 203 + the HTML sign-in page, or a redirect to it.
         if (status == HttpStatusCode.NonAuthoritativeInformation || (int)status is >= 300 and < 400)
             throw new TrackerException(BadToken(c));

@@ -69,7 +69,8 @@ public static partial class JiraQueries
     /// condition. No "not done" clause: the statuses say exactly where a ticket is picked up.
     /// </summary>
     public static string IntakeJql(string project, IReadOnlyCollection<string>? intakeStatuses,
-        IReadOnlyCollection<string>? epicKeys, IEnumerable<string>? childKeys, string? extraClause)
+        IReadOnlyCollection<string>? epicKeys, IEnumerable<string>? childKeys, string? extraClause,
+        string? boardClause = null)
     {
         var jql = new StringBuilder($"project = {Literal(project.Trim())} AND assignee = currentUser()");
         var statuses = (intakeStatuses ?? [])
@@ -86,10 +87,64 @@ public static partial class JiraQueries
                 .Select(Literal);
             jql.Append($" AND parent in ({string.Join(", ", parents)})");
         }
+        if (!string.IsNullOrWhiteSpace(boardClause))
+            jql.Append($" AND {boardClause.Trim()}");
         if (!string.IsNullOrWhiteSpace(extraClause))
             jql.Append($" AND ({extraClause.Trim()})");
         return jql.ToString();
     }
+
+    /// <summary>
+    /// A board's filter as a clause of the intake query: its JQL without the trailing
+    /// <c>ORDER BY …</c> (which cannot sit inside an AND), parenthesized. Null when nothing is
+    /// left — a filter that is only an ordering matches everything the rest of the query does.
+    /// </summary>
+    public static string? BoardFilterClause(string? filterJql)
+    {
+        var condition = StripOrderBy(filterJql ?? "");
+        return condition.Length == 0 ? null : $"({condition})";
+    }
+
+    /// <summary>
+    /// The JQL up to its top-level <c>ORDER BY</c> — the words outside any quoted string, so a
+    /// summary search containing "order by" is left alone.
+    /// </summary>
+    public static string StripOrderBy(string jql)
+    {
+        char? quote = null;
+        for (var i = 0; i < jql.Length; i++)
+        {
+            var ch = jql[i];
+            if (quote is { } open)
+            {
+                if (ch == '\\')
+                    i++;
+                else if (ch == open)
+                    quote = null;
+                continue;
+            }
+            if (ch is '"' or '\'')
+            {
+                quote = ch;
+                continue;
+            }
+            if ((ch is 'o' or 'O') && (i == 0 || !IsWordChar(jql[i - 1]))
+                && string.Compare(jql, i, "order", 0, 5, StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                var j = i + 5;
+                if (j >= jql.Length || !char.IsWhiteSpace(jql[j]))
+                    continue;
+                while (j < jql.Length && char.IsWhiteSpace(jql[j]))
+                    j++;
+                if (string.Compare(jql, j, "by", 0, 2, StringComparison.OrdinalIgnoreCase) == 0
+                    && (j + 2 == jql.Length || !IsWordChar(jql[j + 2])))
+                    return jql[..i].Trim();
+            }
+        }
+        return jql.Trim();
+    }
+
+    private static bool IsWordChar(char ch) => char.IsLetterOrDigit(ch) || ch is '_' or '.';
 
     /// <summary>The tracking read: these keys, whatever their status or assignee.</summary>
     public static string TrackingJql(IEnumerable<string> keys)
@@ -137,6 +192,7 @@ public sealed partial class JiraCloudClient(HttpClient http) : ITrackerClient, I
 {
     private const string Name = "Jira";
     private const int MaxProjectPages = 5;
+    private const int MaxBoardPages = 10;
     private const int MaxChildPages = 5;
     private const int ChildPageSize = 100;
     private const int SampleSize = 5;
@@ -226,17 +282,69 @@ public sealed partial class JiraCloudClient(HttpClient http) : ITrackerClient, I
         return [.. statuses];
     }
 
+    /// <summary>The project's agile boards (scrum, kanban), by name.</summary>
+    public async Task<TrackerBoard[]> BoardsAsync(TrackerCredential c, string scope, CancellationToken ct)
+    {
+        var boards = new List<TrackerBoard>();
+        var startAt = 0;
+        for (var page = 0; page < MaxBoardPages; page++)
+        {
+            var doc = await GetAsync(c,
+                $"/rest/agile/1.0/board?projectKeyOrId={Uri.EscapeDataString(scope)}&maxResults=50&startAt={startAt}",
+                $"the boards of {scope}", ct);
+            var values = doc.Prop("values").Items().ToList();
+            foreach (var b in values)
+            {
+                if (b.Prop("id") is { ValueKind: JsonValueKind.Number } id && b.Str("name") is { } name)
+                    boards.Add(new TrackerBoard(id.GetInt64().ToString(CultureInfo.InvariantCulture), name, b.Str("type")));
+            }
+            if (doc.Prop("isLast") is { ValueKind: JsonValueKind.True } || values.Count == 0)
+                break;
+            startAt += values.Count;
+        }
+        return [.. boards.OrderBy(b => b.Name, StringComparer.OrdinalIgnoreCase)];
+    }
+
+    /// <summary>
+    /// The board's filter, read live on each poll (board configuration → its filter → the
+    /// filter's JQL) so an edit to the board applies at once. A board that is gone fails — the
+    /// source is never widened to the whole project.
+    /// </summary>
+    internal async Task<string?> BoardClauseAsync(TrackerCredential c, string scope, TrackerBoardRef? board, CancellationToken ct)
+    {
+        if (board is null)
+            return null;
+        if (!long.TryParse(board.Id, NumberStyles.None, CultureInfo.InvariantCulture, out var boardId))
+            throw board.NotFound(scope);
+        var configuration = await GetOrNullAsync(c, $"/rest/agile/1.0/board/{boardId}/configuration", $"the board '{board.Label}'", ct)
+            ?? throw board.NotFound(scope);
+        var filterId = configuration.Prop("filter").Prop("id") switch
+        {
+            { ValueKind: JsonValueKind.String } text => text.GetString(),
+            { ValueKind: JsonValueKind.Number } number => number.GetInt64().ToString(CultureInfo.InvariantCulture),
+            _ => null,
+        };
+        if (string.IsNullOrEmpty(filterId) || !filterId.All(char.IsAsciiDigit))
+            throw new TrackerException($"Jira did not say which filter the board '{board.Label}' uses.");
+        var filter = await GetOrNullAsync(c, $"/rest/api/3/filter/{filterId}", $"the filter of the board '{board.Label}'", ct)
+            ?? throw new TrackerException(
+                $"The filter of the board '{board.Label}' cannot be read by this Jira account — ask for it to be shared with you, or pick another board in the ticket source settings.");
+        return JiraQueries.BoardFilterClause(filter.Str("jql"));
+    }
+
     public async Task<TrackerPreview> PreviewAsync(TrackerCredential c, string scope, string[] epicKeys,
-        string? extraClause, bool includeDescendants, string[]? intakeStatuses, string? scopeMode, CancellationToken ct)
+        string? extraClause, bool includeDescendants, string[]? intakeStatuses, string? scopeMode, CancellationToken ct,
+        TrackerBoardRef? board = null)
     {
         var epicsMode = TrackerScopeModes.IsEpics(scopeMode);
         var epics = epicsMode ? ValidEpics(scope, epicKeys, "preview") : [];
+        var boardClause = await BoardClauseAsync(c, scope, board, ct);
 
         List<string>? children = null;
         if (epicsMode && includeDescendants)
             children = [.. (await ChildrenAsync(c, epics, ct)).Children.Select(ch => ch.Key)];
 
-        var jql = JiraQueries.IntakeJql(scope, intakeStatuses, epicsMode ? epics : null, children, extraClause);
+        var jql = JiraQueries.IntakeJql(scope, intakeStatuses, epicsMode ? epics : null, children, extraClause, boardClause);
         var count = await PostAsync(c, "/rest/api/3/search/approximate-count", new { jql }, "the ticket query", ct);
         var sample = await SearchAsync(c, jql + " ORDER BY updated DESC", ["summary", "status", "issuetype"], SampleSize, null, ct);
 
@@ -272,6 +380,9 @@ public sealed partial class JiraCloudClient(HttpClient http) : ITrackerClient, I
             ? ValidEpics(a.Scope, a.EpicKeys, "poll")
             : [.. a.EpicKeys.Select(k => k.Trim()).Where(JiraQueries.LooksLikeIssueKey)];
         var epicSet = epics.Select(k => k.ToUpperInvariant()).ToHashSet(StringComparer.Ordinal);
+        // First, so a board that is gone fails the poll before anything is read. Intake only,
+        // like the extra clause: tracked tickets are read by key below, on the board or not.
+        var boardClause = await BoardClauseAsync(c, a.Scope, TrackerBoardRef.From(a.BoardId, a.BoardName), ct);
 
         List<string>? children = null;
         var parentOfChild = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -295,7 +406,7 @@ public sealed partial class JiraCloudClient(HttpClient http) : ITrackerClient, I
         var context = new ParseContext(c, acceptanceField, epicSet, parentOfChild, me);
 
         var jql = JiraQueries.IntakeJql(a.Scope, a.IntakeStatuses, epicsMode ? epics : null, epicsMode ? children : null,
-            a.ExtraClause) + " ORDER BY key ASC";
+            a.ExtraClause, boardClause) + " ORDER BY key ASC";
         var intake = new List<RawTicket>();
         await SearchAllAsync(c, jql, fields, MaxTicketPages,
             $"More than {MaxTicketPages * TicketPageSize} tickets match — too many to poll. Narrow the intake statuses, the epics or the extra condition.",
@@ -675,9 +786,21 @@ public sealed partial class JiraCloudClient(HttpClient http) : ITrackerClient, I
     private Task<JsonElement> PostAsync(TrackerCredential c, string path, object body, string what, CancellationToken ct)
         => SendAsync(c, TrackerHttp.Request(HttpMethod.Post, c.SiteUrl + path, c, body), what, ct);
 
+    /// <summary>A GET whose 404 means "not there" (null) rather than an error.</summary>
+    private async Task<JsonElement?> GetOrNullAsync(TrackerCredential c, string path, string what, CancellationToken ct)
+    {
+        var (status, body, mediaType) = await TrackerHttp.SendAsync(http, TrackerHttp.Request(HttpMethod.Get, c.SiteUrl + path, c), Name, ct);
+        return status == HttpStatusCode.NotFound ? null : Interpret(c, status, body, mediaType, what);
+    }
+
     private async Task<JsonElement> SendAsync(TrackerCredential c, HttpRequestMessage request, string what, CancellationToken ct)
     {
         var (status, body, mediaType) = await TrackerHttp.SendAsync(http, request, Name, ct);
+        return Interpret(c, status, body, mediaType, what);
+    }
+
+    private static JsonElement Interpret(TrackerCredential c, HttpStatusCode status, string body, string? mediaType, string what)
+    {
         if ((int)status is >= 200 and < 300)
         {
             if (mediaType is not null && !mediaType.Contains("json", StringComparison.OrdinalIgnoreCase))

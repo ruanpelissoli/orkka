@@ -410,6 +410,12 @@ public static class RunnerCapabilities
     /// tracker connections added from the settings page, stored in its OS secret store.</summary>
     public const string TrackerConnect = "tracker-connect";
 
+    /// <summary>The runner answers the <c>boards</c> tracker query and honours a board on a
+    /// preview and on a poll (<see cref="TrackerSyncFeatures.Boards"/>): Jira boards (their filter
+    /// is AND-ed onto intake), Azure DevOps teams (their area paths). Without it the settings page
+    /// says to update Orkka instead of offering boards.</summary>
+    public const string TrackerBoards = "tracker-boards";
+
     /// <summary>Stories: <c>OpenPullRequestRequest.Draft</c> (<c>gh pr create --draft</c>, <c>az repos
     /// pr create --draft true</c>, <c>glab mr create --draft</c>), <c>MarkPullRequestReady</c>
     /// (and its undo), <c>UpdatePullRequestBody</c>, <c>ResolveReviewBase</c> and
