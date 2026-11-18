@@ -1,12 +1,12 @@
 name: CI
 
-# Pull requests only, deliberately. A push trigger would double Actions consumption for no
-# extra coverage — CD already builds and tests every push to main — and it validates code that
-# has already landed. Opening a PR gets the same checks BEFORE the merge, which is the part
-# that actually protects main.
+# Every push to main (the README's badge) and every pull request into it; runnable by hand too.
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -136,9 +136,9 @@ jobs:
       run:
         shell: bash
     env:
-      # A sandbox: the data folder in the runner's temp, the owner-only file secret store (never
-      # the OS keychain), a port nothing else uses.
-      ORKKA_HOME: ${{ runner.temp }}/orkka-home
+      # A sandbox: the owner-only file secret store (never the OS keychain), a port nothing else
+      # uses, and the data folder in the runner's temp (set in the first step: the runner context
+      # is not available to a job's env).
       ORKKA_SECRET_STORE: file
       PORT: "6750"
     steps:
@@ -156,6 +156,8 @@ jobs:
 
       - name: Start (builds the UI and the app on first run)
         run: |
+          export ORKKA_HOME="$RUNNER_TEMP/orkka-home"
+          echo "ORKKA_HOME=$ORKKA_HOME" >> "$GITHUB_ENV"
           if [ "$RUNNER_OS" = Windows ]; then ORKKA=./orkka.cmd; else ORKKA=./orkka; fi
           echo "ORKKA=$ORKKA" >> "$GITHUB_ENV"
           nohup $ORKKA start --no-browser --port "$PORT" > "$RUNNER_TEMP/orkka-start.log" 2>&1 &
