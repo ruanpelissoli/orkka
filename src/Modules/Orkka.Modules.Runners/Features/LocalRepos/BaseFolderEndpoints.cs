@@ -315,7 +315,11 @@ public sealed class CreateProjectFromFolderEndpoint(
         }
 
         var name = string.IsNullOrWhiteSpace(req.Name)
-            ? Path.GetFileName(discovered.Path.TrimEnd('\\', '/')) is { Length: > 0 } folderName ? folderName : "Project"
+            // The runner's path, in the runner's OS's form (it may be another machine): take the
+            // last segment on either separator, not this host's Path.GetFileName.
+            ? discovered.Path.TrimEnd('\\', '/') is var trimmed
+              && trimmed[(trimmed.LastIndexOfAny(['\\', '/']) + 1)..] is { Length: > 0 } folderName
+                ? folderName : "Project"
             : req.Name.Trim();
         var shape = discovered.Shape == DiscoveredShapes.Monorepo ? BaseFolderShape.Monorepo : BaseFolderShape.MultiRepo;
 

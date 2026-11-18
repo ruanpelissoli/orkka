@@ -169,7 +169,9 @@ jobs:
 
       - name: Health, signed-out page, status
         run: |
-          curl -fsS "http://127.0.0.1:$PORT/health" | tee /dev/stderr | grep -q '"service":"orkka"'
+          curl -fsS "http://127.0.0.1:$PORT/health" > health.json
+          cat health.json; echo
+          grep -q '"service":"orkka"' health.json
           code=$(curl -s -o page.html -w '%{http_code}' "http://127.0.0.1:$PORT/en/dashboard")
           [ "$code" = 401 ] || { echo "expected 401, got $code"; cat page.html; exit 1; }
           grep -q "orkka open" page.html
