@@ -384,3 +384,46 @@ since: 2026-11-18
 **Expected**:
 - No assignment for the source (it would ignore the board and pick up the whole project); `lastPollError` says the polling Orkka is too old to know boards and to update it (`git pull`, then `./orkka start`). A current runner gets the assignment with `boardId`/`boardName`.
 **Notes**: covered at unit level by `tests/Orkka.IntegrationTests/TrackerBoardEndpointTests.cs`.
+
+## TING-024 A Story's members are only my sub-tasks that have not been started
+```yaml
+priority: P0
+surface: [api]
+automation: planned
+refs:
+  - orkka-api:GET /api/projects/{projectId}/tasks
+  - orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.Stories.cs
+since: 2026-11-18
+```
+**Preconditions**: Jira source on SHOP, Stories on; story SHOP-40 in To Do assigned to the token's owner with sub-tasks SHOP-41 (me, To Do), SHOP-42 (assignee "colleague", To Do), SHOP-43 (unassigned), SHOP-44 (me, In Progress), SHOP-45 (me, a QA status in the In Progress category); story SHOP-50 in To Do assigned to me whose only sub-task SHOP-51 is the colleague's.
+**Steps**:
+1. Wait two intervals.
+2. `GET …/tasks`.
+3. In the fake, assign SHOP-42 to me; wait two intervals.
+**Expected**:
+- 1–2: SHOP-40 is a Story with one member, SHOP-41; SHOP-42…45 are not tasks at all (never imported, never waited for: the story's last member can mark its pull request ready). SHOP-50 is a plain task of its own, no group; SHOP-51 is not a task.
+- 3: SHOP-42 joins the end of SHOP-40 (story order 2, depending on SHOP-41's member). The ADO variant: a User Story's Tasks in a Proposed state assigned to @Me are members; Tasks in Active / Resolved states, or assigned to others, are not.
+**Notes**: covered at unit level by `tests/Orkka.Tests/Features/Trackers/TrackerStoryTests.cs` (OnlySubTasksAssignedToMe…, AStoryWithNoSubTaskOfMineToDo…, ASubTaskAssignedToMeLater…) and the runner's own assignee / status category per tracked child in `tests/Orkka.Tests/Services/TrackerPollingTests.cs`.
+
+## TING-025 A Story member that is not mine leaves the story while nothing started
+```yaml
+priority: P1
+surface: [api]
+automation: planned
+refs:
+  - orkka-api:GET /api/projects/{projectId}/tasks
+  - orkka-api:src/Modules/Orkka.Modules.Tasks/PublicApi/TasksApi.Stories.cs
+since: 2026-11-18
+```
+**Preconditions**: Story SHOP-60 with members for SHOP-61, SHOP-62, SHOP-63 (all mine, To Do when imported); auto-submit off so nothing starts; SHOP-64's member has started planning.
+**Steps**:
+1. In the fake, assign SHOP-62 to "colleague"; wait two intervals; `GET …/tasks`.
+2. Assign SHOP-62 back to me; wait two intervals.
+3. Assign SHOP-64 (started) to "colleague"; wait three intervals.
+4. Archive SHOP-64's task on the board; assign SHOP-61, SHOP-62 and SHOP-63 to "colleague" (nothing of mine left under SHOP-60); wait two intervals.
+**Expected**:
+- 1: SHOP-62's task is archived and out of the story ("… is not assigned to you in Jira — Orkka only works tickets assigned to you. Nothing had started, so the task was archived and taken out of the story …"); SHOP-63's member now depends on SHOP-61's.
+- 2: the same task is back in Drafting at the end of the story.
+- 3: SHOP-64's task keeps going with exactly one note "SHOP-64 is not assigned to you in Jira; Orkka will not pick up more of it — archive this task if it isn't yours."
+- 4: the story group is cancelled and SHOP-60, still in To Do and mine, becomes a plain task (on the next poll at the latest).
+**Notes**: covered at unit level by `tests/Orkka.Tests/Features/Trackers/TrackerStoryTests.cs` (AMemberNotAssignedToMe…, AStartedMemberNotAssignedToMe…, WhenNoMemberIsLeft…) and `tests/Orkka.Tests/Features/Tasks/StoryTasksTests.cs` (AReleasedMember…).

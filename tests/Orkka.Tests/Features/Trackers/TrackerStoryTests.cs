@@ -21,6 +21,9 @@ using Orkka.SharedKernel.Utilities;
 /// draft), or are worked on their own once the story's pull request is done. In write-back the
 /// Story and its sub-tasks follow the story: the furthest step their members reached, "PR
 /// opened" only when the story is ready, "Merged" when every story pull request merged.
+///
+/// Only sub-tasks assigned to me and not under way are members: the rest are never imported,
+/// never waited for, and a member that stops being mine leaves the story while nothing started.
 /// </summary>
 public sealed class TrackerStoryTests : IDisposable
 {
@@ -97,9 +100,12 @@ public sealed class TrackerStoryTests : IDisposable
         "SHOP-10", "10010", "https://acme.atlassian.net/browse/SHOP-10", null, "hs", Body("Checkout"), [],
         Status: "To Do", StatusCategory: "todo", AssignedToMe: true, InIntake: true, ChildKeys: children);
 
-    private static TrackerTicket Child(string key, string category = "todo", bool assignedToMe = false, bool inIntake = false) => new(
+    // A sub-task is mine and not started unless a test says otherwise.
+    private static TrackerTicket Child(string key, string category = "todo", bool assignedToMe = true, bool inIntake = false,
+        string? status = null) => new(
         key, key, $"https://acme.atlassian.net/browse/{key}", null, $"h-{key}", Body($"Part {key}"), [],
-        Status: category == "done" ? "Done" : "To Do", StatusCategory: category, AssignedToMe: assignedToMe, InIntake: inIntake,
+        Status: status ?? category switch { "done" => "Done", "inprogress" => "In Progress", _ => "To Do" },
+        StatusCategory: category, AssignedToMe: assignedToMe, InIntake: inIntake,
         ParentKey: "SHOP-10", ParentType: "Story");
 
     private Task<TrackerReportAck> ReportAsync(params TrackerTicket[] tickets) => _api.ReportAsync(OrgId, UserId,
@@ -248,6 +254,210 @@ public sealed class TrackerStoryTests : IDisposable
         link.ParentKey.Should().Be("SHOP-10");
         link.ParentTitle.Should().Be("[SHOP-10] Checkout");
         link.ParentDescription.Should().Be("The whole story.");
+    }
+
+    // ── Only my sub-tasks, and only ones not started ────────────────────────
+
+    [Fact]
+    public async Task OnlySubTasksAssignedToMe_ThatAreNotUnderWay_BecomeMembers()
+    {
+        _config.IntakeStatusesJson = """["To Do","Ready for Dev"]""";
+        await _db.SaveChangesAsync();
+
+        await ReportAsync(
+            Story("SHOP-11", "SHOP-12", "SHOP-13", "SHOP-14", "SHOP-15", "SHOP-16"),
+            Child("SHOP-11"),                                                   // mine, To Do
+            Child("SHOP-12", assignedToMe: false),                              // a teammate's
+            Child("SHOP-13", assignedToMe: false, status: "Backlog"),           // unassigned
+            Child("SHOP-14", "inprogress"),                                     // mine, already in progress
+            Child("SHOP-15", "inprogress", status: "In Test"),                  // mine long ago, now with QA
+            Child("SHOP-16", "inprogress", status: "Ready for Dev"));           // an intake status
+
+        _storySpec!.SubTasks.Select(s => s.Key).Should().Equal("SHOP-11", "SHOP-16");
+        (await LinksAsync()).Select(l => l.TicketKey).Should().Equal("SHOP-10", "SHOP-11", "SHOP-16");
+        _tasks.Verify(t => t.CreateTrackerTaskAsync(It.IsAny<TrackerTaskSpec>(), It.IsAny<CancellationToken>()), Times.Never,
+            "nobody else's sub-task becomes a task of its own either");
+        _tasks.Verify(t => t.SetStoryPendingChildrenAsync(_groupId, 0, It.IsAny<CancellationToken>()), Times.Once,
+            "sub-tasks read and not mine are never waited for");
+    }
+
+    [Fact]
+    public void MemberCandidates_FollowTheNormalizedStatusCategory_OnBothTrackers()
+    {
+        string[] intake = ["New"];
+        // Jira "new" and ADO "Proposed" are normalized to "todo"; "indeterminate" / InProgress / Resolved to "inprogress".
+        TrackersApi.IsMemberCandidate(Child("1", "todo", status: "New"), intake).Should().BeTrue();
+        TrackersApi.IsMemberCandidate(Child("2", "inprogress", status: "Active"), intake).Should().BeFalse();
+        TrackersApi.IsMemberCandidate(Child("3", "inprogress", status: "Resolved"), intake).Should().BeFalse();
+        TrackersApi.IsMemberCandidate(Child("4", "done", status: "Closed"), intake).Should().BeFalse();
+        TrackersApi.IsMemberCandidate(Child("5", "todo", assignedToMe: false), intake).Should().BeFalse();
+        TrackersApi.IsMemberCandidate(Child("6", null!, status: "Removed"), intake).Should().BeFalse("ADO Removed has no category");
+        TrackersApi.IsMemberCandidate(Child("7", "inprogress", status: "new"), intake).Should().BeTrue("an intake status, any case");
+    }
+
+    [Fact]
+    public async Task AStoryWithNoSubTaskOfMineToDo_IsATaskOfItsOwn()
+    {
+        _tasks.Setup(t => t.CreateTrackerTaskAsync(It.IsAny<TrackerTaskSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ExternalTaskResult(Ulid.NewUlid(), 1, "x", true));
+
+        await ReportAsync(Story("SHOP-11", "SHOP-12"), Child("SHOP-11", assignedToMe: false), Child("SHOP-12", "inprogress"));
+
+        _tasks.Verify(t => t.CreateTrackerStoryAsync(It.IsAny<TrackerStorySpec>(), It.IsAny<CancellationToken>()), Times.Never);
+        _tasks.Verify(t => t.CreateTrackerTaskAsync(It.Is<TrackerTaskSpec>(s => s.ExternalKey == "SHOP-10"), It.IsAny<CancellationToken>()),
+            Times.Once);
+        (await LinksAsync()).Should().ContainSingle().Which.Should().Match<TicketLink>(l =>
+            l.TicketKey == "SHOP-10" && l.Role == TicketRole.Standalone && l.GroupId == null);
+    }
+
+    [Fact]
+    public async Task ASubTaskAssignedToMeLater_IsWatched_ThenJoinsTheEnd()
+    {
+        await ReportAsync(Story("SHOP-11", "SHOP-12"), Child("SHOP-11"), Child("SHOP-12", assignedToMe: false));
+        _storySpec!.SubTasks.Select(s => s.Key).Should().Equal("SHOP-11");
+        _tasks.Verify(t => t.SetStoryPendingChildrenAsync(_groupId, 0, It.IsAny<CancellationToken>()), Times.Once);
+        (await _api.ExtraKnownKeysAsync(_config.Id, CancellationToken.None)).Should().Equal("SHOP-12");
+
+        var tracked = Story("SHOP-11", "SHOP-12") with { Body = null, InIntake = false, Status = "In Progress", StatusCategory = "inprogress" };
+        await ReportAsync(tracked, Child("SHOP-11") with { Body = null }, Child("SHOP-12", assignedToMe: false));
+        _tasks.Verify(t => t.AppendStoryMemberAsync(It.IsAny<Ulid>(), It.IsAny<StorySubTaskSpec>(), It.IsAny<CancellationToken>()), Times.Never);
+
+        var member = Ulid.NewUlid();
+        _tasks.Setup(t => t.AppendStoryMemberAsync(_groupId, It.IsAny<StorySubTaskSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new StoryAppendResult([new StoryMemberRef(member, "SHOP-12", ShopRepo, 2, true)], false, false));
+
+        await ReportAsync(tracked, Child("SHOP-11") with { Body = null }, Child("SHOP-12"));
+
+        _tasks.Verify(t => t.AppendStoryMemberAsync(_groupId, It.Is<StorySubTaskSpec>(s => s.Key == "SHOP-12"),
+            It.IsAny<CancellationToken>()), Times.Once);
+        (await LinksAsync()).Should().Contain(l => l.TicketKey == "SHOP-12" && l.Role == TicketRole.SubTask && l.TaskId == member);
+    }
+
+    // ── Members that are not mine (cleanup) ─────────────────────────────────
+
+    /// <summary>Imports SHOP-10 with the given sub-tasks (all mine, not started) and points the
+    /// group state at their member tasks. Releasing a member takes it out of the group.</summary>
+    private async Task<Dictionary<string, TicketLink>> ImportStoryWithAsync(params string[] keys)
+    {
+        await ReportAsync([Story(keys), .. keys.Select(k => Child(k))]);
+        var links = (await LinksAsync()).ToDictionary(l => l.TicketKey);
+        _group = _group with
+        {
+            Members = [.. keys.Select((k, i) => new StoryMemberState(links[k].TaskId, k, i + 1, ShopRepo, false, false, false, false, false))],
+        };
+        _tasks.Setup(t => t.ReleaseStoryMemberAsync(It.IsAny<Ulid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Ulid taskId, string _, CancellationToken _) =>
+            {
+                _group = _group with { Members = [.. _group.Members.Where(m => m.TaskId != taskId)] };
+                return TrackerTaskRetirement.Archived;
+            });
+        return links;
+    }
+
+    private static TrackerTicket Tracked(params string[] keys)
+        => Story(keys) with { Body = null, InIntake = false, Status = "In Progress", StatusCategory = "inprogress" };
+
+    [Fact]
+    public async Task AMemberNotAssignedToMe_NotStarted_LeavesTheStory_AndRejoinsWhenItIsMineAgain()
+    {
+        var links = await ImportStoryWithAsync("SHOP-11", "SHOP-12", "SHOP-13");
+        var released = links["SHOP-12"].TaskId;
+
+        await ReportAsync(Tracked("SHOP-11", "SHOP-12", "SHOP-13"),
+            Child("SHOP-11") with { Body = null }, Child("SHOP-12", assignedToMe: false) with { Body = null },
+            Child("SHOP-13") with { Body = null });
+
+        _tasks.Verify(t => t.ReleaseStoryMemberAsync(released,
+            It.Is<string>(r => r.Contains("SHOP-12 is not assigned to you in Jira")), It.IsAny<CancellationToken>()), Times.Once);
+        _tasks.Verify(t => t.ReleaseStoryMemberAsync(It.Is<Ulid>(id => id != released), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        var link = (await LinksAsync()).Single(l => l.TicketKey == "SHOP-12");
+        link.TrackingEndedAt.Should().NotBeNull();
+        link.AssignedToOwner.Should().BeFalse();
+        link.Role.Should().Be(TicketRole.Standalone);
+        link.GroupId.Should().BeNull();
+        (await LinksAsync()).Single(l => l.TicketKey == "SHOP-10").Role.Should().Be(TicketRole.Story, "two members remain");
+        _tasks.Verify(t => t.CancelStoryAsync(It.IsAny<Ulid>(), It.IsAny<CancellationToken>()), Times.Never);
+        _tasks.Verify(t => t.SetStoryPendingChildrenAsync(_groupId, 0, It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        _tasks.Verify(t => t.SetStoryPendingChildrenAsync(_groupId, It.Is<int>(n => n > 0), It.IsAny<CancellationToken>()), Times.Never);
+        (await _api.ExtraKnownKeysAsync(_config.Id, CancellationToken.None)).Should().Equal(["SHOP-12"], "it is watched in case it becomes mine");
+
+        // Given back to me, not started: revived and appended at the end of the story.
+        _tasks.Setup(t => t.AppendStoryMemberAsync(_groupId, It.IsAny<StorySubTaskSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new StoryAppendResult([new StoryMemberRef(released, "SHOP-12", ShopRepo, 4, false)], false, false));
+        await ReportAsync(Tracked("SHOP-11", "SHOP-12", "SHOP-13"),
+            Child("SHOP-11") with { Body = null }, Child("SHOP-12"), Child("SHOP-13") with { Body = null });
+
+        _tasks.Verify(t => t.ReviveTrackerTaskAsync(released, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        _tasks.Verify(t => t.AppendStoryMemberAsync(_groupId, It.Is<StorySubTaskSpec>(s => s.Key == "SHOP-12"), It.IsAny<CancellationToken>()),
+            Times.Once);
+        _tasks.Verify(t => t.SubmitTaskAsync(OrgId, released, null, It.IsAny<CancellationToken>()), Times.Exactly(2),
+            "submitted at import, and again once revived");
+        link = (await LinksAsync()).Single(l => l.TicketKey == "SHOP-12");
+        link.Should().Match<TicketLink>(l => l.TrackingEndedAt == null && l.AssignedToOwner
+            && l.Role == TicketRole.SubTask && l.GroupId == _groupId && l.TaskId == released);
+    }
+
+    [Fact]
+    public async Task AMemberUnderWayInTheTracker_NotStarted_LeavesTheStory_ButOneOrkkaMovedItselfStays()
+    {
+        var links = await ImportStoryWithAsync("SHOP-11", "SHOP-12");
+        var moved = await _db.TicketLinks.SingleAsync(l => l.TicketKey == "SHOP-11");
+        moved.SyncedPhase = TrackerPhase.PickedUp; // Orkka moved it to "In Progress" itself
+        await _db.SaveChangesAsync();
+
+        await ReportAsync(Tracked("SHOP-11", "SHOP-12"),
+            Child("SHOP-11", "inprogress") with { Body = null }, Child("SHOP-12", "inprogress", status: "Resolved") with { Body = null });
+
+        _tasks.Verify(t => t.ReleaseStoryMemberAsync(links["SHOP-12"].TaskId,
+            It.Is<string>(r => r.Contains("already under way") && r.Contains("Resolved")), It.IsAny<CancellationToken>()), Times.Once);
+        _tasks.Verify(t => t.ReleaseStoryMemberAsync(links["SHOP-11"].TaskId, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        (await LinksAsync()).Single(l => l.TicketKey == "SHOP-11").TrackingEndedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task WhenNoMemberIsLeft_TheStoryIsCancelled_AndTheStoryTicketIsATaskOfItsOwn()
+    {
+        var links = await ImportStoryWithAsync("SHOP-11", "SHOP-12");
+        var storyTask = Ulid.NewUlid();
+        _tasks.Setup(t => t.CreateTrackerTaskAsync(It.IsAny<TrackerTaskSpec>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ExternalTaskResult(storyTask, 7, "x", true));
+
+        // Still in my To Do; neither sub-task is mine (the damage the cleanup repairs).
+        await ReportAsync(Story("SHOP-11", "SHOP-12"),
+            Child("SHOP-11", assignedToMe: false) with { Body = null }, Child("SHOP-12", "inprogress", assignedToMe: false) with { Body = null });
+
+        _tasks.Verify(t => t.ReleaseStoryMemberAsync(It.IsAny<Ulid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        _tasks.Verify(t => t.CancelStoryAsync(_groupId, It.IsAny<CancellationToken>()), Times.Once);
+        _tasks.Verify(t => t.CreateTrackerTaskAsync(It.Is<TrackerTaskSpec>(s => s.ExternalKey == "SHOP-10"), It.IsAny<CancellationToken>()),
+            Times.Once);
+        var all = await LinksAsync();
+        all.Single(l => l.TicketKey == "SHOP-10").Should().Match<TicketLink>(l =>
+            l.Role == TicketRole.Standalone && l.TaskId == storyTask && l.GroupId == null && l.TrackingEndedAt == null);
+        all.Where(l => l.TicketKey != "SHOP-10").Should().OnlyContain(l => l.TrackingEndedAt != null && l.Role == TicketRole.Standalone);
+        _ = links;
+    }
+
+    [Fact]
+    public async Task AStartedMemberNotAssignedToMe_KeepsGoing_WithOneNote()
+    {
+        var links = await ImportStoryWithAsync("SHOP-11", "SHOP-12");
+        _group = _group with
+        {
+            Members = [.. _group.Members.Select(m => m.SubTaskKey == "SHOP-12" ? m with { Planning = true } : m)],
+        };
+
+        for (var poll = 0; poll < 2; poll++)
+            await ReportAsync(Tracked("SHOP-11", "SHOP-12"),
+                Child("SHOP-11") with { Body = null }, Child("SHOP-12", assignedToMe: false) with { Body = null });
+
+        _tasks.Verify(t => t.ReleaseStoryMemberAsync(It.IsAny<Ulid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _tasks.Verify(t => t.AddTaskMessageAsync(links["SHOP-12"].TaskId, "system",
+            It.Is<string>(m => m.Contains("SHOP-12 is not assigned to you in Jira; Orkka will not pick up more of it")),
+            MessageType.SystemEvent, It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+        var link = (await LinksAsync()).Single(l => l.TicketKey == "SHOP-12");
+        link.TrackingEndedAt.Should().BeNull("started work is never touched");
+        link.Role.Should().Be(TicketRole.SubTask);
     }
 
     // ── Write-back ──────────────────────────────────────────────────────────

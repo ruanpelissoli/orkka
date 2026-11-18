@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-18T20:06:37.904Z",
+  "generatedAt": "2026-11-18T20:21:16.568Z",
   "counts": {
-    "total": 714,
+    "total": 716,
     "files": 37,
     "byArea": {
       "ONB": 4,
@@ -18,7 +18,7 @@
       "PR": 20,
       "RDK": 21,
       "SES": 15,
-      "TING": 23,
+      "TING": 25,
       "TWB": 13,
       "AIR": 7,
       "TEAM": 36,
@@ -43,15 +43,15 @@
       "GRD": 8
     },
     "byAutomation": {
-      "planned": 594,
+      "planned": 596,
       "automated": 86,
       "manual": 33,
       "blocked": 1
     },
     "byPriority": {
-      "P1": 346,
+      "P1": 347,
       "P2": 219,
-      "P0": 126,
+      "P0": 127,
       "P3": 23
     },
     "byMode": {
@@ -59,7 +59,7 @@
       "hybrid-repo": 226,
       "hybrid-folder": 52,
       "offline": 17,
-      "tracker": 73
+      "tracker": 75
     },
     "linkedToSpecs": 34
   },
@@ -7592,6 +7592,48 @@
       "refs": [
         "orkka-api:GET /api/projects/{projectId}/tracker",
         "orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.cs"
+      ],
+      "since": "2026-11-18",
+      "tests": []
+    },
+    {
+      "id": "TING-024",
+      "area": "TING",
+      "title": "A Story's members are only my sub-tasks that have not been started",
+      "file": "catalog/27-tracker-ingestion.md",
+      "line": 388,
+      "priority": "P0",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:GET /api/projects/{projectId}/tasks",
+        "orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.Stories.cs"
+      ],
+      "since": "2026-11-18",
+      "tests": []
+    },
+    {
+      "id": "TING-025",
+      "area": "TING",
+      "title": "A Story member that is not mine leaves the story while nothing started",
+      "file": "catalog/27-tracker-ingestion.md",
+      "line": 408,
+      "priority": "P1",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:GET /api/projects/{projectId}/tasks",
+        "orkka-api:src/Modules/Orkka.Modules.Tasks/PublicApi/TasksApi.Stories.cs"
       ],
       "since": "2026-11-18",
       "tests": []

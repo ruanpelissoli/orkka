@@ -332,8 +332,8 @@
       "prOpened": "O pull request foi publicado (numa Story: quando a story inteira está pronta).",
       "merged": "O pull request foi mesclado."
     },
-    "storyMode": "Trabalhar as subtarefas de uma Story em ordem, num só branch",
-    "storyModeHint": "As subtarefas de uma Story são feitas uma depois da outra num único branch e publicadas como um só pull request.",
+    "storyMode": "Trabalhar em ordem as suas subtarefas de uma Story, num só branch",
+    "storyModeHint": "As subtarefas de uma Story atribuídas a você e ainda não iniciadas são feitas uma depois da outra num único branch e publicadas como um só pull request. Subtarefas de outras pessoas, e as que já estão em andamento, ficam de fora.",
     "advanced": "Avançado",
     "errors": {
       "connection": "Escolha uma das suas conexões com tracker.",

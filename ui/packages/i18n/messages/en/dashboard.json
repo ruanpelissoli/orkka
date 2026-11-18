@@ -332,8 +332,8 @@
       "prOpened": "The pull request is published (for a Story: when the whole story is ready).",
       "merged": "The pull request merged."
     },
-    "storyMode": "Work a Story's sub-tasks in order on one branch",
-    "storyModeHint": "A Story's sub-tasks are worked one after another on a single branch and published as one pull request.",
+    "storyMode": "Work your sub-tasks of a Story in order on one branch",
+    "storyModeHint": "A Story's sub-tasks that are assigned to you and not started yet are worked one after another on a single branch and published as one pull request. Other people's sub-tasks, and ones already under way, are left alone.",
     "advanced": "Advanced",
     "errors": {
       "connection": "Pick one of your tracker connections.",
