@@ -55,6 +55,7 @@ import type {
   UpsertMemoryRequest,
   CreateApiKeyResponse,
   UpdateAgentRequest,
+  SetAgentsModelResponse,
   CreateProject,
   CreateTask,
   CreateMessage,
@@ -1120,6 +1121,13 @@ export const api = {
         token,
         { method: "POST", body: JSON.stringify({ provider }) }
       ),
+    /** Pins one model on every agent of the project (the Team page's "Set every agent's
+     * model"). QA agents are skipped when the model can't drive browser (MCP) tools. */
+    setModel: (projectId: string, model: string, token: string) =>
+      fetchApi<SetAgentsModelResponse>(`/api/projects/${projectId}/agents/model`, token, {
+        method: "PUT",
+        body: JSON.stringify({ model }),
+      }),
     get: (projectId: string, agentId: string, token: string) =>
       fetchApi<ProjectAgent>(`/api/projects/${projectId}/agents/${agentId}`, token),
     update: (projectId: string, agentId: string, data: UpdateAgentRequest, token: string) =>

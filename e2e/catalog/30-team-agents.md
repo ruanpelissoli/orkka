@@ -712,3 +712,31 @@ refs:
 - 2 → Chat tab with conversation C selected (not the most recent) and message M scrolled into view with a 3 s highlight ring.
 - 3 → no panel opens; the grid renders normally.
 **Notes**: —
+
+## TEAM-038 Set every agent's model at once
+```yaml
+priority: P2
+modes: [hybrid-repo, hybrid-folder]
+surface: [ui, api]
+automation: planned
+since: 2026-11-18
+refs:
+  - orkka-api:PUT /api/projects/{projectId}/agents/model
+  - orkka-ui:/p/[projectId]/team
+  - orkka-ui:apps/local/app/[locale]/(dashboard)/p/[projectId]/team/TeamModelControl.tsx
+  - i18n:teamModel
+```
+**Preconditions**: runner online with Claude and Copilot signed in, Codex not; seeded project.
+**Steps**:
+1. Open `/p/{slug}/team`; open the "Set every agent's model" select.
+2. Pick "Copilot Auto"; click "Apply to all agents"; read the dialog; click "Set model".
+3. Repeat step 2 with "Copilot Auto" again.
+4. Pick "Claude Sonnet 5"; apply and confirm.
+5. `PUT …/agents/model {model:"no-such-model"}`; `{model:"copilot/claude-sonnet-4.5"}` (retired); `{model:""}`.
+**Expected**:
+- 1 → only models the runner has ready are listed (Claude and Copilot groups; no OpenAI).
+- 2 → nothing changes before "Set model"; the dialog names Copilot Auto and says QA keeps its model. After it: 200 `{updatedCount:13, unchangedCount:0, skippedQaCount:1}`, toast "13 agents now use Copilot Auto. 1 QA agent kept its model."; every card except Scout shows Copilot Auto; one `AgentConfigChanged` audit event per changed agent; another project's agents are untouched.
+- 3 → `{updatedCount:0, unchangedCount:13, skippedQaCount:1}`, no new audit events.
+- 4 → no QA note in the dialog; all 14 agents on Claude Sonnet 5.
+- 5 → 400 each; no agent changes.
+**Notes**: AgentsConfigure, like the per-agent update (TEAM-005). Agents' saved models never change on their own — a new Copilot default (copilot/auto on every tier) only reaches agents seeded afterwards; this control is how an existing team moves.

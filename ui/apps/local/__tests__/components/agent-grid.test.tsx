@@ -11,6 +11,12 @@ vi.mock(
   () => ({ AgentDetailPanel: () => null })
 );
 
+// Covered by its own test (team-model-control); it needs a ToastProvider and the runner status.
+vi.mock(
+  "@/app/[locale]/(dashboard)/p/[projectId]/team/TeamModelControl",
+  () => ({ TeamModelControl: () => null })
+);
+
 import { AgentGrid } from "@/app/[locale]/(dashboard)/p/[projectId]/team/AgentGrid";
 import type { AiModel, ProjectAgent } from "@/lib/types";
 

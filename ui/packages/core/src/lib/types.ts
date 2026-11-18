@@ -1929,6 +1929,14 @@ export interface AgentTokenBreakdown {
   totalTokens: number;
 }
 
+/** PUT /api/projects/{id}/agents/model — what a team-wide model change did. */
+export interface SetAgentsModelResponse {
+  updatedCount: number;
+  unchangedCount: number;
+  /** QA agents left on their model: the target can't drive browser (MCP) tools. */
+  skippedQaCount: number;
+}
+
 export interface UpdateAgentRequest {
   name?: string;
   model?: string;

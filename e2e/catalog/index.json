@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-18T19:25:17.702Z",
+  "generatedAt": "2026-11-18T20:06:37.904Z",
   "counts": {
-    "total": 713,
+    "total": 714,
     "files": 37,
     "byArea": {
       "ONB": 4,
@@ -21,7 +21,7 @@
       "TING": 23,
       "TWB": 13,
       "AIR": 7,
-      "TEAM": 35,
+      "TEAM": 36,
       "DSN": 26,
       "MEM": 15,
       "SKL": 12,
@@ -43,21 +43,21 @@
       "GRD": 8
     },
     "byAutomation": {
-      "planned": 593,
+      "planned": 594,
       "automated": 86,
       "manual": 33,
       "blocked": 1
     },
     "byPriority": {
       "P1": 346,
-      "P2": 218,
+      "P2": 219,
       "P0": 126,
       "P3": 23
     },
     "byMode": {
       "all": 377,
-      "hybrid-repo": 225,
-      "hybrid-folder": 51,
+      "hybrid-repo": 226,
+      "hybrid-folder": 52,
       "offline": 17,
       "tracker": 73
     },
@@ -283,6 +283,7 @@
       "PUT /api/org",
       "PUT /api/org/me/preferences",
       "PUT /api/projects/{id}/run-config",
+      "PUT /api/projects/{projectId}/agents/model",
       "PUT /api/projects/{projectId}/agents/{agentId}",
       "PUT /api/projects/{projectId}/agents/{agentId}/skills",
       "PUT /api/projects/{projectId}/brand",
@@ -428,6 +429,7 @@
       "taskMilestone",
       "taskMisc",
       "tasksPage",
+      "teamModel",
       "teamStats",
       "ticketSource",
       "ticketSourceStatus",
@@ -8794,6 +8796,31 @@
       "refs": [
         "orkka-ui:/p/[projectId]/team"
       ],
+      "tests": []
+    },
+    {
+      "id": "TEAM-038",
+      "area": "TEAM",
+      "title": "Set every agent's model at once",
+      "file": "catalog/30-team-agents.md",
+      "line": 716,
+      "priority": "P2",
+      "modes": [
+        "hybrid-repo",
+        "hybrid-folder"
+      ],
+      "surface": [
+        "ui",
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:PUT /api/projects/{projectId}/agents/model",
+        "orkka-ui:/p/[projectId]/team",
+        "orkka-ui:apps/local/app/[locale]/(dashboard)/p/[projectId]/team/TeamModelControl.tsx",
+        "i18n:teamModel"
+      ],
+      "since": "2026-11-18",
       "tests": []
     },
     {

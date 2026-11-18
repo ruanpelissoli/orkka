@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-11-18T19:25:25.747Z",
+  "generatedAt": "2026-11-18T20:06:36.641Z",
   "sources": {
     "ui": {
-      "path": "C:\\Projects\\orkka\\orkka-boards\\ui",
-      "sha": "a2ee52fc0f4b"
+      "path": "C:\\Projects\\orkka\\orkka-auto\\ui",
+      "sha": "2a7deb25b134"
     },
     "api": {
-      "path": "C:\\Projects\\orkka\\orkka-boards",
-      "sha": "a2ee52fc0f4b"
+      "path": "C:\\Projects\\orkka\\orkka-auto",
+      "sha": "2a7deb25b134"
     }
   },
   "uiPages": [
@@ -523,6 +523,16 @@
       "path": "/api/projects/{projectId}/agents/{agentId:ulid}/skills",
       "file": "src/Modules/Orkka.Modules.Agents/Features/Skills/SkillEndpoints.cs",
       "class": "SetAgentSkillsEndpoint",
+      "permissions": [
+        "AgentsConfigure"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/{projectId}/agents/model",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Agents/SetAgentsModelEndpoint.cs",
+      "class": "SetAgentsModelEndpoint",
       "permissions": [
         "AgentsConfigure"
       ],
@@ -2605,6 +2615,7 @@
         "taskMilestone",
         "taskMisc",
         "tasksPage",
+        "teamModel",
         "teamStats",
         "ticketSource",
         "ticketSourceStatus",
@@ -2617,13 +2628,13 @@
         "workspaces"
       ]
     },
-    "leafCount": 2276
+    "leafCount": 2288
   },
   "counts": {
     "uiPages": 39,
-    "apiRoutes": 253,
+    "apiRoutes": 254,
     "hubEvents": 20,
     "cliVerbs": 15,
-    "i18nNamespaces": 111
+    "i18nNamespaces": 112
   }
 }
