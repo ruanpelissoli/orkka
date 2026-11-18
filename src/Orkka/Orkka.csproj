@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- THE entry point: `./orkka <command>` runs `dotnet src/Orkka/bin/Release/net10.0/orkka.dll`.
+         `start` runs the web host (Orkka.Local) and the runner (Orkka.LocalRunner) in this one
+         process; every other command is one-shot. -->
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>orkka</AssemblyName>
+    <RootNamespace>Orkka.Cli</RootNamespace>
+    <Version>0.2.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Orkka.Local\Orkka.Local.csproj" />
+    <ProjectReference Include="..\Orkka.LocalRunner\Orkka.LocalRunner.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Orkka.Tests" />
+  </ItemGroup>
+
+</Project>

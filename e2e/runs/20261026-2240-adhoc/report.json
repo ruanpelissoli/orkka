@@ -1,0 +1,1740 @@
+{
+  "runId": "20261026-2240-adhoc",
+  "suite": "adhoc",
+  "target": "offline",
+  "startedAt": "2026-10-27T01:40:21.073Z",
+  "finishedAt": "2026-10-27T01:40:34.223Z",
+  "durationMs": 13150,
+  "operator": "claude",
+  "gitSha": "uncommitted",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "totals": {
+    "passed": 22,
+    "failed": 0,
+    "skipped": 102,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [
+        "TSRC-001"
+      ],
+      "testTitle": "TSRC-001 a project with no ticket source answers 204",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.482Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-002"
+      ],
+      "testTitle": "TSRC-002 PUT with a connection that is not mine → 400 on trackerConnectionId",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.483Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-003"
+      ],
+      "testTitle": "TSRC-003 validation: poll interval, branch template, epics, subfolder, scope",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.483Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-005"
+      ],
+      "testTitle": "TSRC-005 DELETE without a ticket source is a no-op 204; GET stays 204",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.483Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-007"
+      ],
+      "testTitle": "TSRC-007 tracker query with an unknown kind → 400",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.483Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-008"
+      ],
+      "testTitle": "TSRC-008 tracker query on an unknown connection → 404 (not 403)",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.483Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-009"
+      ],
+      "testTitle": "TSRC-009 GET /api/trackers/connections lists my connections with metadata only",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.483Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-006"
+      ],
+      "testTitle": "TSRC-006 a query while my runner is offline answers supported:false, not an error",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.483Z"
+    },
+    {
+      "caseIds": [
+        "WSP-001"
+      ],
+      "testTitle": "WSP-001 GET /api/me/workspaces lists my workspaces with exactly one active",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.483Z"
+    },
+    {
+      "caseIds": [
+        "WSP-003"
+      ],
+      "testTitle": "WSP-003 switching the active workspace answers 204; an unknown org answers 404",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "WSP-004"
+      ],
+      "testTitle": "WSP-004 a non-ULID X-Orkka-Workspace answers 400 Invalid workspace.",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "WSP-005"
+      ],
+      "testTitle": "WSP-005 naming a workspace I am not in answers 403",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "WSP-006"
+      ],
+      "testTitle": "WSP-006 the same call in two workspaces returns disjoint projects",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "WSP-007"
+      ],
+      "testTitle": "WSP-007 an API key ignores X-Orkka-Workspace and stays in its own org",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "WSP-002"
+      ],
+      "testTitle": "WSP-002 creating a workspace makes it mine and active (restores the previous active one)",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "HYF-001"
+      ],
+      "testTitle": "HYF-001 browse the runner's file system through the relay",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "HYF-004"
+      ],
+      "testTitle": "HYF-004 link a git folder from this machine: provider local, execution on the runner",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "HYF-005"
+      ],
+      "testTitle": "HYF-005 link a plain (non-git) folder: Orkka initialises the repository in place",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "HYF-006"
+      ],
+      "testTitle": "HYF-006 linking a folder that does not exist answers 4xx with a reason",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "HYF-010"
+      ],
+      "testTitle": "HYF-010 sync-status of a freshly linked folder: no remote, nothing to push",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "HYF-013",
+        "HYF-011"
+      ],
+      "testTitle": "HYF-013 connect the folder to an EMPTY remote the developer created and push",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "HYF-014"
+      ],
+      "testTitle": "HYF-014 connecting to a remote that already has commits is refused with a reason",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "HYF-024",
+        "HYF-018",
+        "FRG-013"
+      ],
+      "testTitle": "HYF-024 a task on a linked folder lands in the working copy on this machine",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "HYB-016",
+        "HYB-017",
+        "HYB-019",
+        "HYB-046",
+        "FRG-001",
+        "FRG-002",
+        "PR-006"
+      ],
+      "testTitle": "HYB-046 hands-free task → Done → PR published via gh on the developer's account",
+      "file": "tests/hybrid-repo/pipeline.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "HYB-024",
+        "PLN-001",
+        "PLN-003",
+        "HYB-027",
+        "HYB-021",
+        "PR-007"
+      ],
+      "testTitle": "HYB-024 human loop: plan waits in PlanReady, approval resumes, request changes, approve publishes",
+      "file": "tests/hybrid-repo/pipeline.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "FRG-003"
+      ],
+      "testTitle": "FRG-003 gh signed out: publishing fails with the gh auth login remedy and nothing is created",
+      "file": "tests/hybrid-repo/pipeline.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "HYB-002"
+      ],
+      "testTitle": "HYB-002 unknown execution preference target is rejected with 400",
+      "file": "tests/hybrid-repo/project-and-repo.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "HYB-008",
+        "RURL-001"
+      ],
+      "testTitle": "HYB-008 create a project and add a remote by URL: GitHub detected from the host",
+      "file": "tests/hybrid-repo/project-and-repo.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "RURL-002"
+      ],
+      "testTitle": "RURL-002 ssh, scp-style and host-alias remotes are accepted; an alias reads as Other",
+      "file": "tests/hybrid-repo/project-and-repo.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "RURL-003"
+      ],
+      "testTitle": "RURL-003 a folder path in the URL field is refused (link folders through the runner)",
+      "file": "tests/hybrid-repo/project-and-repo.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.484Z"
+    },
+    {
+      "caseIds": [
+        "RURL-004"
+      ],
+      "testTitle": "RURL-004 provider override and CLI account are stored",
+      "file": "tests/hybrid-repo/project-and-repo.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.485Z"
+    },
+    {
+      "caseIds": [
+        "RURL-005"
+      ],
+      "testTitle": "RURL-005 credentials embedded in an https URL are refused",
+      "file": "tests/hybrid-repo/project-and-repo.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.485Z"
+    },
+    {
+      "caseIds": [
+        "HYB-009",
+        "RURL-008"
+      ],
+      "testTitle": "HYB-009 access preflight: the sandboxed runner reads the remote with its own git",
+      "file": "tests/hybrid-repo/project-and-repo.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.485Z"
+    },
+    {
+      "caseIds": [
+        "HYB-010",
+        "RURL-009"
+      ],
+      "testTitle": "HYB-010 access preflight names an unreadable remote with a reason",
+      "file": "tests/hybrid-repo/project-and-repo.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.485Z"
+    },
+    {
+      "caseIds": [
+        "HYB-004"
+      ],
+      "testTitle": "HYB-004 execution-target preview: a task runs on the developer's runner",
+      "file": "tests/hybrid-repo/project-and-repo.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.485Z"
+    },
+    {
+      "caseIds": [
+        "REPO-008"
+      ],
+      "testTitle": "REPO-008 the file viewer reads the remote through the runner relay",
+      "file": "tests/hybrid-repo/project-and-repo.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.485Z"
+    },
+    {
+      "caseIds": [
+        "RUN-001"
+      ],
+      "testTitle": "RUN-001 Runner settings page shows the runner online with its machine and providers",
+      "file": "tests/hybrid-repo/ui-flows.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.485Z"
+    },
+    {
+      "caseIds": [
+        "BRD-001"
+      ],
+      "testTitle": "BRD-001 board renders the nine lanes and the new-task entry point for a fresh project",
+      "file": "tests/hybrid-repo/ui-flows.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.485Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "create a task from the form as a draft and see it on the board and the detail page",
+      "file": "tests/hybrid-repo/ui-flows.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.485Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "task detail shows the runner execution badge for a UserRunner task",
+      "file": "tests/hybrid-repo/ui-flows.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.485Z"
+    },
+    {
+      "caseIds": [
+        "SET-012"
+      ],
+      "testTitle": "SET-010 project settings: pipeline toggles persist through the UI and the API sees them",
+      "file": "tests/hybrid-repo/ui-flows.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:21.485Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "seeded from the web fixture; the alias URL clones, a branch pushes, a merge lands on main",
+      "file": "tests/offline/bare-remote.spec.ts",
+      "status": "passed",
+      "durationMs": 1926,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:22.004Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "custom files and default branch; a teammate's commit moves the head",
+      "file": "tests/offline/bare-remote.spec.ts",
+      "status": "passed",
+      "durationMs": 1105,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:23.955Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "auth: /myself answers for email+token and 401s anything else",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 30,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:25.080Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "scopes, statuses and the Acceptance Criteria field lookup",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 36,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:25.116Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "epic search: by title prefix, by key, by bare number, unknown key → 400",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 23,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:25.160Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "polling query: assigned to me, under the epics, not done, extra clause; rendered fields; paging",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 40,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:25.190Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "comments newest-first with rendered bodies; attachments via a 303 to the media host",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 22,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:25.236Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "write-back: status read, transitions list, POST transition 204, invalid id 400",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 58,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:25.264Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "failure injection and an outage",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 10,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:25.332Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "auth: connectionData for the PAT; a wrong PAT gets 203 + HTML like the real service",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 5,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:25.350Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "projects, work item types with state categories, type categories",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 19,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:25.361Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "two-step polling WIQL: hierarchy (MustContain / Recursive), then the flat filter; batch with relations",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 63,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:25.386Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "comments (desc, deleted skipped by the runner), attachments, System.State write-back",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 35,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:25.458Z"
+    },
+    {
+      "caseIds": [
+        "TCLI-007",
+        "TCLI-008",
+        "TCLI-011"
+      ],
+      "testTitle": "tracker test/list: the runner signs in to the fake Jira and ADO with the seeded tokens; tokens never printed",
+      "file": "tests/offline/runner-tracker-cli.spec.ts",
+      "status": "passed",
+      "durationMs": 1579,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:25.523Z"
+    },
+    {
+      "caseIds": [
+        "TCLI-008"
+      ],
+      "testTitle": "a revoked token: tracker test reports failing with Jira's advice and exits 1",
+      "file": "tests/offline/runner-tracker-cli.spec.ts",
+      "status": "passed",
+      "durationMs": 698,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:27.315Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "tracker add cannot target a loopback site: --site http://127.0.0.1:<port> is rewritten to https://127.0.0.1 (no port)",
+      "file": "tests/offline/runner-tracker-cli.spec.ts",
+      "status": "passed",
+      "durationMs": 2285,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:28.019Z"
+    },
+    {
+      "caseIds": [
+        "TCLI-009"
+      ],
+      "testTitle": "tracker remove deletes the entry and its token",
+      "file": "tests/offline/runner-tracker-cli.spec.ts",
+      "status": "passed",
+      "durationMs": 806,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:30.309Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "auth status reports the signed-in accounts the way ForgeCli.SignedInAccounts parses them",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 311,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:32.521Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "publish: pr list finds nothing → pr create prints the URL → a retry finds the open PR (idempotent)",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 388,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:32.838Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "state: pr view --json state --jq .state follows OPEN → MERGED (ForgeCli.NormalizeState → merged)",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 401,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:33.231Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "account scoping: auth token --user prints that account's token; GH_TOKEN reaches the call record",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 298,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:33.638Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "a configured failure and a signed-out CLI fail like gh does",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 193,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:33.942Z"
+    },
+    {
+      "caseIds": [
+        "NEG-030"
+      ],
+      "testTitle": "NEG-030 a project whose slug is exactly 26 characters must still resolve by slug (ULID-length regression)",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.143Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "an unknown project id answers 404, not 403",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.143Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "the harness API key acts as a Member: admin/me says not admin and admin actions are 403",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.143Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "API keys cannot mint API keys",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.143Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "health endpoint answers anonymously",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.143Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "API: org/me answers for the harness key and matches the expected workspace @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.143Z"
+    },
+    {
+      "caseIds": [
+        "WSP-001"
+      ],
+      "testTitle": "API: workspaces list answers with exactly one active workspace @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.143Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "API: runner presence answers, with forge CLI status when online @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.143Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-009"
+      ],
+      "testTitle": "API: tracker connections list answers (possibly empty) @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.143Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "UI: dashboard loads for the saved session and shows the shell @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.143Z"
+    },
+    {
+      "caseIds": [
+        "SET-012"
+      ],
+      "testTitle": "UI: project settings page renders for the first project (or onboarding when none) @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.143Z"
+    },
+    {
+      "caseIds": [
+        "TING-001",
+        "TING-006",
+        "TSRC-004",
+        "TSRC-010",
+        "TWB-001",
+        "TWB-002",
+        "TWB-003",
+        "FRG-001"
+      ],
+      "testTitle": "TING-001 a Jira ticket becomes a task, is planned, built, published via gh, and its status follows",
+      "file": "tests/tracker/ticket-to-pr.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "seed: create the inventory project with a repo and a draft task",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/ renders (MKT-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/pricing renders (MKT-005)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/docs renders (MKT-006)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/blog renders (MKT-009)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/terms renders (MKT-008)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/privacy renders (MKT-008)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/dpa renders (MKT-008)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/dashboard renders (ONB-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/inbox renders (NTF-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/notifications renders (NTF-003)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/onboarding renders (ONB-002)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/settings renders (SET-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/settings/preferences renders (SET-003)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/settings/billing renders (BIL-002)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/settings/billing/credits renders (BIL-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/settings/billing/budget renders (BIL-012)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.144Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/settings/billing/invoices renders (BIL-014)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/settings/billing/payment renders (BIL-016)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/settings/notifications renders (SET-005)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/settings/runner renders (RUN-002)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/settings/organization renders (SET-006)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/settings/api-keys renders (KEY-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/settings/integrations renders (INT-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/settings/audit renders (AUD-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug} renders (NAV-003)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/board renders (BRD-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/board?view=code renders (BRD-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/tasks renders (TSK-050)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/tasks/new renders (TSK-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/tasks/{n} renders (TSK-011)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/tasks/{n}/review renders (PR-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/team renders (TEAM-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/activity renders (ACT-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/skills renders (SKL-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/automation renders (AUTO-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/memory renders (MEM-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/roadmap renders (RDM-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.145Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/repos renders (REPO-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.146Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/documents renders (DOC-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.146Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/design renders (DSN-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.146Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/architect renders (ARC-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.146Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/members renders (MBR-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.146Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/p/{slug}/settings renders (SET-010)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.146Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/es/settings renders localized (I18N-001, I18N-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.146Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/pt/settings renders localized (I18N-001, I18N-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.146Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/fr/settings renders localized (I18N-001, I18N-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.146Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/de/settings renders localized (I18N-001, I18N-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.146Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "teardown: delete the inventory project",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "skipReason": "no deployed Orkka configured (set E2E_BASE_URL / E2E_API_URL in .env)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:40:34.146Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [],
+    "leftovers": []
+  },
+  "notes": [
+    "No environment configured (E2E_BASE_URL unset): only offline specs ran; environment-bound specs were skipped."
+  ]
+}

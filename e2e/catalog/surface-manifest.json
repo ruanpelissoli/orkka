@@ -1,0 +1,2629 @@
+{
+  "generatedAt": "2026-11-18T16:47:52.790Z",
+  "sources": {
+    "ui": {
+      "path": "C:\\Projects\\orkka\\orkka-r5\\ui",
+      "sha": "fbedc71bddd8"
+    },
+    "api": {
+      "path": "C:\\Projects\\orkka\\orkka-r5",
+      "sha": "fbedc71bddd8"
+    }
+  },
+  "uiPages": [
+    {
+      "app": "local",
+      "route": "/",
+      "file": "apps/local/app/[locale]/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/dashboard",
+      "file": "apps/local/app/[locale]/(dashboard)/dashboard/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/inbox",
+      "file": "apps/local/app/[locale]/(dashboard)/inbox/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/notifications",
+      "file": "apps/local/app/[locale]/(dashboard)/notifications/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/activity",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/activity/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/architect",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/architect/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/automation",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/automation/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/board",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/board/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/design",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/design/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/documents",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/documents/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/memory",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/memory/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/repos",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/repos/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/roadmap",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/roadmap/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/roadmap/[milestoneId]",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/roadmap/[milestoneId]/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/settings",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/settings/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/skills",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/skills/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/tasks",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/tasks/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/tasks/[taskId]",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/tasks/[taskId]/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/tasks/[taskId]/merge",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/tasks/[taskId]/merge/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/tasks/[taskId]/review",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/tasks/[taskId]/review/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/tasks/new",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/tasks/new/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/team",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/team/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/projects",
+      "file": "apps/local/app/[locale]/(dashboard)/projects/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/projects/[projectId]",
+      "file": "apps/local/app/[locale]/(dashboard)/projects/[projectId]/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/projects/[projectId]/board",
+      "file": "apps/local/app/[locale]/(dashboard)/projects/[projectId]/board/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/projects/[projectId]/repos",
+      "file": "apps/local/app/[locale]/(dashboard)/projects/[projectId]/repos/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/projects/[projectId]/settings",
+      "file": "apps/local/app/[locale]/(dashboard)/projects/[projectId]/settings/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/projects/[projectId]/tasks/[taskId]",
+      "file": "apps/local/app/[locale]/(dashboard)/projects/[projectId]/tasks/[taskId]/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/projects/[projectId]/tasks/new",
+      "file": "apps/local/app/[locale]/(dashboard)/projects/[projectId]/tasks/new/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/projects/new",
+      "file": "apps/local/app/[locale]/(dashboard)/projects/new/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/settings",
+      "file": "apps/local/app/[locale]/(dashboard)/settings/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/settings/api-keys",
+      "file": "apps/local/app/[locale]/(dashboard)/settings/api-keys/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/settings/machine",
+      "file": "apps/local/app/[locale]/(dashboard)/settings/machine/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/settings/notifications",
+      "file": "apps/local/app/[locale]/(dashboard)/settings/notifications/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/settings/preferences",
+      "file": "apps/local/app/[locale]/(dashboard)/settings/preferences/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/settings/trackers",
+      "file": "apps/local/app/[locale]/(dashboard)/settings/trackers/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/settings/usage",
+      "file": "apps/local/app/[locale]/(dashboard)/settings/usage/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/settings/workspace",
+      "file": "apps/local/app/[locale]/(dashboard)/settings/workspace/page.tsx"
+    }
+  ],
+  "apiRoutes": [
+    {
+      "method": "DELETE",
+      "path": "/api/attachments/{id:ulid}",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/TaskAttachments/TaskAttachmentEndpoints.cs",
+      "class": "DeleteAttachmentEndpoint",
+      "permissions": [
+        "TasksEdit"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/audit",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Audit/GetAuditEventsEndpoint.cs",
+      "class": "GetAuditEventsEndpoint",
+      "permissions": [
+        "AuditView"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/inbox",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Inbox/GetInboxEndpoint.cs",
+      "class": "GetInboxEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/active-workspace",
+      "file": "src/Modules/Orkka.Modules.Organizations/Features/Workspaces/WorkspaceEndpoints.cs",
+      "class": "SetActiveWorkspaceEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/api-keys",
+      "file": "src/Modules/Orkka.Modules.Organizations/Features/ApiKeys/ApiKeyEndpoints.cs",
+      "class": "ListApiKeysEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/api-keys",
+      "file": "src/Modules/Orkka.Modules.Organizations/Features/ApiKeys/ApiKeyEndpoints.cs",
+      "class": "CreateApiKeyEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/me/api-keys/{keyId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Organizations/Features/ApiKeys/ApiKeyEndpoints.cs",
+      "class": "RevokeApiKeyEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/runner",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/Presence/RunnerPresenceEndpoints.cs",
+      "class": "GetMyRunnerEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/runner-tokens",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/RunnerTokens/RunnerTokenEndpoints.cs",
+      "class": "ListRunnerTokensEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/me/runner-tokens",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/RunnerTokens/RunnerTokenEndpoints.cs",
+      "class": "CreateRunnerTokenEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/me/runner-tokens/{tokenId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/RunnerTokens/RunnerTokenEndpoints.cs",
+      "class": "RevokeRunnerTokenEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/me/workspaces",
+      "file": "src/Modules/Orkka.Modules.Organizations/Features/Workspaces/WorkspaceEndpoints.cs",
+      "class": "ListMyWorkspacesEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/models",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Models/ListModelsEndpoint.cs",
+      "class": "ListModelsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications",
+      "file": "src/Modules/Orkka.Modules.Organizations/Features/Notifications/ListNotificationsEndpoint.cs",
+      "class": "ListNotificationsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notifications/{id:ulid}/read",
+      "file": "src/Modules/Orkka.Modules.Organizations/Features/Notifications/MarkNotificationReadEndpoint.cs",
+      "class": "MarkNotificationReadEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notifications/read-all",
+      "file": "src/Modules/Orkka.Modules.Organizations/Features/Notifications/MarkNotificationReadEndpoint.cs",
+      "class": "MarkAllNotificationsReadEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/org",
+      "file": "src/Modules/Orkka.Modules.Organizations/Features/Settings/OrgProfileEndpoints.cs",
+      "class": "UpdateOrgProfileEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/org/me",
+      "file": "src/Modules/Orkka.Modules.Organizations/Features/Members/GetMeEndpoint.cs",
+      "class": "GetMeEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/org/me/preferences",
+      "file": "src/Modules/Orkka.Modules.Organizations/Features/Members/UpdateMyPreferencesEndpoint.cs",
+      "class": "UpdateMyPreferencesEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/org/runners",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/Presence/RunnerPresenceEndpoints.cs",
+      "class": "ListOrgRunnersEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/Projects/ListProjectsEndpoint.cs",
+      "class": "ListProjectsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/Projects/CreateProjectEndpoint.cs",
+      "class": "CreateProjectEndpoint",
+      "permissions": [
+        "ProjectsCreate"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/projects/{id:ulid}",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/Projects/DeleteProjectEndpoint.cs",
+      "class": "DeleteProjectEndpoint",
+      "permissions": [
+        "ProjectsDelete"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/projects/{id:ulid}",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/Projects/UpdateProjectEndpoint.cs",
+      "class": "UpdateProjectEndpoint",
+      "permissions": [
+        "ProjectsManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{id}",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/Projects/GetProjectEndpoint.cs",
+      "class": "GetProjectEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/agent-stats",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/AgentStats/GetAgentStatsEndpoint.cs",
+      "class": "GetAgentStatsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/agents",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Agents/ListAgentsEndpoint.cs",
+      "class": "ListAgentsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/projects/{projectId}/agents/{agentId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Agents/DeleteAgentEndpoint.cs",
+      "class": "DeleteAgentEndpoint",
+      "permissions": [
+        "AgentsConfigure"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/agents/{agentId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Agents/GetAgentEndpoint.cs",
+      "class": "GetAgentEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/{projectId}/agents/{agentId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Agents/UpdateAgentEndpoint.cs",
+      "class": "UpdateAgentEndpoint",
+      "permissions": [
+        "AgentsConfigure"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/agents/{agentId:ulid}/conversations",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/AgentChat/ListConversationsEndpoint.cs",
+      "class": "ListConversationsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/agents/{agentId:ulid}/conversations",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/AgentChat/CreateConversationEndpoint.cs",
+      "class": "CreateConversationEndpoint",
+      "permissions": [
+        "AgentsChat"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/projects/{projectId}/agents/{agentId:ulid}/conversations/{conversationId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/AgentChat/DeleteConversationEndpoint.cs",
+      "class": "DeleteConversationEndpoint",
+      "permissions": [
+        "AgentsChat"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/agents/{agentId:ulid}/conversations/{conversationId:ulid}/cancel-run",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/AgentChat/CancelChatRunEndpoint.cs",
+      "class": "CancelChatRunEndpoint",
+      "permissions": [
+        "AgentsChat"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/agents/{agentId:ulid}/conversations/{conversationId:ulid}/messages",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/AgentChat/ListMessagesEndpoint.cs",
+      "class": "ListMessagesEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/agents/{agentId:ulid}/conversations/{conversationId:ulid}/messages",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/AgentChat/SendMessageEndpoint.cs",
+      "class": "SendMessageEndpoint",
+      "permissions": [
+        "AgentsChat"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/{projectId}/agents/{agentId:ulid}/skills",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Skills/SkillEndpoints.cs",
+      "class": "SetAgentSkillsEndpoint",
+      "permissions": [
+        "AgentsConfigure"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/agents/switch-provider",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Agents/SwitchAgentsProviderEndpoint.cs",
+      "class": "SwitchAgentsProviderEndpoint",
+      "permissions": [
+        "AgentsConfigure"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/app-run",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/AppRun/AppRunEndpoints.cs",
+      "class": "AttachAppRunEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/app-run/input",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/AppRun/AppRunEndpoints.cs",
+      "class": "AppRunInputEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/app-run/resize",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/AppRun/AppRunEndpoints.cs",
+      "class": "AppRunResizeEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/app-run/start",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/AppRun/AppRunEndpoints.cs",
+      "class": "StartAppRunEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/app-run/stop",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/AppRun/AppRunEndpoints.cs",
+      "class": "StopAppRunEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/projects/{projectId}/autopilot",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Autopilot/AutopilotEndpoints.cs",
+      "class": "StopAutopilotEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/autopilot",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Autopilot/AutopilotEndpoints.cs",
+      "class": "GetAutopilotStatusEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/autopilot",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Autopilot/AutopilotEndpoints.cs",
+      "class": "StartAutopilotEndpoint",
+      "permissions": [
+        "BillingManage",
+        "ProjectsManage",
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/board",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/GetBoardEndpoint.cs",
+      "class": "GetBoardEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/board-metrics",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/BoardMetrics/GetBoardMetricsEndpoint.cs",
+      "class": "GetBoardMetricsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/board/search",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/SearchBoardTasksEndpoint.cs",
+      "class": "SearchBoardTasksEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/brand",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/DesignAssets/BrandKitEndpoints.cs",
+      "class": "GetBrandKitEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/{projectId}/brand",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/DesignAssets/BrandKitEndpoints.cs",
+      "class": "UpdateBrandKitEndpoint",
+      "permissions": [
+        "DesignReview"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/chat-attachments",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/AgentChat/UploadChatAttachmentEndpoint.cs",
+      "class": "UploadChatAttachmentEndpoint",
+      "permissions": [
+        "AgentsChat"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/design-assets",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/DesignAssets/ListDesignAssetsEndpoint.cs",
+      "class": "ListDesignAssetsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/projects/{projectId}/design-assets/{assetId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/DesignAssets/DeleteDesignAssetEndpoint.cs",
+      "class": "DeleteDesignAssetEndpoint",
+      "permissions": [
+        "DesignReview"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/design-assets/{assetId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/DesignAssets/GetDesignAssetEndpoint.cs",
+      "class": "GetDesignAssetEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/design-assets/{assetId:ulid}/approve",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/DesignAssets/ApproveDesignAssetEndpoint.cs",
+      "class": "ApproveDesignAssetEndpoint",
+      "permissions": [
+        "DesignReview"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/projects/{projectId}/design-assets/{assetId:ulid}/folder",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/DesignAssets/MoveDesignAssetEndpoint.cs",
+      "class": "MoveDesignAssetEndpoint",
+      "permissions": [
+        "DesignReview"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/design-assets/{assetId:ulid}/reject",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/DesignAssets/RejectDesignAssetEndpoint.cs",
+      "class": "RejectDesignAssetEndpoint",
+      "permissions": [
+        "DesignReview"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/design-assets/{assetId:ulid}/restore",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/DesignAssets/RestoreDesignAssetEndpoint.cs",
+      "class": "RestoreDesignAssetEndpoint",
+      "permissions": [
+        "DesignReview"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/design-assets/folders/delete",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/DesignAssets/DeleteDesignFolderEndpoint.cs",
+      "class": "DeleteDesignFolderEndpoint",
+      "permissions": [
+        "DesignReview"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/design-assets/folders/rename",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/DesignAssets/RenameDesignFolderEndpoint.cs",
+      "class": "RenameDesignFolderEndpoint",
+      "permissions": [
+        "DesignReview"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/design-assets/upload",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/DesignAssets/UploadDesignAssetEndpoint.cs",
+      "class": "UploadDesignAssetEndpoint",
+      "permissions": [
+        "DesignReview"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/diagrams",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Diagrams/ListDiagramsEndpoint.cs",
+      "class": "ListDiagramsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/projects/{projectId}/diagrams/{diagramId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Diagrams/DeleteDiagramEndpoint.cs",
+      "class": "DeleteDiagramEndpoint",
+      "permissions": [
+        "AgentsChat"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/diagrams/{diagramId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Diagrams/GetDiagramEndpoint.cs",
+      "class": "GetDiagramEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/{projectId}/diagrams/{diagramId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Diagrams/UpdateDiagramEndpoint.cs",
+      "class": "UpdateDiagramEndpoint",
+      "permissions": [
+        "AgentsChat"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/projects/{projectId}/diagrams/{diagramId:ulid}/folder",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Diagrams/MoveDiagramEndpoint.cs",
+      "class": "MoveDiagramEndpoint",
+      "permissions": [
+        "AgentsChat"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/diagrams/{diagramId:ulid}/versions",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Diagrams/ListDiagramVersionsEndpoint.cs",
+      "class": "ListDiagramVersionsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/diagrams/{diagramId:ulid}/versions/{version:int}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Diagrams/GetDiagramVersionEndpoint.cs",
+      "class": "GetDiagramVersionEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/diagrams/{diagramId:ulid}/versions/{version:int}/restore",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Diagrams/RestoreDiagramVersionEndpoint.cs",
+      "class": "RestoreDiagramVersionEndpoint",
+      "permissions": [
+        "AgentsChat"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/diagrams/folders/rename",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Diagrams/RenameDiagramFolderEndpoint.cs",
+      "class": "RenameDiagramFolderEndpoint",
+      "permissions": [
+        "AgentsChat"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/documents",
+      "file": "src/Modules/Orkka.Modules.Documents/Features/Documents/ListDocumentsEndpoint.cs",
+      "class": "ListDocumentsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/documents",
+      "file": "src/Modules/Orkka.Modules.Documents/Features/Documents/CreateDocumentEndpoint.cs",
+      "class": "CreateDocumentEndpoint",
+      "permissions": [
+        "DocumentsManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/projects/{projectId}/documents/{id:ulid}",
+      "file": "src/Modules/Orkka.Modules.Documents/Features/Documents/DeleteDocumentEndpoint.cs",
+      "class": "DeleteDocumentEndpoint",
+      "permissions": [
+        "DocumentsManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/documents/{id:ulid}",
+      "file": "src/Modules/Orkka.Modules.Documents/Features/Documents/GetDocumentEndpoint.cs",
+      "class": "GetDocumentEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/projects/{projectId}/documents/{id:ulid}",
+      "file": "src/Modules/Orkka.Modules.Documents/Features/Documents/UpdateDocumentEndpoint.cs",
+      "class": "UpdateDocumentEndpoint",
+      "permissions": [
+        "DocumentsManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/documents/{id:ulid}/docx",
+      "file": "src/Modules/Orkka.Modules.Documents/Features/Documents/ExportDocumentDocxEndpoint.cs",
+      "class": "ExportDocumentDocxEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/documents/{id:ulid}/file",
+      "file": "src/Modules/Orkka.Modules.Documents/Features/Documents/GetDocumentFileEndpoint.cs",
+      "class": "GetDocumentFileEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/documents/{id:ulid}/pdf",
+      "file": "src/Modules/Orkka.Modules.Documents/Features/Documents/ExportDocumentPdfEndpoint.cs",
+      "class": "ExportDocumentPdfEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/documents/{id:ulid}/revisions",
+      "file": "src/Modules/Orkka.Modules.Documents/Features/Documents/ListDocumentRevisionsEndpoint.cs",
+      "class": "ListDocumentRevisionsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/documents/{id:ulid}/revisions/{version:int}",
+      "file": "src/Modules/Orkka.Modules.Documents/Features/Documents/GetDocumentRevisionEndpoint.cs",
+      "class": "GetDocumentRevisionEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/documents/{id:ulid}/revisions/{version:int}/restore",
+      "file": "src/Modules/Orkka.Modules.Documents/Features/Documents/RestoreDocumentRevisionEndpoint.cs",
+      "class": "RestoreDocumentRevisionEndpoint",
+      "permissions": [
+        "DocumentsManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/documents/by-task/{taskId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Documents/Features/Documents/GetTaskDocumentsEndpoint.cs",
+      "class": "GetTaskDocumentsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/documents/folders/rename",
+      "file": "src/Modules/Orkka.Modules.Documents/Features/Documents/RenameDocumentFolderEndpoint.cs",
+      "class": "RenameDocumentFolderEndpoint",
+      "permissions": [
+        "DocumentsManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/documents/upload",
+      "file": "src/Modules/Orkka.Modules.Documents/Features/Documents/UploadDocumentFileEndpoint.cs",
+      "class": "UploadDocumentFileEndpoint",
+      "permissions": [
+        "DocumentsManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/executions",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Executions/ListProjectExecutionsEndpoint.cs",
+      "class": "ListProjectExecutionsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/interactive-sessions",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/InteractiveSessions/StartInteractiveSessionEndpoint.cs",
+      "class": "StartInteractiveSessionEndpoint",
+      "permissions": [
+        "TasksCreate",
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/memories",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Memory/MemoryEndpoints.cs",
+      "class": "ListMemoriesEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/memories",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Memory/MemoryEndpoints.cs",
+      "class": "CreateMemoryEndpoint",
+      "permissions": [
+        "AgentsConfigure"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/projects/{projectId}/memories/{memoryId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Memory/MemoryEndpoints.cs",
+      "class": "DeleteMemoryEndpoint",
+      "permissions": [
+        "AgentsConfigure"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/{projectId}/memories/{memoryId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Memory/MemoryEndpoints.cs",
+      "class": "UpdateMemoryEndpoint",
+      "permissions": [
+        "AgentsConfigure"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/memories/retrieve",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Memory/MemoryEndpoints.cs",
+      "class": "PreviewMemoryRetrievalEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/milestone-plans/{jobId}",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Milestones/MilestonePlanJobEndpoints.cs",
+      "class": "GetMilestonePlanJobEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/milestone-plans/active",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Milestones/MilestonePlanJobEndpoints.cs",
+      "class": "GetActiveMilestonePlanJobEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/milestones",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Milestones/MilestoneEndpoints.cs",
+      "class": "ListMilestonesEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/milestones",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Milestones/MilestoneEndpoints.cs",
+      "class": "CreateMilestoneEndpoint",
+      "permissions": [
+        "TasksCreate"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/projects/{projectId}/milestones/{id:ulid}",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Milestones/MilestoneEndpoints.cs",
+      "class": "DeleteMilestoneEndpoint",
+      "permissions": [
+        "TasksDelete"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/milestones/{id:ulid}",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Milestones/GetMilestoneEndpoint.cs",
+      "class": "GetMilestoneEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/projects/{projectId}/milestones/{id:ulid}",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Milestones/MilestoneEndpoints.cs",
+      "class": "UpdateMilestoneEndpoint",
+      "permissions": [
+        "TasksEdit"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/milestones/{id:ulid}/forecast",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Forecast/ForecastEndpoints.cs",
+      "class": "GetMilestoneForecastEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/milestones/accept",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Milestones/PlanMilestoneEndpoints.cs",
+      "class": "AcceptMilestonePlanEndpoint",
+      "permissions": [
+        "TasksCreate"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/milestones/plan",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Milestones/PlanMilestoneEndpoints.cs",
+      "class": "PlanMilestoneEndpoint",
+      "permissions": [
+        "TasksCreate"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/repos",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/ProjectRepos/ListProjectReposEndpoint.cs",
+      "class": "ListProjectReposEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/repos",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/ProjectRepos/AddProjectRepoEndpoint.cs",
+      "class": "AddProjectRepoEndpoint",
+      "permissions": [
+        "ReposManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/projects/{projectId}/repos/{repoId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/ProjectRepos/UpdateProjectRepoEndpoint.cs",
+      "class": "UpdateProjectRepoEndpoint",
+      "permissions": [
+        "ReposManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/repos/{repoId:ulid}/attach-remote",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/LocalRepos/LocalRepoEndpoints.cs",
+      "class": "AttachRepoRemoteEndpoint",
+      "permissions": [
+        "ReposManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/repos/{repoId:ulid}/branches",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/ProjectRepos/RepoHistoryEndpoints.cs",
+      "class": "GetRepoBranchesEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/repos/{repoId:ulid}/clone-access",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/ProjectRepos/GetRepoCloneAccessEndpoint.cs",
+      "class": "GetRepoCloneAccessEndpoint",
+      "permissions": [
+        "ReposManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/repos/{repoId:ulid}/commits",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/ProjectRepos/RepoHistoryEndpoints.cs",
+      "class": "GetRepoCommitsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/repos/{repoId:ulid}/commits/{sha}/diff",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/ProjectRepos/RepoHistoryEndpoints.cs",
+      "class": "GetRepoCommitDiffEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/repos/{repoId:ulid}/editors",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/Editors/RepoEditorEndpoints.cs",
+      "class": "ListRepoEditorsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/repos/{repoId:ulid}/files",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/ProjectRepos/GetRepoFileTreeEndpoint.cs",
+      "class": "GetRepoFileTreeEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/repos/{repoId:ulid}/files/content",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/ProjectRepos/GetRepoFileContentEndpoint.cs",
+      "class": "GetRepoFileContentEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/repos/{repoId:ulid}/files/search",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/ProjectRepos/SearchRepoFilesEndpoint.cs",
+      "class": "SearchRepoFilesEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/repos/{repoId:ulid}/open-in-editor",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/Editors/RepoEditorEndpoints.cs",
+      "class": "OpenRepoInEditorEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/repos/{repoId:ulid}/push",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/LocalRepos/LocalRepoEndpoints.cs",
+      "class": "PushRepoEndpoint",
+      "permissions": [
+        "ReposManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/repos/{repoId:ulid}/sync-status",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/LocalRepos/LocalRepoEndpoints.cs",
+      "class": "RepoSyncStatusEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/repos/{repoId:ulid}/tree",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/ProjectRepos/RepoHistoryEndpoints.cs",
+      "class": "GetRepoTreeEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/repos/access-check",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/Presence/RepoAccessCheckEndpoint.cs",
+      "class": "RepoAccessCheckEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/repos/local",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/LocalRepos/LocalRepoEndpoints.cs",
+      "class": "LinkLocalRepoEndpoint",
+      "permissions": [
+        "ReposManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/rescan",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/LocalRepos/BaseFolderEndpoints.cs",
+      "class": "RescanProjectEndpoint",
+      "permissions": [
+        "ReposManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/run-config",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/RunConfig/RunConfigEndpoints.cs",
+      "class": "GetRunConfigEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/{projectId}/run-config",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/RunConfig/RunConfigEndpoints.cs",
+      "class": "SaveRunConfigEndpoint",
+      "permissions": [
+        "ReposManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/run-config/detect",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/RunConfig/RunConfigEndpoints.cs",
+      "class": "DetectRunConfigEndpoint",
+      "permissions": [
+        "ReposManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/schedules",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Schedules/ScheduleEndpoints.cs",
+      "class": "ListSchedulesEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/schedules",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Schedules/ScheduleEndpoints.cs",
+      "class": "CreateScheduleEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/projects/{projectId}/schedules/{scheduleId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Schedules/ScheduleEndpoints.cs",
+      "class": "DeleteScheduleEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/schedules/{scheduleId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Schedules/ScheduleEndpoints.cs",
+      "class": "GetScheduleEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/{projectId}/schedules/{scheduleId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Schedules/ScheduleEndpoints.cs",
+      "class": "UpdateScheduleEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/projects/{projectId}/schedules/{scheduleId:ulid}/enabled",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Schedules/ScheduleEndpoints.cs",
+      "class": "ToggleScheduleEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/schedules/{scheduleId:ulid}/run",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Schedules/ScheduleEndpoints.cs",
+      "class": "RunScheduleNowEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/schedules/{scheduleId:ulid}/runs",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Schedules/ScheduleEndpoints.cs",
+      "class": "ListScheduleRunsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/skills",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Skills/SkillEndpoints.cs",
+      "class": "ListSkillsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/skills",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Skills/SkillEndpoints.cs",
+      "class": "CreateSkillEndpoint",
+      "permissions": [
+        "AgentsConfigure"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/projects/{projectId}/skills/{skillId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Skills/SkillEndpoints.cs",
+      "class": "DeleteSkillEndpoint",
+      "permissions": [
+        "AgentsConfigure"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/skills/{skillId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Skills/SkillEndpoints.cs",
+      "class": "GetSkillEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/{projectId}/skills/{skillId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Skills/SkillEndpoints.cs",
+      "class": "UpdateSkillEndpoint",
+      "permissions": [
+        "AgentsConfigure"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/task-groups/{id:ulid}",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/TaskGroups/GetTaskGroupEndpoint.cs",
+      "class": "GetTaskGroupEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/projects/{projectId}/task-groups/{id:ulid}",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/TaskGroups/UpdateTaskGroupEndpoint.cs",
+      "class": "UpdateTaskGroupEndpoint",
+      "permissions": [
+        "TasksEdit"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/task-groups/{id:ulid}/repo-requests",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/TaskGroups/ResolveRepoRequestEndpoint.cs",
+      "class": "ResolveRepoRequestEndpoint",
+      "permissions": [
+        "TasksCreate"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/tasks",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/ListTasksEndpoint.cs",
+      "class": "ListTasksEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/tasks",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/CreateTaskEndpoint.cs",
+      "class": "CreateTaskEndpoint",
+      "permissions": [
+        "TasksCreate"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/tasks/forecast",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Forecast/ForecastEndpoints.cs",
+      "class": "PostDraftForecastEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/tasks/number/{number:int}",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/GetTaskByNumberEndpoint.cs",
+      "class": "GetTaskByNumberEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/projects/{projectId}/tracker",
+      "file": "src/Modules/Orkka.Modules.Trackers/Features/ProjectConfig/ProjectTrackerEndpoints.cs",
+      "class": "DeleteProjectTrackerEndpoint",
+      "permissions": [
+        "ProjectsManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/tracker",
+      "file": "src/Modules/Orkka.Modules.Trackers/Features/ProjectConfig/ProjectTrackerEndpoints.cs",
+      "class": "GetProjectTrackerEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/{projectId}/tracker",
+      "file": "src/Modules/Orkka.Modules.Trackers/Features/ProjectConfig/ProjectTrackerEndpoints.cs",
+      "class": "SaveProjectTrackerEndpoint",
+      "permissions": [
+        "ProjectsManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/from-folder",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/LocalRepos/BaseFolderEndpoints.cs",
+      "class": "CreateProjectFromFolderEndpoint",
+      "permissions": [
+        "ProjectsCreate"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/repos/{repoId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/ProjectRepos/DeleteProjectRepoEndpoint.cs",
+      "class": "DeleteProjectRepoEndpoint",
+      "permissions": [
+        "ReposManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/repos/{repoId:ulid}/pulls",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/RepoPulls/RepoPullsEndpoints.cs",
+      "class": "ListRepoPullsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/repos/{repoId:ulid}/pulls/{number:int}",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/RepoPulls/RepoPullsEndpoints.cs",
+      "class": "GetRepoPullEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/repos/{repoId:ulid}/pulls/{number:int}/close",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/RepoPulls/RepoPullsEndpoints.cs",
+      "class": "CloseRepoPullEndpoint",
+      "permissions": [
+        "CodeReviewMerge"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/repos/{repoId:ulid}/pulls/{number:int}/comments",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/RepoPulls/RepoPullsEndpoints.cs",
+      "class": "AddRepoPullCommentEndpoint",
+      "permissions": [
+        "CodeReviewReview"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/repos/{repoId:ulid}/pulls/{number:int}/merge",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/RepoPulls/RepoPullsEndpoints.cs",
+      "class": "MergeRepoPullEndpoint",
+      "permissions": [
+        "CodeReviewMerge"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/repos/{repoId:ulid}/pulls/{number:int}/reviews",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/RepoPulls/RepoPullsEndpoints.cs",
+      "class": "SubmitRepoPullReviewEndpoint",
+      "permissions": [
+        "CodeReviewReview"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/runners/fs/browse",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/LocalRepos/LocalRepoEndpoints.cs",
+      "class": "BrowseDirectoryEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/runners/fs/discover",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/LocalRepos/BaseFolderEndpoints.cs",
+      "class": "DiscoverReposEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/runners/fs/init-repo",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/LocalRepos/LocalRepoEndpoints.cs",
+      "class": "InitLocalRepoEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/tasks/{id:ulid}",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/DeleteTaskEndpoint.cs",
+      "class": "DeleteTaskEndpoint",
+      "permissions": [
+        "TasksDelete"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{id:ulid}",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/GetTaskEndpoint.cs",
+      "class": "GetTaskEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/tasks/{id:ulid}",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/UpdateTaskEndpoint.cs",
+      "class": "UpdateTaskEndpoint",
+      "permissions": [
+        "TasksEdit"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id:ulid}/archive",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/ArchiveTaskEndpoint.cs",
+      "class": "ArchiveTaskEndpoint",
+      "permissions": [
+        "TasksEdit"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id:ulid}/block",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/BlockTaskEndpoint.cs",
+      "class": "BlockTaskEndpoint",
+      "permissions": [
+        "TasksEdit"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id:ulid}/create-pr",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/CreatePrEndpoint.cs",
+      "class": "CreatePrEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id:ulid}/dependencies",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/TaskDependencyEndpoints.cs",
+      "class": "AddTaskDependencyEndpoint",
+      "permissions": [
+        "TasksEdit"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/tasks/{id:ulid}/dependencies/{dependsOnTaskId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/TaskDependencyEndpoints.cs",
+      "class": "RemoveTaskDependencyEndpoint",
+      "permissions": [
+        "TasksEdit"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/tasks/{id:ulid}/lane",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/MoveTaskLaneEndpoint.cs",
+      "class": "MoveTaskLaneEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id:ulid}/model-recommendation",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/ModelRecommendationEndpoint.cs",
+      "class": "ModelRecommendationEndpoint",
+      "permissions": [
+        "TasksEdit"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id:ulid}/reset",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/ResetTaskEndpoint.cs",
+      "class": "ResetTaskEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id:ulid}/retry",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/RetryTaskEndpoint.cs",
+      "class": "RetryTaskEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id:ulid}/spend/continue",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/SpendCheckpointEndpoints.cs",
+      "class": "ContinueTaskSpendEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id:ulid}/spend/stop",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/SpendCheckpointEndpoints.cs",
+      "class": "StopTaskSpendEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id:ulid}/submit",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/SubmitTaskEndpoint.cs",
+      "class": "SubmitTaskEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id:ulid}/unarchive",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/ArchiveTaskEndpoint.cs",
+      "class": "UnarchiveTaskEndpoint",
+      "permissions": [
+        "TasksEdit"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{id:ulid}/unblock",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/BlockTaskEndpoint.cs",
+      "class": "UnblockTaskEndpoint",
+      "permissions": [
+        "TasksEdit"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{taskId:ulid}/approvals",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/InteractiveSessions/DecideApprovalEndpoint.cs",
+      "class": "ListPendingApprovalsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{taskId:ulid}/approvals/{approvalId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/InteractiveSessions/DecideApprovalEndpoint.cs",
+      "class": "DecideApprovalEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{taskId:ulid}/attachments",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/TaskAttachments/TaskAttachmentEndpoints.cs",
+      "class": "ListAttachmentsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{taskId:ulid}/attachments",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/TaskAttachments/TaskAttachmentEndpoints.cs",
+      "class": "ConfirmAttachmentEndpoint",
+      "permissions": [
+        "TasksEdit"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{taskId:ulid}/attachments/upload-url",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/TaskAttachments/TaskAttachmentEndpoints.cs",
+      "class": "GetUploadUrlEndpoint",
+      "permissions": [
+        "TasksEdit"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{taskId:ulid}/chat",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/TaskChat/TaskChatEndpoints.cs",
+      "class": "GetTaskChatEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{taskId:ulid}/chat",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/TaskChat/TaskChatEndpoints.cs",
+      "class": "SendTaskChatMessageEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{taskId:ulid}/chat/apply",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/TaskChat/TaskChatEndpoints.cs",
+      "class": "ApplyTaskChatEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{taskId:ulid}/code-changes",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/CodeChanges/ListCodeChangeSnapshotsEndpoint.cs",
+      "class": "ListCodeChangeSnapshotsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{taskId:ulid}/code-changes/{snapshotId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/CodeChanges/GetCodeChangeSnapshotDiffEndpoint.cs",
+      "class": "GetCodeChangeSnapshotDiffEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{taskId:ulid}/editors",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/Editors/TaskEditorEndpoints.cs",
+      "class": "ListTaskEditorsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{taskId:ulid}/evidence",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Evidence/GetTaskEvidenceEndpoint.cs",
+      "class": "GetTaskEvidenceEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{taskId:ulid}/executions",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/TaskExecutions/ListTaskExecutionsEndpoint.cs",
+      "class": "ListTaskExecutionsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{taskId:ulid}/forecast",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Forecast/ForecastEndpoints.cs",
+      "class": "GetTaskForecastEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{taskId:ulid}/interactive-session/finish",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/InteractiveSessions/FinishInteractiveSessionEndpoint.cs",
+      "class": "FinishInteractiveSessionEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{taskId:ulid}/merge-conflicts",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/MergeResolution/GetMergeConflictsEndpoint.cs",
+      "class": "GetMergeConflictsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{taskId:ulid}/messages",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/TaskMessages/ListTaskMessagesEndpoint.cs",
+      "class": "ListTaskMessagesEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{taskId:ulid}/messages",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/TaskMessages/SendTaskMessageEndpoint.cs",
+      "class": "SendTaskMessageEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{taskId:ulid}/open-in-editor",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/Editors/TaskEditorEndpoints.cs",
+      "class": "OpenTaskInEditorEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{taskId:ulid}/plans",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/TaskPlans/ListTaskPlansEndpoint.cs",
+      "class": "ListTaskPlansEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{taskId:ulid}/plans/{planId:ulid}/review",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/TaskPlans/ReviewPlanEndpoint.cs",
+      "class": "ReviewPlanEndpoint",
+      "permissions": [
+        "PlansReview"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{taskId:ulid}/plans/latest",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/TaskPlans/GetLatestPlanEndpoint.cs",
+      "class": "GetLatestPlanEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{taskId:ulid}/pull-request",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/CodeReview/GetPullRequestEndpoint.cs",
+      "class": "GetPullRequestEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{taskId:ulid}/pull-request/comments",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/CodeReview/AddLineCommentEndpoint.cs",
+      "class": "AddLineCommentEndpoint",
+      "permissions": [
+        "CodeReviewReview"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{taskId:ulid}/pull-request/merge",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/CodeReview/MergePullRequestEndpoint.cs",
+      "class": "MergePullRequestEndpoint",
+      "permissions": [
+        "CodeReviewMerge"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{taskId:ulid}/pull-request/reviews",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/CodeReview/SubmitCodeReviewEndpoint.cs",
+      "class": "SubmitCodeReviewEndpoint",
+      "permissions": [
+        "CodeReviewReview"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{taskId:ulid}/pull-request/sync",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/CodeReview/SyncPullRequestEndpoint.cs",
+      "class": "SyncPullRequestEndpoint",
+      "permissions": [
+        "CodeReviewMerge"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{taskId:ulid}/resolve-merge",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/MergeResolution/ResolveMergeEndpoint.cs",
+      "class": "ResolveMergeEndpoint",
+      "permissions": [
+        "CodeReviewMerge"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/tasks/{taskId:ulid}/resolve-merge/queued",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/MergeResolution/CancelQueuedMergeEndpoint.cs",
+      "class": "CancelQueuedMergeEndpoint",
+      "permissions": [
+        "CodeReviewMerge"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{taskId:ulid}/verification",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Verification/SubmitVerificationEndpoint.cs",
+      "class": "SubmitVerificationEndpoint",
+      "permissions": [
+        "TasksExecute"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trackers/connections",
+      "file": "src/Modules/Orkka.Modules.Trackers/Features/Connections/TrackerConnectionEndpoints.cs",
+      "class": "ListMyTrackerConnectionsEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/trackers/connections",
+      "file": "src/Modules/Orkka.Modules.Trackers/Features/Connections/TrackerConnectionEndpoints.cs",
+      "class": "AddTrackerConnectionEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/trackers/connections/{connectionId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Trackers/Features/Connections/TrackerConnectionEndpoints.cs",
+      "class": "RemoveTrackerConnectionEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/trackers/connections/{connectionId:ulid}/query",
+      "file": "src/Modules/Orkka.Modules.Trackers/Features/Connections/TrackerConnectionEndpoints.cs",
+      "class": "TrackerQueryEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usage/breakdown",
+      "file": "src/Modules/Orkka.Modules.Usage/Features/GetUsageBreakdownEndpoint.cs",
+      "class": "GetUsageBreakdownEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usage/daily",
+      "file": "src/Modules/Orkka.Modules.Usage/Features/GetDailyUsageEndpoint.cs",
+      "class": "GetDailyUsageEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/usage/summary",
+      "file": "src/Modules/Orkka.Modules.Usage/Features/GetUsageSummaryEndpoint.cs",
+      "class": "GetUsageSummaryEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspaces",
+      "file": "src/Modules/Orkka.Modules.Organizations/Features/Workspaces/WorkspaceEndpoints.cs",
+      "class": "CreateWorkspaceEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/blobs/{container}/{**blob}",
+      "file": "src/Orkka.Local/Storage/LocalBlobEndpoints.cs",
+      "class": "LocalBlobEndpoints",
+      "permissions": [],
+      "host": "local"
+    },
+    {
+      "method": "HEAD",
+      "path": "/blobs/{container}/{**blob}",
+      "file": "src/Orkka.Local/Storage/LocalBlobEndpoints.cs",
+      "class": "LocalBlobEndpoints",
+      "permissions": [],
+      "host": "local"
+    },
+    {
+      "method": "PUT",
+      "path": "/blobs/{container}/{**blob}",
+      "file": "src/Orkka.Local/Storage/LocalBlobEndpoints.cs",
+      "class": "LocalBlobEndpoints",
+      "permissions": [],
+      "host": "local"
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "file": "src/Orkka.Local/OrkkaHost.cs",
+      "class": "OrkkaHost",
+      "permissions": [],
+      "host": "local"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/apprun/attach",
+      "file": "src/Orkka.Runners.Server/Hosting/RunnerRelayEndpoints.cs",
+      "class": "RunnerRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/apprun/input",
+      "file": "src/Orkka.Runners.Server/Hosting/RunnerRelayEndpoints.cs",
+      "class": "RunnerRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/apprun/resize",
+      "file": "src/Orkka.Runners.Server/Hosting/RunnerRelayEndpoints.cs",
+      "class": "RunnerRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/apprun/start",
+      "file": "src/Orkka.Runners.Server/Hosting/RunnerRelayEndpoints.cs",
+      "class": "RunnerRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/apprun/stop",
+      "file": "src/Orkka.Runners.Server/Hosting/RunnerRelayEndpoints.cs",
+      "class": "RunnerRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/chat",
+      "file": "src/Orkka.Runners.Server/Hosting/RunnerRelayEndpoints.cs",
+      "class": "RunnerRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/chat-workspace",
+      "file": "src/Orkka.Runners.Server/Hosting/RunnerRelayEndpoints.cs",
+      "class": "RunnerRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/editors",
+      "file": "src/Orkka.Runners.Server/Hosting/RunnerRelayEndpoints.cs",
+      "class": "RunnerRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/fs/browse",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/fs/discover",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/fs/init-repo",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/fs/prepare-repo",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/open-in-editor",
+      "file": "src/Orkka.Runners.Server/Hosting/RunnerRelayEndpoints.cs",
+      "class": "RunnerRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/pr/body",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/pr/conflicts",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/pr/diff",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/pr/merge",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/pr/publish",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/pr/ready",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/pr/state",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/pr/working-diff",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/repo-access",
+      "file": "src/Orkka.Runners.Server/Hosting/RunnerRelayEndpoints.cs",
+      "class": "RunnerRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/repo/attach-remote",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/repo/ensure-clone",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/repo/push",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/repo/read",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/repo/sync-status",
+      "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
+      "class": "LocalFolderRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/tracker-connections",
+      "file": "src/Orkka.Runners.Server/Hosting/RunnerRelayEndpoints.cs",
+      "class": "RunnerRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/tracker-connections/remove",
+      "file": "src/Orkka.Runners.Server/Hosting/RunnerRelayEndpoints.cs",
+      "class": "RunnerRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/tracker-query",
+      "file": "src/Orkka.Runners.Server/Hosting/RunnerRelayEndpoints.cs",
+      "class": "RunnerRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
+      "path": "/internal/runner/utility",
+      "file": "src/Orkka.Runners.Server/Hosting/RunnerRelayEndpoints.cs",
+      "class": "RunnerRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "GET",
+      "path": "/launch",
+      "file": "src/Orkka.Local/Auth/LocalEndpoints.cs",
+      "class": "LocalEndpoints",
+      "permissions": [],
+      "host": "local"
+    },
+    {
+      "method": "POST",
+      "path": "/local/bootstrap",
+      "file": "src/Orkka.Local/Auth/LocalEndpoints.cs",
+      "class": "LocalEndpoints",
+      "permissions": [],
+      "host": "local"
+    },
+    {
+      "method": "POST",
+      "path": "/local/launch-codes",
+      "file": "src/Orkka.Local/Auth/LocalEndpoints.cs",
+      "class": "LocalEndpoints",
+      "permissions": [],
+      "host": "local"
+    },
+    {
+      "method": "POST",
+      "path": "/local/shutdown",
+      "file": "src/Orkka.Local/Auth/LocalEndpoints.cs",
+      "class": "LocalEndpoints",
+      "permissions": [],
+      "host": "local"
+    },
+    {
+      "method": "POST",
+      "path": "/mcp",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Mcp/McpHosting.cs",
+      "class": "McpHosting",
+      "permissions": [],
+      "host": "api"
+    }
+  ],
+  "hubs": [
+    {
+      "path": "/hubs/tasks",
+      "hub": "TaskHub",
+      "joinMethods": [
+        "JoinTask",
+        "LeaveTask",
+        "JoinBoard",
+        "LeaveBoard",
+        "JoinAgentChat",
+        "LeaveAgentChat",
+        "JoinAppRun",
+        "LeaveAppRun"
+      ],
+      "events": [
+        "AgentChatMessage",
+        "AppRunOutput",
+        "AppRunState",
+        "AutopilotChanged",
+        "CodeReviewed",
+        "LaneChanged",
+        "MilestoneChanged",
+        "MilestonePlanChanged",
+        "NewMessage",
+        "NotificationCreated",
+        "PlanReviewed",
+        "StatusChanged",
+        "StreamEvent",
+        "TaskCreated",
+        "TaskDeleted",
+        "TaskDependenciesChanged",
+        "TaskLastMessageChanged",
+        "TaskMergeFailed",
+        "TaskUpdated",
+        "WorkspaceChanged"
+      ]
+    }
+  ],
+  "cliVerbs": [
+    "command",
+    "commands",
+    "connect",
+    "doctor",
+    "help",
+    "open",
+    "start",
+    "status",
+    "stop",
+    "tracker",
+    "trackers",
+    "uninstall",
+    "update",
+    "workspace",
+    "workspaces"
+  ],
+  "i18n": {
+    "namespaces": {
+      "common": [
+        "actions",
+        "agentRoles",
+        "glossary",
+        "lanes",
+        "locale",
+        "meta",
+        "nav",
+        "planStatuses",
+        "priorities",
+        "roles",
+        "taskStatuses",
+        "taskTypes"
+      ],
+      "dashboard": [
+        "activityPage",
+        "addRepoByUrl",
+        "agentCard",
+        "agentChat",
+        "agentChatTab",
+        "agentConfig",
+        "agentStream",
+        "apiKeysPage",
+        "architect",
+        "automationPage",
+        "autopilotToggle",
+        "baseFolder",
+        "boardFilters",
+        "boardMetrics",
+        "boardPage",
+        "boardSearch",
+        "branchList",
+        "brandKit",
+        "brandPanel",
+        "codeChanges",
+        "codeView",
+        "conversationThread",
+        "defaultBranchPicker",
+        "design",
+        "documents",
+        "editor",
+        "errorPage",
+        "evidence",
+        "executionHistory",
+        "externalTicket",
+        "fileViewer",
+        "firstRun",
+        "folderPicker",
+        "folders",
+        "forecast",
+        "forgePr",
+        "forges",
+        "fromFolder",
+        "inbox",
+        "interactiveSession",
+        "localRepos",
+        "memoryPage",
+        "mentionTextarea",
+        "mergePage",
+        "meta",
+        "milestonePage",
+        "mobileNav",
+        "modelBilling",
+        "modelRecommendation",
+        "newProjectPage",
+        "notFound",
+        "notifications",
+        "permissions",
+        "pipelineSettings",
+        "planViewer",
+        "prReview",
+        "preferencesPage",
+        "projectOverview",
+        "providerMismatch",
+        "repoAccessCheck",
+        "repoBrowser",
+        "repoFilePanel",
+        "repoInsights",
+        "repoMisc",
+        "reposPage",
+        "reviewPage",
+        "roadmapPage",
+        "run",
+        "runnerPage",
+        "settingsNav",
+        "settingsPage",
+        "sidebar",
+        "skillsPage",
+        "taskActions",
+        "taskCard",
+        "taskCreateForm",
+        "taskDependencies",
+        "taskDetailEditable",
+        "taskDetailLive",
+        "taskDetailModal",
+        "taskDiscuss",
+        "taskDocumentation",
+        "taskDocuments",
+        "taskFilterBar",
+        "taskGroup",
+        "taskList",
+        "taskMilestone",
+        "taskMisc",
+        "tasksPage",
+        "teamStats",
+        "ticketSource",
+        "ticketSourceStatus",
+        "topBar",
+        "tour",
+        "trackers",
+        "uiMisc",
+        "usagePage",
+        "workspaceSettings",
+        "workspaces"
+      ]
+    },
+    "leafCount": 2272
+  },
+  "counts": {
+    "uiPages": 39,
+    "apiRoutes": 253,
+    "hubEvents": 20,
+    "cliVerbs": 15,
+    "i18nNamespaces": 111
+  }
+}

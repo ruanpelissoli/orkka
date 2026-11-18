@@ -1,0 +1,196 @@
+name: CI
+
+# Pull requests only, deliberately. A push trigger would double Actions consumption for no
+# extra coverage — CD already builds and tests every push to main — and it validates code that
+# has already landed. Opening a PR gets the same checks BEFORE the merge, which is the part
+# that actually protects main.
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Directory.Build.props turns on NuGet locked mode for CI builds: a dependency change that did
+  # not update packages.lock.json fails here instead of resolving something new.
+  ContinuousIntegrationBuild: "true"
+
+jobs:
+  build-test:
+    name: Build & Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore --locked-mode
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Unit Tests
+        run: dotnet test tests/Orkka.Tests/Orkka.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=unit-tests.trx"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: unit-test-results
+          path: "**/unit-tests.trx"
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore --locked-mode
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Integration Tests
+        run: dotnet test tests/Orkka.IntegrationTests/Orkka.IntegrationTests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=integration-tests.trx"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: integration-test-results
+          path: "**/integration-tests.trx"
+
+  ui:
+    name: UI (typecheck, lint, tests, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm test
+
+      # The static SPA the host serves (apps/local/dist).
+      - name: Build
+        run: npm run build
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore --locked-mode
+
+      - name: Check for vulnerable packages
+        run: dotnet list package --vulnerable --include-transitive 2>&1 | tee vulnerability-report.txt; grep -q "has the following vulnerable packages" vulnerability-report.txt && exit 1 || exit 0
+
+      - name: Upload vulnerability report
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: vulnerability-report
+          path: vulnerability-report.txt
+
+  smoke:
+    name: ./orkka start smoke (${{ matrix.os }})
+    needs: build-test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      # A sandbox: the data folder in the runner's temp, the owner-only file secret store (never
+      # the OS keychain), a port nothing else uses.
+      ORKKA_HOME: ${{ runner.temp }}/orkka-home
+      ORKKA_SECRET_STORE: file
+      PORT: "6750"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+
+      - name: Start (builds the UI and the app on first run)
+        run: |
+          if [ "$RUNNER_OS" = Windows ]; then ORKKA=./orkka.cmd; else ORKKA=./orkka; fi
+          echo "ORKKA=$ORKKA" >> "$GITHUB_ENV"
+          nohup $ORKKA start --no-browser --port "$PORT" > "$RUNNER_TEMP/orkka-start.log" 2>&1 &
+          for i in $(seq 1 600); do
+            if curl -fsS "http://127.0.0.1:$PORT/health" > /dev/null 2>&1; then echo "healthy after ${i}s"; exit 0; fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/orkka-start.log"; exit 1
+
+      - name: Health, signed-out page, status
+        run: |
+          curl -fsS "http://127.0.0.1:$PORT/health" | tee /dev/stderr | grep -q '"service":"orkka"'
+          code=$(curl -s -o page.html -w '%{http_code}' "http://127.0.0.1:$PORT/en/dashboard")
+          [ "$code" = 401 ] || { echo "expected 401, got $code"; cat page.html; exit 1; }
+          grep -q "orkka open" page.html
+          $ORKKA status
+
+      - name: Sign in with a launch link, then the dashboard
+        run: |
+          url=$($ORKKA open --print | tail -n 1 | tr -d '\r')
+          case "$url" in http://127.0.0.1:$PORT/launch\?code=*) ;; *) echo "unexpected: $url"; exit 1 ;; esac
+          curl -fsS -c jar.txt -o /dev/null "$url"
+          code=$(curl -s -b jar.txt -o dash.html -w '%{http_code}' "http://127.0.0.1:$PORT/en/dashboard")
+          [ "$code" = 200 ] || { echo "expected 200, got $code"; cat dash.html; exit 1; }
+          grep -qi "<html" dash.html
+
+      - name: Stop
+        run: |
+          $ORKKA stop
+          for i in $(seq 1 60); do
+            curl -fsS "http://127.0.0.1:$PORT/health" > /dev/null 2>&1 || { grep -q "Orkka stopped." "$RUNNER_TEMP/orkka-start.log" && exit 0; }
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/orkka-start.log"; exit 1
+
+      - name: Start log
+        if: always()
+        run: cat "$RUNNER_TEMP/orkka-start.log" || true

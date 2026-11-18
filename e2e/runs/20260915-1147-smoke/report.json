@@ -1,0 +1,130 @@
+{
+  "runId": "20260915-1147-smoke",
+  "suite": "smoke",
+  "target": "prod",
+  "startedAt": "2026-09-15T14:47:30.997Z",
+  "finishedAt": "2026-09-15T14:47:51.520Z",
+  "durationMs": 20523,
+  "operator": "claude",
+  "gitSha": "uncommitted",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "spend": {
+    "startCredits": 3294,
+    "endCredits": 3294,
+    "totalUsd": 0,
+    "capUsd": 5,
+    "aborted": false
+  },
+  "totals": {
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [
+        "KEY-001",
+        "NEG-002"
+      ],
+      "testTitle": "API: org/me answers for the harness key and matches the expected org @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 1105,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T14:47:33.779Z"
+    },
+    {
+      "caseIds": [
+        "BIL-001"
+      ],
+      "testTitle": "API: credits balance and usage summary are readable @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 623,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T14:47:34.923Z"
+    },
+    {
+      "caseIds": [
+        "CLD-001"
+      ],
+      "testTitle": "API: models catalogue lists at least one enabled cloud model @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 610,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T14:47:35.566Z"
+    },
+    {
+      "caseIds": [
+        "RUN-001"
+      ],
+      "testTitle": "API: runner presence endpoint answers @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 478,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T14:47:36.186Z"
+    },
+    {
+      "caseIds": [
+        "NAV-001",
+        "ONB-001"
+      ],
+      "testTitle": "UI: dashboard loads for the saved session and shows the shell @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 10158,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T14:47:36.675Z"
+    },
+    {
+      "caseIds": [
+        "SET-001"
+      ],
+      "testTitle": "UI: project settings page renders for the first project (or onboarding when none) @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 2545,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T14:47:46.966Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [],
+    "leftovers": []
+  },
+  "notes": [
+    "Credentials are not an Owner (role=Member); permission-gated cases may fail.",
+    "Org plan has no team features (not Enterprise); Members cases will be skipped."
+  ]
+}

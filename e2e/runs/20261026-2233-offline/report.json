@@ -1,0 +1,315 @@
+{
+  "runId": "20261026-2233-offline",
+  "suite": "offline",
+  "target": "offline",
+  "startedAt": "2026-10-27T01:33:55.559Z",
+  "finishedAt": "2026-10-27T01:34:08.896Z",
+  "durationMs": 13337,
+  "operator": "claude",
+  "gitSha": "uncommitted",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "totals": {
+    "passed": 17,
+    "failed": 2,
+    "skipped": 3,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [],
+      "testTitle": "seeded from the web fixture; the alias URL clones, a branch pushes, a merge lands on main",
+      "file": "tests/offline/bare-remote.spec.ts",
+      "status": "failed",
+      "durationMs": 1047,
+      "projects": [],
+      "artifacts": {
+        "trace": "..\\current\\artifacts\\offline-bare-remote-bare-r-0664c-ushes-a-merge-lands-on-main-chromium\\trace.zip",
+        "screenshots": []
+      },
+      "failure": {
+        "message": "Error: origin keeps the alias; only transport is rewritten\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"\u001b[7mhttps://github.com/e2e-local\u001b[27m/e2e-web-mvq0ib20-39b3.git\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mfile:///C:/Projects/orkka/orkka-e2e-tests/.runs/scratch/remotes\u001b[27m/e2e-web-mvq0ib20-39b3.git\"\u001b[39m",
+        "stackHead": "Error: origin keeps the alias; only transport is rewritten\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"\u001b[7mhttps://github.com/e2e-local\u001b[27m/e2e-web-mvq0ib20-39b3.git\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mfile:///C:/Projects/orkka/orkka-e2e-tests/.runs/scratch/remotes\u001b[27m/e2e-web-mvq0ib20-39b3.git\"\u001b[39m\n    at C:\\Projects\\orkka\\orkka-e2e-tests\\tests\\offline\\bare-remote.spec.ts:28:75",
+        "logHint": "API + Worker console output of the stack at http://127.0.0.1:9; runner log .runs/runner.log"
+      },
+      "startedAt": "2026-10-27T01:33:57.213Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "custom files and default branch; a teammate's commit moves the head",
+      "file": "tests/offline/bare-remote.spec.ts",
+      "status": "passed",
+      "durationMs": 1373,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:33:59.020Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "auth: /myself answers for email+token and 401s anything else",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 63,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:00.452Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "scopes, statuses and the Acceptance Criteria field lookup",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 28,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:00.529Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "epic search: by title prefix, by key, by bare number, unknown key → 400",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 47,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:00.575Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "polling query: assigned to me, under the epics, not done, extra clause; rendered fields; paging",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 30,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:00.633Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "comments newest-first with rendered bodies; attachments via a 303 to the media host",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 27,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:00.670Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "write-back: status read, transitions list, POST transition 204, invalid id 400",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 61,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:00.708Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "failure injection and an outage",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 9,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:00.777Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "auth: connectionData for the PAT; a wrong PAT gets 203 + HTML like the real service",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 8,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:00.794Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "projects, work item types with state categories, type categories",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 20,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:00.821Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "two-step polling WIQL: hierarchy (MustContain / Recursive), then the flat filter; batch with relations",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 48,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:00.852Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "comments (desc, deleted skipped by the runner), attachments, System.State write-back",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 47,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:00.910Z"
+    },
+    {
+      "caseIds": [
+        "TCLI-007",
+        "TCLI-008",
+        "TCLI-011"
+      ],
+      "testTitle": "tracker test/list: the runner signs in to the fake Jira and ADO with the seeded tokens; tokens never printed",
+      "file": "tests/offline/runner-tracker-cli.spec.ts",
+      "status": "failed",
+      "durationMs": 1846,
+      "projects": [],
+      "artifacts": {
+        "trace": "..\\current\\artifacts\\offline-runner-tracker-cli-83bcb-tokens-tokens-never-printed-chromium\\trace.zip",
+        "screenshots": []
+      },
+      "failure": {
+        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"jira-fake: ok — signed in as E2E Developer\"\u001b[39m\nReceived string:    \u001b[31m\"jira-fake: ok - signed in as E2E Developer\"\u001b[39m",
+        "stackHead": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: \u001b[32m\"jira-fake: ok — signed in as E2E Developer\"\u001b[39m\nReceived string:    \u001b[31m\"jira-fake: ok - signed in as E2E Developer\"\u001b[39m\n    at C:\\Projects\\orkka\\orkka-e2e-tests\\tests\\offline\\runner-tracker-cli.spec.ts:53:26",
+        "logHint": "API + Worker console output of the stack at http://127.0.0.1:9; runner log .runs/runner.log"
+      },
+      "startedAt": "2026-10-27T01:34:00.977Z"
+    },
+    {
+      "caseIds": [
+        "TCLI-008"
+      ],
+      "testTitle": "a revoked token: tracker test reports failing with Jira's advice and exits 1",
+      "file": "tests/offline/runner-tracker-cli.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:04.704Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "tracker add cannot target a loopback site: --site http://127.0.0.1:<port> is rewritten to https://127.0.0.1 (no port)",
+      "file": "tests/offline/runner-tracker-cli.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:04.704Z"
+    },
+    {
+      "caseIds": [
+        "TCLI-009"
+      ],
+      "testTitle": "tracker remove deletes the entry and its token",
+      "file": "tests/offline/runner-tracker-cli.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:04.704Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "auth status reports the signed-in accounts the way ForgeCli.SignedInAccounts parses them",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 992,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:05.483Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "publish: pr list finds nothing → pr create prints the URL → a retry finds the open PR (idempotent)",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 603,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:06.513Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "state: pr view --json state --jq .state follows OPEN → MERGED (ForgeCli.NormalizeState → merged)",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 590,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:07.125Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "account scoping: auth token --user prints that account's token; GH_TOKEN reaches the call record",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 466,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:07.724Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "a configured failure and a signed-out CLI fail like gh does",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 294,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-10-27T01:34:08.207Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [],
+    "leftovers": []
+  },
+  "notes": [
+    "Playwright overall status: failed",
+    "No environment configured (E2E_BASE_URL unset): only offline specs ran; environment-bound specs were skipped."
+  ]
+}

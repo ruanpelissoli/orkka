@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Orkka.Local</RootNamespace>
+    <!-- A library: the `orkka` entry point (src/Orkka) builds this host in its own process
+         (OrkkaHost.BuildAsync). Its appsettings.json travels to the entry point's output. -->
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Update="appsettings*.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Modules\Orkka.Modules.Agents\Orkka.Modules.Agents.csproj" />
+    <ProjectReference Include="..\Modules\Orkka.Modules.Tasks\Orkka.Modules.Tasks.csproj" />
+    <ProjectReference Include="..\Modules\Orkka.Modules.Projects\Orkka.Modules.Projects.csproj" />
+    <ProjectReference Include="..\Modules\Orkka.Modules.SourceControl\Orkka.Modules.SourceControl.csproj" />
+    <ProjectReference Include="..\Modules\Orkka.Modules.Usage\Orkka.Modules.Usage.csproj" />
+    <ProjectReference Include="..\Modules\Orkka.Modules.Organizations\Orkka.Modules.Organizations.csproj" />
+    <ProjectReference Include="..\Modules\Orkka.Modules.Execution\Orkka.Modules.Execution.csproj" />
+    <ProjectReference Include="..\Modules\Orkka.Modules.Documents\Orkka.Modules.Documents.csproj" />
+    <ProjectReference Include="..\Modules\Orkka.Modules.Runners\Orkka.Modules.Runners.csproj" />
+    <ProjectReference Include="..\Modules\Orkka.Modules.Trackers\Orkka.Modules.Trackers.csproj" />
+    <ProjectReference Include="..\Orkka.Runners.Server\Orkka.Runners.Server.csproj" />
+    <ProjectReference Include="..\ThirdParty\ih0.Claude.Agent.SDK\ih0.Claude.Agent.SDK.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FastEndpoints" Version="8.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+    <PackageReference Include="Serilog.Expressions" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Orkka.Tests" />
+    <InternalsVisibleTo Include="Orkka.IntegrationTests" />
+  </ItemGroup>
+
+</Project>

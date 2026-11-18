@@ -1,0 +1,25 @@
+{
+  "name": "orkka-e2e-fixture-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tiny Next.js app used by the Orkka end-to-end test suite. Agents are asked to add entries to app/features.ts.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "next": "15.5.4",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

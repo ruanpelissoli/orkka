@@ -1,0 +1,84 @@
+{
+  "runId": "20261117-2321-workflow-live",
+  "suite": "workflow",
+  "target": "http://127.0.0.1:6750",
+  "startedAt": "2026-11-18T02:21:00Z",
+  "finishedAt": "2026-11-18T03:55:00Z",
+  "operator": "claude",
+  "mode": "live-step-by-step",
+  "agentRuns": 3,
+  "model": "claude-haiku-4-5",
+  "cases": [
+    {
+      "caseIds": [
+        "LWF-001"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseIds": [
+        "LWF-002"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseIds": [
+        "LWF-003"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseIds": [
+        "LWF-004"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseIds": [
+        "LWF-005"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseIds": [
+        "LWF-006"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseIds": [
+        "LWF-007"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseIds": [
+        "LWF-008"
+      ],
+      "status": "passed"
+    },
+    {
+      "caseIds": [
+        "LWF-009"
+      ],
+      "status": "passed"
+    }
+  ],
+  "fixes": {
+    "orkka-api": [
+      "327e3a2",
+      "15f5ee0",
+      "d012406",
+      "a4c76d5",
+      "cf0218a",
+      "770abb7",
+      "4cbb34a",
+      "613d1c9",
+      "8df8c45",
+      "3f0e16e"
+    ],
+    "orkka-ui": [
+      "b391de3"
+    ]
+  }
+}

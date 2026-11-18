@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The one git engine. Every process Orkka runs git from — the hosted Worker, the API host
+    and the developer's runner (the `orkka` process) — spawns git through GitProcess in this assembly
+    and nowhere else. Also home to the dependency-free git-adjacent helpers (GitUrlRedactor,
+    RepoRelativePath). Kept dependency-light on purpose: the runner ships it, so it must not
+    drag modules or the shared kernel in.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Orkka.Git</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Orkka.Tests" />
+  </ItemGroup>
+
+</Project>

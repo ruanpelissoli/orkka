@@ -1,0 +1,78 @@
+{
+  "runId": "20261118-0058-adhoc",
+  "suite": "adhoc",
+  "target": "http://127.0.0.1:6750",
+  "startedAt": "2026-11-18T03:58:48.071Z",
+  "finishedAt": "2026-11-18T03:58:49.754Z",
+  "durationMs": 1683,
+  "operator": "claude",
+  "gitSha": "7c790e44baab",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "totals": {
+    "passed": 1,
+    "failed": 1,
+    "skipped": 0,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [
+        "NEG-030"
+      ],
+      "testTitle": "NEG-030 a project whose slug is exactly 26 characters must still resolve by slug (ULID-length regression)",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "failed",
+      "durationMs": 89,
+      "projects": [
+        "01M7PCXAHXNHAYT4EV1SQR60B9 e2e-neg-20261118-0058cwmhk"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "failure": {
+        "message": "Error: project reachable by its 26-char slug\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBeInstanceOf\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected constructor: not \u001b[32mApiError\u001b[39m\n",
+        "stackHead": "Error: project reachable by its 26-char slug\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBeInstanceOf\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected constructor: not \u001b[32mApiError\u001b[39m\n\n    at C:\\Projects\\orkka\\orkka-e2e-tests\\tests\\smoke\\negatives.spec.ts:32:65",
+        "logHint": "API + Worker console output of the stack at http://127.0.0.1:6750; runner log .runs/runner.log (grep for 01M7PCXAHXNHAYT4EV1SQR60B9)"
+      },
+      "startedAt": "2026-11-18T03:58:49.359Z"
+    },
+    {
+      "caseIds": [
+        "NEG-031"
+      ],
+      "testTitle": "NEG-031 the removed cloud-execution surface is gone: routes 404",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "passed",
+      "durationMs": 151,
+      "projects": [
+        "01M7PCXAN3ZQPZ8BED23KCSXZ7 e2e-neg-20261118-0058-9mgsd"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:58:49.476Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [
+      {
+        "id": "01M7PCXAHXNHAYT4EV1SQR60B9",
+        "name": "e2e-neg-20261118-0058cwmhk"
+      },
+      {
+        "id": "01M7PCXAHXNHAYT4EV1SQR60B9",
+        "name": "e2e-neg-20261118-0058cwmhk"
+      },
+      {
+        "id": "01M7PCXAN3ZQPZ8BED23KCSXZ7",
+        "name": "e2e-neg-20261118-0058-9mgsd"
+      }
+    ],
+    "leftovers": []
+  },
+  "notes": []
+}

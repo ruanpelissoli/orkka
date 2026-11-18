@@ -1,0 +1,259 @@
+# TRACKERS.md — Jira Cloud and Azure DevOps as the ticket source
+
+Tickets assigned to the developer in their employer's tracker drive the board. **The tracker is
+only ever reached from the developer's machine, with their own token**; Orkka holds no tracker
+credential and installs nothing in the tracker. v1 supports Jira Cloud and Azure DevOps
+Services (not Data Center / ADO Server).
+
+## Pieces
+
+| Where | What |
+|---|---|
+| Runner `Orkka.LocalRunner/Trackers/` | `TrackerStore` (non-secret settings, `~/.orkka/workspaces/{ws}/trackers.json`), `WorkspaceSecretStore` (tokens), `TrackerConnectionManager` (test-and-store, shared by the CLI and the settings page), `JiraCloudClient`, `AzureDevOpsClient`, `TicketNormalizer`, `TrackerAttachmentCache`, `TrackerPoller`, `TrackerWriteBack` |
+| Runner CLI | `./orkka tracker add jira\|ado`, `list`, `test`, `remove` (`Cli/TrackerCommand.cs`) |
+| Host module `Orkka.Modules.Trackers` (schema `trackers`) | `connections` (metadata from the runner's Hello), `project_configs` + `epic_mappings` (a project's ticket source and its routing rules), `ticket_links` (ticket ↔ task, sync state), `RepoRouter` (the runner utility that picks a repository) |
+| Runner hub `HostedRunnerHub` | `SyncTrackers`, `ReportTickets`, `AckTransitions` — each authorised against the connection's bound (org, user); project ids are never taken from the payload |
+| UI | Settings → Trackers (add / re-test / remove connections), Project settings → Ticket source |
+
+## Connecting a tracker
+
+Either way the token is tested against the tracker first and only a working one is stored, in
+the OS secret store (Windows Credential Manager, macOS Keychain, libsecret; an owner-only file
+only on a machine with none). Only the connection's metadata — id (`jira-{site}` / `ado-{org}`),
+kind, site, account id and display name, health — goes into the Hello, which the hub upserts
+into `trackers.connections` per machine (a connection removed on a machine is marked missing,
+never deleted).
+
+- **Settings → Trackers** (the usual way). "Add Jira Cloud" (site, email, API token) or "Add
+  Azure DevOps" (organization, PAT) posts to `POST /api/trackers/connections`
+  `{kind, site, email?, token}`. The host relays it over loopback
+  (`/internal/runner/tracker-connections`) to the caller's own runner — `AddTrackerConnection`,
+  capability `tracker-connect` — which tests and stores the token, writes trackers.json, sends a
+  fresh Hello and answers with metadata only; the host upserts the row and answers
+  `{supported, ok, error?, connection?}` (`supported=false` = runner offline or too old). This is
+  the **one host → runner field that carries a credential**: write-only, at the developer's
+  request, over loopback, and the host never stores, logs, echoes or audits it (SECURITY.md).
+  `DELETE /api/trackers/connections/{id}` (`RemoveTrackerConnection`) deletes the token and
+  entry on the machine; the row goes too unless a project still points at it (then it stays,
+  marked removed). Re-test = the `test` query below.
+- **Terminal.** `./orkka tracker add jira --site acme.atlassian.net --email dev@acme.com` or
+  `tracker add ado --org acme` asks for the token with no echo (or reads stdin).
+
+Tokens needed: a Jira API token (https://id.atlassian.com/manage-profile/security/api-tokens),
+or an ADO PAT with *Work Items (Read & write)* and *Project and Team (Read)*.
+
+## A project's ticket source
+
+`PUT /api/projects/{id}/tracker` (ProjectsManage, audited `TrackerConfigChanged`) stores: one of
+the **caller's own** connections (their runner polls with their token, so the tickets picked up
+are the ones assigned to them — the caller becomes the source's owner), a scope (Jira project /
+ADO project) and:
+
+- **Intake statuses** (`intakeStatuses`, default `["To Do"]`; ADO: the Proposed states) — where a
+  ticket must be to become a task. Only intake: a ticket that moves on keeps being tracked.
+- **Scope mode** — `All` (every ticket assigned to the owner in an intake status; no epic needed)
+  or `Epics` (only tickets under the epics listed; at least one).
+- **Rules** (`epic_mappings`, `Kind` epic | component | label | areaPath, the value, a repo and an
+  optional monorepo subfolder — `TrackerSubpath`: relative, forward slashes, never `..`). Epics
+  come first, then the others, each in order; the first match wins. An epic without a repo only
+  scopes intake. In the API: `epics[]` and `routingRules[]` (kind component / label / areaPath).
+- An optional **default repository**, the optional extra JQL/WIQL clause, include-descendants,
+  auto-submit (default on), the poll interval (60–300 s), the status map and the branch template
+  (must contain `{key}`; default `{type}/{key}-{slug}`, rendered by `TrackerBranchName`).
+  `storyMode` (default on) turns Stories on — see Stories below.
+
+`DELETE /api/projects/{id}/tracker` removes the source. Deleting the project removes it too, with
+its rules and ticket links (`TrackerCleanupOnProjectDeleted`, on `ProjectDeleted`), so nothing
+polls a tracker for a project that is gone.
+
+**Status map** — six optional steps, each any tracker status name (`statusMap: { pickedUp?,
+planning?, developing?, inReview?, prOpened?, merged? }`; stored JSON with the old `started` key
+reads as `planning`): Picked up = the task was created; Planning = the first PM/planning run;
+Developing = the plan approved / first dev run; In review = Orkka's Code Review lane; PR opened =
+the forge pull request published, or a folder landing (a Story: its pull request marked ready);
+Merged = the forge pull request merged. **Defaults** (`TrackerStatusDefaults`, returned as
+`defaults.statusMap` by the `statuses` query and pre-filled by the form): Planning = the first
+status like "In Progress" / "Doing" / "Active" / "Committed" (else the first in-progress one); PR
+opened = the first like "Review" (else for ADO the first Resolved state); the rest unmapped;
+intake = "To Do" (ADO: Proposed states).
+
+Everything the settings page shows — test, scopes, epics, statuses, "N tickets would be picked
+up" (the intake query) — is asked of the owner's runner live: `POST /api/trackers/connections/{id}/query`
+→ `/internal/runner/tracker-query` → runner `TrackerQuery`. Runner offline → `Supported: false`.
+
+## Polling and ingestion
+
+1. Every 30 s the runner calls `SyncTrackers` with the connections it holds. The host returns
+   the owner's enabled sources that are due, each under a **poll lease**
+   (`ProjectTrackerConfig.LeaseHolder` = the runner's instance id, a conditional update — one
+   machine polls a source; the owner's ACTIVE runner connection takes over a lease held by the
+   instance it replaced, so a restart does not pause intake), plus the **tracked** tickets with content hash and last comment time,
+   plus pending status moves (below). Tracked = links whose task is not archived, that have not
+   synced Merged and are under 30 days past PR opened — whoever they are assigned to now. Links
+   that drop out get `TrackingEndedAt`.
+2. The runner (protocol v5) runs two reads:
+   - **intake** — assigned to the developer, in an intake status (none set: Jira status category
+     "To Do", ADO Proposed states), in the scope, under the epics in Epics mode, plus the extra
+     clause; epics/features themselves are skipped;
+   - **tracking** — the tracked keys whatever their status or assignee (Jira `key in (…)`, 100 a
+     query; a key Jira says does not exist is dropped and the batch asked again; ADO work items
+     by id, `errorPolicy=Omit`), plus the children of intake tickets (reported for the stories
+     phase; `InIntake` only if they match intake themselves).
+
+   Each ticket carries `Status`/`StatusCategory`, `AssignedToMe` (Jira: assignee vs
+   `/rest/api/3/myself`; ADO: `System.AssignedTo` vs `connectionData`), `InIntake`, `ParentKey`/
+   `ParentType` and ordered `ChildKeys` (Jira `subtasks`; ADO Hierarchy-Forward by StackRank /
+   BacklogPriority, then id). Text is normalized (`TicketNormalizer`: description and acceptance
+   criteria capped at 20,000 chars, comments at 4,000), attachments cached on the machine
+   (`~/.orkka/workspaces/{ws}/tickets/…`, size and type caps, metadata only travels), and a body
+   travels only when its hash changed.
+3. The host (`ITrackersApi.ReportAsync`):
+   - a new **intake** ticket assigned to me → `ITasksApi.CreateTrackerTaskAsync` (title `[KEY] …`,
+     type and priority mapped, `ExternalRef` `jira:{site}:{key}` / `ado:{org}:{id}` as the
+     idempotency key, runs on the owner's runner) + a `ticket_links` row (`ParentKey`, `Role`
+     Standalone); submitted when auto-submit is on. Repository routing: the rules → the
+     project's only repo → the default repo → the **repo router** (`IRepoRouter`, a utility call
+     on the owner's runner with the ticket and the repos' name, stack and description, answering
+     `{repoIds, confidence, reason}`: one repo with high confidence is set; two or more make a
+     cross-repo group, split on submit like a hand-made spanning task) → otherwise no repository:
+     the task posts a question listing the repos and waits in PendingQuestions
+     (`AskTrackerRepoAsync`); the answer sets the repo (`BoardOperations`) and submits it when
+     the source auto-submits. Nothing plans a task without a repository;
+   - a tracked ticket → status, parent, text (rewritten while nothing has started, else a note)
+     and new comments (`MessageType.ExternalComment`) always sync — moving To Do → In Progress
+     changes nothing else;
+   - **retired** (`RetireTrackerTaskAsync`: archived if nothing started, else left running with a
+     note — never killed) only when it is reassigned, moved to a done status category before any
+     work started, or missing from a successful poll (deleted, moved, no longer visible).
+     Reassigned back, or back in the developer's intake after a retirement, it is revived; a
+     task a person archived stays archived.
+
+   A failed poll records `LastPollError` and changes nothing else.
+4. When a run starts, the runner copies the ticket's cached attachments into the task's
+   worktree under `.orkka/context/attachments/`, which the prompt names.
+
+## Status write-back — the only thing Orkka writes to a tracker
+
+No events. On each `SyncTrackers` the host compares how far every tracked task has got
+(`ITasksApi.GetTrackerTaskStatesAsync` → `TrackerPhase` PickedUp / Planning / Developing /
+InReview / PrOpened / Merged; Story links read `GetTrackerGroupStatesAsync`) with
+`TicketLink.SyncedPhase` and hands the runner the furthest **mapped** move ahead (unmapped steps
+are skipped; moves never go backwards). A folder repo has no forge PR: its landing counts as
+Merged, so with Merged unmapped the ticket moves to the PR-opened status (Code Review). Tracked
+tickets whose work carries on after a reassignment still move. A move is handed out once per
+2-minute window (`PendingPhase` / `PendingSince`); the runner applies it with the developer's
+token (Jira: the workflow transition into that status; ADO: `System.State`; already there =
+success) and answers `AckTransitions` (`SyncedAt` is stamped when the phase advances). Success
+posts "Moved SHOP-12 to “In Progress”"; five failures give up with a thread note and
+`TaskEntity.ExternalSyncError` on the card. "Merged" is detected with the developer's forge CLI
+(`TrackerPrCheck`, at most every 10 minutes, only when "Merged" is mapped; the repo is the task's
+current one).
+
+## Stories — one branch, one pull request
+
+With `storyMode` on, a ticket **assigned to me, in intake, with at least one open sub-task** is a
+Story (`TrackersApi.Stories`, `TasksApi.Stories`):
+
+- **Intake.** `CreateTrackerStoryAsync` makes a `TaskGroup` with `Kind = Story` (`branch_name` =
+  `TrackerBranchName.Render` of the Story's key, `external_key/url`; merge policy Independent) and
+  one member task per open sub-task in tracker order (`story_order`, `BranchName` = the group's
+  branch, a Manual `TaskDependency` on the previous member). The repo router places each
+  sub-task; one in several repos is one member per repo in strict global order, and each repo
+  gets a `tasks.group_branches` row (same branch, its own pull request). A member nobody could
+  place asks the repository question; an answer naming several repositories is handled the same
+  way (`StoryChain.SpanReposAsync`): the member takes the first, one new member per further
+  repository is inserted right after it (`{ExternalRef}@{repo}`, the Story's branch, the later
+  members moved down and the chain re-linked through the new ones), each repository gets its row,
+  and — when the source auto-submits — every new member is submitted too. Links: role **Story** (→
+  the group; its `TaskId` is the first member, where the Story's comments land; `ChildKeysJson`)
+  and **SubTask** (→ its member; its assignee is not watched). A Story with no open sub-task is a
+  plain task; a sub-task assigned to me whose Story is not mine is a plain task whose Story is
+  read by key on the next poll and carried as **"Parent story context"** (`ParentTitle`/
+  `ParentDescription`, `TaskTicketContext.Parent*`). Story members are neither split nor
+  dependency-analysed.
+- **Order.** A same-group edge is met at Completed (= passed Orkka's review, commits already
+  pushed to the shared branch); an **archived blocker counts as met**, and archiving/retiring a
+  member rewires its dependents to its predecessor (`StoryChain`). Members never plan ahead of a
+  milestone gate. The next member's clone continues `origin/{branch}` (for a linked folder the
+  folder is origin).
+- **Review base.** At worktree creation a member records `review_base_sha` once (head of
+  `origin/{branch}`, else the merge-base with the default branch); its Orkka pull request
+  (`CreateForTaskAsync` with the explicit task id and `base_sha`), snapshots, QA and review diffs
+  show its own change. Normally that is `review_base_sha..HEAD`. When a base sync merged the
+  default branch into the shared branch during the member, the diff starts instead from the tree
+  of `review_base_sha` merged with the newest synced default-branch commit (`git merge-tree
+  --write-tree`, built on the fly by `GitWorkspaceManager.ReviewDiffBaseAsync`; nothing stored,
+  no ref written) — otherwise the default branch's commits would show as the member's. Moving the
+  stored base to an existing commit is not enough: with member commits before the sync, the sync
+  merge's first parent lacks the default branch's changes and its second parent lacks the earlier
+  members' work (`GitWorkspaceStoryTests` proves both on real repositories). A conflicted sync
+  keeps its markers in that tree, so the member's resolution shows as its change.
+- **Reset.** A reset member keeps the Story's branch (`FinalizeTaskResetAsync` leaves `BranchName`
+  for story members) and clears `review_base_sha`; it re-plans on top of the shared branch as it
+  stands, its earlier commits included — they were reviewed and pushed, and later members may
+  build on them. After the reset its thread starts with a note giving the previous attempt's
+  commit range (`TaskQueueProcessor.StoryResetNote`: its review base .. the last head its clone
+  pushed) and how to drop it. There is deliberately no "discard my previous commits" button:
+  Orkka never rewrites a shared branch (no force-push), and reverting is not a safe one-click
+  action — the range can include base-sync merges (a revert needs a mainline and can conflict),
+  a later member may already sit on top of it, and a revert is new code that deserves review.
+  So the developer says so in the task ("revert the previous attempt's commits first") and the
+  agent undoes it with ordinary, reviewed commits. Its open Orkka pull request follows the new
+  base.
+- **Prompts.** PM, planning, developing, review and interactive prompts — and the task's
+  Discuss chat (`ITaskStoryContextSource` → `TaskStoryContextSource`) — carry a **Story
+  context** section: the Story's text (fenced), the sub-tasks with ✓ done / ▶ this one /
+  ○ pending, and for each done one its plan summary, commit range and changed files (from its
+  snapshot — no code), plus "The previous sub-tasks' code is already in your working copy".
+- **Landing** (`StoryLandingService`, from `MergeAsync`): the member's local pull request is
+  Merged and the task Completed (the ticket stays open). The first landing opens the forge pull
+  request as a **draft** (`gh pr create --draft`, `az repos pr create --draft true`, `glab mr
+  create --draft`; runner capability `stories`, else "update Orkka"); later ones tick
+  its checklist (`gh pr edit --body-file` / `az repos pr update --description` / `glab mr
+  update --description`). The **last** one (no member left that is neither landed nor archived,
+  no pending sub-task) checks EVERY repository of the story — its `group_branches` rows and the
+  members' repositories, except a folder already squash-merged — refreshing each mirror and
+  dry-run merging the shared branch into that repository's own default branch. Only when every
+  one is clean does it run `MarkPullRequestReady` on every repo row (`gh pr ready`, `az repos pr
+  update --draft false`, `glab mr update --ready`) and set `ready_at`. A conflict anywhere fails
+  the landing with `StoryLandingErrors` (every pull request stays a draft); the merge sweep treats
+  it as a conflict even when the landing member's own repository is clean, and the resolver
+  (`TaskOrchestrator.ResolveStoryRepositoriesAsync`) posts a thread note naming the repositories,
+  runs the existing conflict resolver (base sync, resolver agent, verification, build check,
+  push) for each conflicting one in a clone of that repository's last member, then the landing
+  member's own conflict if any, and lands again. A repository nobody could check (runner offline)
+  leaves the drafts and retries every cycle as environment-blocked. Spent automatic attempts on
+  another repository's conflict park the task on the merge page for the developer instead of a
+  dev pass that cannot reach that repository. A linked folder has no draft; the whole shared
+  branch is squash-merged into it at the end.
+- **Write-back.** Story and SubTask links follow the group: the furthest step their members
+  reached (all members for the Story, its own for a sub-task); **PR opened only at `ready_at`**,
+  so every sub-task and the Story move to Code Review together; **Merged** when every story pull
+  request merged (checked per PR from the Story's link, check id `g:{group}:{repo}`, stored on
+  `group_branches.forge_state`).
+- **Late sub-tasks** (a new child key on a tracked Story is read by key next poll, pending until
+  then): before ready it joins the end; ready and still open → it joins, the pull requests go
+  back to draft (`gh pr ready --undo`, `az repos pr update --draft true`, `glab mr update
+  --draft`) and are readied again at the end (the tracker status is not moved back); after the
+  story's pull request merged or closed → a plain task with the Story as parent context. In a
+  mixed story (a linked folder plus a forge repository), a late sub-task in the folder reopens
+  that folder's row (its "merged" state is cleared), so the end of the story squash-merges the
+  shared branch into the folder again — it had never received the late work; a late sub-task in
+  the forge repository leaves the squashed folder alone.
+
+## Security notes
+
+- Tokens never leave the machine: not in the Hello, not in errors (`TrackerClient` scrubs them),
+  not in agent environments; agents cannot read the secret store or `~/.orkka` (SECURITY.md).
+  A token typed into Settings → Trackers crosses the local host once, in memory, write-only, to
+  the developer's own runner — never logged (request logging is method/path/status), never in a
+  400, never in audit metadata, never sent back.
+- Ticket text is untrusted input: it reaches agents (and the repo router) only fenced
+  (`PromptSafety.Wrap`), and an injected instruction still runs into the command guard.
+- Ticket text and comments are stored by Orkka as task content; attachments are not.
+
+## Test opt-ins (runner)
+
+`ORKKA_TRACKER_ALLOW_INSECURE_SITE=1` lets e2e fixtures point a connection at an `http://`
+fake tracker; `ORKKA_SECRET_STORE=file` keeps a sandbox out of the real keychain (any
+`ORKKA_HOME` other than the machine's own Orkka home gets the file store anyway).

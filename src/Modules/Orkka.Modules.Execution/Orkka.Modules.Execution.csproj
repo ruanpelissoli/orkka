@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Orkka.SharedKernel\Orkka.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\Orkka.AgentRuntime\Orkka.AgentRuntime.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Organizations.Contracts\Orkka.Modules.Organizations.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Projects.Contracts\Orkka.Modules.Projects.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Tasks.Contracts\Orkka.Modules.Tasks.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Agents.Contracts\Orkka.Modules.Agents.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Usage.Contracts\Orkka.Modules.Usage.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.SourceControl.Contracts\Orkka.Modules.SourceControl.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Runners.Contracts\Orkka.Modules.Runners.Contracts.csproj" />
+    <ProjectReference Include="..\..\Orkka.LocalRunner.Contracts\Orkka.LocalRunner.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Documents.Contracts\Orkka.Modules.Documents.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Trackers.Contracts\Orkka.Modules.Trackers.Contracts.csproj" />
+    <ProjectReference Include="..\..\ThirdParty\ih0.Claude.Agent.SDK\ih0.Claude.Agent.SDK.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FastEndpoints" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Orkka.Tests" />
+    <InternalsVisibleTo Include="Orkka.IntegrationTests" />
+  </ItemGroup>
+
+</Project>

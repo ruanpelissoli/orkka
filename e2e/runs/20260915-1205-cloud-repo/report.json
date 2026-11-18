@@ -1,0 +1,88 @@
+{
+  "runId": "20260915-1205-cloud-repo",
+  "suite": "cloud-repo",
+  "target": "prod",
+  "startedAt": "2026-09-15T15:05:28.394Z",
+  "finishedAt": "2026-09-15T15:11:37.207Z",
+  "durationMs": 368813,
+  "operator": "claude",
+  "gitSha": "uncommitted",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "spend": {
+    "startCredits": 3294,
+    "endCredits": 2814,
+    "totalUsd": 0.48,
+    "capUsd": 3,
+    "aborted": false
+  },
+  "totals": {
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [
+        "CLD-002",
+        "CLD-003",
+        "CLD-005",
+        "CLD-006",
+        "BIL-003"
+      ],
+      "testTitle": "CLD-002 preference Cloud: a task on the fixture repo runs in Orkka's cloud and merges; usage rows appear",
+      "file": "tests/cloud/cloud-repo.spec.ts",
+      "status": "passed",
+      "durationMs": 360272,
+      "costUsd": 0.48,
+      "projects": [
+        "01M2JSM52B5TYVP5EJ9A21KJ6Y e2e-cld-20260915-1205-x92qg"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:05:33.525Z"
+    },
+    {
+      "caseIds": [
+        "CLD-010",
+        "HYB-006"
+      ],
+      "testTitle": "CLD-010 execution-target preview under Cloud preference says Cloud with CloudPreference",
+      "file": "tests/cloud/cloud-repo.spec.ts",
+      "status": "passed",
+      "durationMs": 1736,
+      "costUsd": 0,
+      "projects": [
+        "01M2JSZ41QKB7HQX3HPQ8MKME1 e2e-cld-20260915-1211-8f86n"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:11:33.833Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [
+      {
+        "id": "01M2JSM52B5TYVP5EJ9A21KJ6Y",
+        "name": "e2e-cld-20260915-1205-x92qg",
+        "type": "Unmanaged"
+      },
+      {
+        "id": "01M2JSZ41QKB7HQX3HPQ8MKME1",
+        "name": "e2e-cld-20260915-1211-8f86n",
+        "type": "Unmanaged"
+      }
+    ],
+    "leftovers": []
+  },
+  "notes": [
+    "Harness API key acts as a Member with all 18 permissions (by design); Owner-only endpoints (org rename/settings, role changes, admin) use the Clerk session.",
+    "Org plan has no team features (not Enterprise); Members cases will be skipped."
+  ]
+}

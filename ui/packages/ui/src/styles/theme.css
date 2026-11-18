@@ -1,0 +1,559 @@
+/* ===== Orkka Design System =====
+ *
+ * The single source of truth for tokens, base styles and shared utilities.
+ * Every app imports this file straight after `@import "tailwindcss"`:
+ *
+ *   @import "tailwindcss";
+ *   @import "../../../packages/ui/src/styles/theme.css";
+ *
+ * Nothing in here may be redefined in an app's globals.css. If a value needs to
+ * change, it changes here and every surface moves together — that is the whole
+ * point. This file used to be copy-pasted into each app and had already drifted
+ * apart in both directions (one copy grew a reduced-motion block, another lost
+ * a lane colour); the import is what stops that happening again.
+ *
+ *
+ * ---- The typography contract ----
+ *
+ * Four typefaces, one job each. A component that reaches for a fifth, or uses
+ * one of these outside its lane, is a bug — the eslint config enforces it.
+ *
+ *   font-brand    Unbounded            The word "Orkka". Nothing else, ever.
+ *   font-display  Plus Jakarta Sans    Headings, buttons, labels, nav, tabs.
+ *   font-body     DM Sans              Body copy, descriptions, form values.
+ *                                      This is the <body> default — the common
+ *                                      case needs no class at all.
+ *   font-mono     JetBrains Mono       Code, diffs, terminal and log output,
+ *                                      commit SHAs, IDs, shell commands, file
+ *                                      paths. Not section headings, not badges,
+ *                                      not timestamps.
+ *
+ *
+ * ---- The readability contract ----
+ *
+ * Measured against the app background (#0b0f18), with the worst case across all
+ * four surfaces in brackets — surface-raised is the lightest and so the tightest:
+ *
+ *   gray-100  #f3f4f6   17.4:1  [16.1]  primary text
+ *   gray-300  #d1d5db   13.0:1  [12.0]  secondary text
+ *   gray-400  #9ca3af    7.6:1  [ 7.0]  muted text — the lightest colour allowed
+ *                                       for anything the user is expected to
+ *                                       read. Clears AA on every surface.
+ *   gray-500  #6b7280    4.0:1  [ 3.7]  BELOW AA. Placeholders, list markers and
+ *                                       disabled states only.
+ *   gray-600  #4b5563    2.5:1  [ 2.4]  Never for text. Borders and dividers only.
+ *
+ * The smallest type size in the product is 11px, and only via `.text-label`,
+ * which buys legibility back with weight, tracking and uppercase forms.
+ * Everything else bottoms out at 12px (`text-xs`).
+ */
+
+/* ===== Design Tokens ===== */
+
+@theme inline {
+  /* Primary — Dark Blue.
+     Note: these are Tailwind's `blue` values. `blue-*` and `primary-*` are the
+     same colour, so `primary-*` is the only correct spelling in this codebase. */
+  --color-primary-950: #0a1628;
+  --color-primary-900: #0f2140;
+  --color-primary-800: #15306b;
+  --color-primary-700: #1e40af;
+  --color-primary-600: #2563eb;
+  --color-primary-500: #3b82f6;
+  --color-primary-400: #60a5fa;
+  --color-primary-300: #93bbfd;
+
+  /* Surfaces — the elevation ladder.
+     Everything dark in the product is one of these five. Hard-coded near-blacks
+     (#0a0a12, #0d0d17, #16161d, #0e0e12) had drifted purple, against a brand
+     whose dark is blue; they map onto `sunken` and `overlay` below. */
+  --color-surface-app: #0b0f18;     /* page background — same value as gray-950 */
+  --color-surface-raised: #111827;  /* cards, panels, sidebar */
+  --color-surface-sunken: #070b16;  /* terminal, run dock, code wells, OG card */
+  --color-surface-overlay: #0f1420; /* modals, popovers, file trees */
+  --color-surface-border: #374151;
+
+  /* Legacy aliases — kept so existing `bg-surface-dark` / `bg-surface-card`
+     class names keep resolving. Prefer the ladder above in new code. */
+  --color-surface-dark: #111827;
+  --color-surface-card: #1f2937;
+
+  /* Gray */
+  --color-gray-950: #0b0f18;
+  --color-gray-900: #111827;
+  --color-gray-800: #1f2937;
+  --color-gray-700: #374151;
+  --color-gray-600: #4b5563;
+  --color-gray-500: #6b7280;
+  --color-gray-400: #9ca3af;
+  --color-gray-300: #d1d5db;
+  --color-gray-200: #e5e7eb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-50: #f9fafb;
+
+  /* The orca's own body blue. It appears in the mascot artwork and nowhere else,
+     but it is a brand colour, so it lives here rather than as a literal hex
+     scattered through the animation components. */
+  --color-orca-body: #1e2d4d;
+
+  /* Accents — the two secondary hues the brand gradients already use.
+     Named so that `sky`, `teal`, `fuchsia`, `indigo` and friends have somewhere
+     to go instead of accumulating as one-off families. */
+  --color-accent-cyan: #06b6d4;
+  --color-accent-violet: #8b5cf6;
+
+  /* Lane Colors */
+  --color-lane-drafting: #6b7280;
+  --color-lane-ready: #3b82f6;
+  --color-lane-planning: #8b5cf6;
+  --color-lane-plan-ready: #a78bfa;
+  --color-lane-questions: #f59e0b;
+  --color-lane-developing: #10b981;
+  --color-lane-testing: #fbbf24;
+  --color-lane-review: #06b6d4;
+  --color-lane-done: #22c55e;
+
+  /* Status. Each one is the same hex as the Tailwind family the components
+     actually reach for, so `text-success` and `text-emerald-500` cannot drift
+     apart: success = emerald-500, warning = amber-500, error = red-500,
+     info = primary-500. (`--color-success` used to be green-500 while every
+     success surface in the app was emerald — the token was the odd one out.) */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Fonts */
+  --font-display: var(--font-plus-jakarta-sans), "Plus Jakarta Sans", sans-serif;
+  --font-body: var(--font-dm-sans), "DM Sans", sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
+  --font-brand: var(--font-unbounded), "Unbounded", sans-serif;
+}
+
+/* ===== Base Styles ===== */
+
+html {
+  color-scheme: dark;
+  /* iOS inflates text in landscape without this. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-gray-950);
+  color: var(--color-gray-100);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Grey flash on every tap in mobile Safari/Chrome — the components own their press states. */
+  -webkit-tap-highlight-color: transparent;
+  /* Backstop against a stray wide child panning the whole page sideways. `clip`, not `hidden`:
+     hidden would turn body into a scroll container and break the sticky sidebar and tab bar. */
+  overflow-x: clip;
+}
+
+/* Native <select> popups are painted by the browser from the control's own computed
+   colours, and nothing else can reach them — there is no selector for the popup itself.
+   Our controls are glass, a near-transparent white fill, which Chromium composites over
+   white for the popup: pale option labels land on a white sheet and vanish. `option` and
+   `optgroup` are the only hooks the popup honours, so every row gets the popover surface
+   here. Components used to do this one at a time and had drifted to four different shades
+   (gray-900, primary-950, surface-overlay, nothing at all) — this is the one place now. */
+select option,
+select optgroup {
+  background-color: var(--color-surface-overlay);
+  color: var(--color-gray-100);
+}
+
+select optgroup {
+  font-weight: 600;
+  color: var(--color-gray-400);
+}
+
+/* gray-500 is the disabled tone in the readability contract above. */
+select option:disabled {
+  color: var(--color-gray-500);
+}
+
+/* Horizontally scrollable region (wide tables on small screens): momentum scrolling, and a
+   fade on the right edge so it reads as "there is more" rather than "the column is cut off". */
+.scroll-x {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* The app is dense with looping decorative animation — the orca states run
+   continuously wherever an agent is working. Honour the OS setting. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===== Typography Utilities ===== */
+
+/* In `components`, not at the top level: unlayered CSS outranks everything
+   Tailwind emits, which would make `text-label text-amber-400` render grey.
+   Inside this layer a utility class still wins, so a label can be recoloured
+   for a warning or a lane without fighting specificity. */
+@layer components {
+  /* The micro-label: section headings, badge captions, table column heads, meta
+     captions. One class, so the ~190 hand-rolled spellings of
+     "text-[10px] font-semibold uppercase tracking-wider text-gray-500" collapse
+     into a single definition that is both consistent and legible — 11px rather
+     than 10px, gray-400 rather than gray-500.
+     Set in the display face: these are chrome, not code. */
+  .text-label {
+    font-family: var(--font-display);
+    font-size: 0.75rem; /* 12px — the floor, no exceptions */
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-gray-400);
+  }
+
+  /* The same idea one tier up: a card or page section heading, where 12px would
+     read as a caption rather than a heading. Brighter than `.text-label`
+     because it is the most prominent thing in its block. */
+  .text-section {
+    font-family: var(--font-display);
+    font-size: 0.875rem; /* 14px */
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-gray-300);
+  }
+
+  /* Brand font utility — only ever wraps the word "Orkka". */
+  .font-brand {
+    font-family: var(--font-brand);
+  }
+}
+
+/* ===== Surface Utilities ===== */
+
+/* Noise texture overlay for dark surfaces */
+.noise {
+  position: relative;
+}
+
+.noise::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+/* Glass card base utility */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Bars that page content scrolls underneath — the mobile top bar and tab bar.
+   `.glass` is only 3% white, so it is legible purely because of backdrop-filter; wherever
+   that is unsupported or dropped, the bar renders see-through and text runs straight
+   through it. These get an opaque base colour instead, with the blur as an enhancement. */
+.glass-bar {
+  background: rgba(11, 15, 24, 0.94);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-bar {
+    background: rgba(11, 15, 24, 0.72);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+  }
+}
+
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary-400), var(--color-accent-cyan), var(--color-primary-500));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glow utility */
+.glow-primary {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.15), 0 0 40px rgba(59, 130, 246, 0.05);
+}
+
+.glow-primary-strong {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), 0 0 60px rgba(59, 130, 246, 0.1);
+}
+
+/* Gradient border utility */
+.gradient-border {
+  position: relative;
+  background: transparent;
+}
+
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(6, 182, 212, 0.2), rgba(139, 92, 246, 0.3));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Shimmer animation for loading states */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+/* Subtle grid background */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Agent working glow animation */
+@keyframes agent-glow {
+  0%, 100% {
+    border-color: rgba(52, 211, 153, 0.08);
+    box-shadow: 0 0 8px rgba(52, 211, 153, 0.05);
+  }
+  50% {
+    border-color: rgba(52, 211, 153, 0.25);
+    box-shadow: 0 0 20px rgba(52, 211, 153, 0.12);
+  }
+}
+
+.animate-agent-glow {
+  animation: agent-glow 2s ease-in-out infinite;
+}
+
+/* Focus ring animation */
+@keyframes focus-ring-expand {
+  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+  100% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); }
+}
+
+*:focus-visible {
+  outline: none;
+  animation: focus-ring-expand 0.2s ease-out forwards;
+}
+
+/* ===== Orca Animations ===== */
+
+@keyframes orca-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes orca-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.08); }
+}
+
+@keyframes orca-bubble-rise {
+  0% { bottom: 35%; opacity: 0; transform: scale(0); }
+  20% { opacity: 0.6; transform: scale(1); }
+  100% { bottom: 80%; opacity: 0; transform: scale(0.5); }
+}
+
+@keyframes orca-dive {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(8px) rotate(3deg); }
+  50% { transform: translateY(-5px) rotate(-2deg); }
+  75% { transform: translateY(4px) rotate(1deg); }
+}
+
+@keyframes orca-code-float {
+  0% { opacity: 0; transform: translateY(0) scale(0.5); }
+  15% { opacity: 0.7; transform: translateY(-5px) scale(1); }
+  100% { opacity: 0; transform: translateY(-40px) scale(0.3); }
+}
+
+@keyframes orca-progress-sweep {
+  0% { width: 10%; margin-left: 0; }
+  50% { width: 60%; margin-left: 20%; }
+  100% { width: 10%; margin-left: 90%; }
+}
+
+@keyframes orca-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes orca-dot-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-8px); opacity: 1; }
+}
+
+@keyframes orca-question-pop {
+  0%, 100% { opacity: 0; transform: scale(0.5) translateY(5px); }
+  20%, 80% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes orca-breach {
+  0% { transform: translateY(20px) rotate(5deg); opacity: 0.5; }
+  40% { transform: translateY(-15px) rotate(-10deg); opacity: 1; }
+  60% { transform: translateY(-15px) rotate(-10deg); opacity: 1; }
+  100% { transform: translateY(20px) rotate(5deg); opacity: 0.5; }
+}
+
+@keyframes orca-splash {
+  0% { transform: translate(0, 0) scale(1); opacity: 0; }
+  30% { opacity: 0.8; }
+  100% { transform: translate(var(--splash-x, 0px), var(--splash-y, 0px)) scale(0); opacity: 0; }
+}
+
+@keyframes orca-check-pop {
+  0%, 50% { transform: translateX(-50%) scale(0); opacity: 0; }
+  65% { transform: translateX(-50%) scale(1.2); opacity: 1; }
+  75%, 90% { transform: translateX(-50%) scale(1); opacity: 1; }
+  100% { transform: translateX(-50%) scale(0); opacity: 0; }
+}
+
+@keyframes orca-tumble {
+  0% { transform: scaleY(-1) rotate(-5deg); }
+  100% { transform: scaleY(-1) rotate(5deg); }
+}
+
+@keyframes orca-error-shake {
+  0%, 100% { transform: translateX(-50%) translateX(0); }
+  25% { transform: translateX(-50%) translateX(-3px); }
+  75% { transform: translateX(-50%) translateX(3px); }
+}
+
+@keyframes orca-spark-flash {
+  0% { opacity: 0; transform: scale(0); }
+  20% { opacity: 1; transform: scale(1.2); }
+  40% { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0) translateY(-10px); }
+}
+
+@keyframes orca-sleep {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(-2deg); }
+}
+
+@keyframes orca-zzz-float {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+  30% { opacity: 0.7; transform: translate(5px, -10px) scale(1); }
+  100% { opacity: 0; transform: translate(15px, -30px) scale(0.7); }
+}
+
+@keyframes orca-wave-shift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-20px); }
+}
+
+@keyframes orca-search {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  30% { transform: translateX(3px) rotate(2deg); }
+  60% { transform: translateX(-3px) rotate(-2deg); }
+}
+
+@keyframes orca-beam-scan {
+  0%, 100% { transform: rotate(-15deg); opacity: 0.3; }
+  50% { transform: rotate(15deg); opacity: 0.8; }
+}
+
+@keyframes orca-scan-dot-pop {
+  0%, 100% { opacity: 0; transform: scale(0); }
+  50% { opacity: 0.8; transform: scale(1.5); }
+  70% { opacity: 0.4; transform: scale(1); }
+}
+
+/* ===== Hero Swimming Logo Animation ===== */
+
+@keyframes orkka-swim {
+  0% { transform: translateY(0) translateX(0) rotate(0deg); }
+  15% { transform: translateY(-8px) translateX(4px) rotate(2deg); }
+  30% { transform: translateY(-4px) translateX(-3px) rotate(-1deg); }
+  50% { transform: translateY(-12px) translateX(2px) rotate(1.5deg); }
+  70% { transform: translateY(-6px) translateX(-4px) rotate(-2deg); }
+  85% { transform: translateY(-2px) translateX(3px) rotate(0.5deg); }
+  100% { transform: translateY(0) translateX(0) rotate(0deg); }
+}
+
+@keyframes orkka-swim-glow {
+  0%, 100% { filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.15)); }
+  50% { filter: drop-shadow(0 0 24px rgba(59, 130, 246, 0.35)) drop-shadow(0 0 48px rgba(6, 182, 212, 0.15)); }
+}
+
+@keyframes orkka-ripple {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes orkka-bubble {
+  0% { transform: translateY(0) scale(1); opacity: 0.5; }
+  50% { opacity: 0.3; }
+  100% { transform: translateY(-60px) scale(0.3); opacity: 0; }
+}
+
+.orkka-swim-logo {
+  animation: orkka-swim 6s ease-in-out infinite, orkka-swim-glow 4s ease-in-out infinite;
+}
+
+.orkka-ripple {
+  animation: orkka-ripple 3s ease-out infinite;
+}
+
+.orkka-bubble {
+  animation: orkka-bubble 3s ease-out infinite;
+}

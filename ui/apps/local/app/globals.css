@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+/* Tokens, base styles and shared utilities live in one place for every app.
+   Do not redefine anything from it here — change it there instead. */
+@import "../../../packages/ui/src/styles/theme.css";
+
+/* Prose utilities for long-form content (legal pages, briefs). */
+@plugin "@tailwindcss/typography";
+
+/* Tailwind v4 auto-detects sources only within the app directory — the shared
+   workspace packages must be registered explicitly or their utility classes are
+   never generated (collapsed layouts, missing paddings/borders). */
+@source "../../../packages/ui/src";
+@source "../../../packages/core/src";
+
+/* The self-hosted fonts (@fontsource-variable/*, imported in src/main.tsx), under the variable
+   names the theme's --font-* tokens read. */
+:root {
+  --font-plus-jakarta-sans: "Plus Jakarta Sans Variable";
+  --font-dm-sans: "DM Sans Variable";
+  --font-jetbrains-mono: "JetBrains Mono Variable";
+  --font-unbounded: "Unbounded Variable";
+}
+

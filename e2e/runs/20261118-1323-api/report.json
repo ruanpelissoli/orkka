@@ -1,0 +1,265 @@
+{
+  "runId": "20261118-1323-api",
+  "suite": "api",
+  "target": "http://127.0.0.1:6792",
+  "startedAt": "2026-11-18T16:23:39.826Z",
+  "finishedAt": "2026-11-18T16:23:42.479Z",
+  "durationMs": 2653,
+  "operator": "claude",
+  "gitSha": "uncommitted",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "totals": {
+    "passed": 13,
+    "failed": 0,
+    "skipped": 2,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [
+        "TSRC-001"
+      ],
+      "testTitle": "TSRC-001 a project with no ticket source answers 204",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "passed",
+      "durationMs": 153,
+      "projects": [
+        "01M7QQH6YVD1FDTG69PQRXRYYG e2e-tsrc-20261118-1323-5adt"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:41.236Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-002"
+      ],
+      "testTitle": "TSRC-002 PUT with a connection that is not mine → 400 on trackerConnectionId",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "passed",
+      "durationMs": 198,
+      "projects": [
+        "01M7QQH73N4H909N3Y36K9WJ4Y e2e-tsrc-20261118-1323-35yb"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:41.416Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-003"
+      ],
+      "testTitle": "TSRC-003 validation: poll interval, branch template, epics, subfolder, scope",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "passed",
+      "durationMs": 250,
+      "projects": [
+        "01M7QQH7A2NYSSV9VWKX077PZG e2e-tsrc-20261118-1323-uwkg"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:41.620Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-005"
+      ],
+      "testTitle": "TSRC-005 DELETE without a ticket source is a no-op 204; GET stays 204",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "passed",
+      "durationMs": 105,
+      "projects": [
+        "01M7QQH7J1T8VFTWSFA99W243S e2e-tsrc-20261118-1323-7wbj"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:41.876Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-007"
+      ],
+      "testTitle": "TSRC-007 tracker query with an unknown kind → 400",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "passed",
+      "durationMs": 11,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:41.990Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-008"
+      ],
+      "testTitle": "TSRC-008 tracker query on an unknown connection → 404 (not 403)",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "passed",
+      "durationMs": 22,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:42.007Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-009"
+      ],
+      "testTitle": "TSRC-009 GET /api/trackers/connections lists my connections with metadata only",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "passed",
+      "durationMs": 19,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:42.040Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-006"
+      ],
+      "testTitle": "TSRC-006 a query while my runner is offline answers supported:false, not an error",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "skipped",
+      "durationMs": 25,
+      "projects": [],
+      "skipReason": "the runner is online — stop it (npm run runner:status) to exercise this case",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:42.065Z"
+    },
+    {
+      "caseIds": [
+        "WSP-001"
+      ],
+      "testTitle": "WSP-001 GET /api/me/workspaces lists my workspaces with exactly one active",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "passed",
+      "durationMs": 32,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:42.107Z"
+    },
+    {
+      "caseIds": [
+        "WSP-003"
+      ],
+      "testTitle": "WSP-003 switching the active workspace answers 204; an unknown org answers 404",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "passed",
+      "durationMs": 46,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:42.145Z"
+    },
+    {
+      "caseIds": [
+        "WSP-004"
+      ],
+      "testTitle": "WSP-004 a non-ULID X-Orkka-Workspace answers 400 Invalid workspace.",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "passed",
+      "durationMs": 7,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:42.195Z"
+    },
+    {
+      "caseIds": [
+        "WSP-005"
+      ],
+      "testTitle": "WSP-005 naming a workspace I am not in answers 403",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "passed",
+      "durationMs": 11,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:42.208Z"
+    },
+    {
+      "caseIds": [
+        "WSP-006"
+      ],
+      "testTitle": "WSP-006 the same call in two workspaces returns disjoint projects",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "skipped",
+      "durationMs": 27,
+      "projects": [],
+      "skipReason": "only one workspace exists (WSP-002 creates a second one)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:42.223Z"
+    },
+    {
+      "caseIds": [
+        "WSP-007"
+      ],
+      "testTitle": "WSP-007 an API key ignores X-Orkka-Workspace and stays in its own org",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "passed",
+      "durationMs": 23,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:42.256Z"
+    },
+    {
+      "caseIds": [
+        "WSP-002"
+      ],
+      "testTitle": "WSP-002 creating a workspace makes it mine and active (restores the previous active one)",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "passed",
+      "durationMs": 90,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:42.289Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [
+      {
+        "id": "01M7QQH6YVD1FDTG69PQRXRYYG",
+        "name": "e2e-tsrc-20261118-1323-5adt"
+      },
+      {
+        "id": "01M7QQH73N4H909N3Y36K9WJ4Y",
+        "name": "e2e-tsrc-20261118-1323-35yb"
+      },
+      {
+        "id": "01M7QQH7A2NYSSV9VWKX077PZG",
+        "name": "e2e-tsrc-20261118-1323-uwkg"
+      },
+      {
+        "id": "01M7QQH7J1T8VFTWSFA99W243S",
+        "name": "e2e-tsrc-20261118-1323-7wbj"
+      }
+    ],
+    "leftovers": []
+  },
+  "notes": []
+}

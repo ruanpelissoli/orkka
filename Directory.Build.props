@@ -1,0 +1,9 @@
+<Project>
+  <!-- Every package is pinned by a committed packages.lock.json (restored from nuget.org only,
+       see nuget.config). CI restores with locked mode, so a dependency change that did not
+       update the lock files fails the build instead of resolving something new. -->
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</RestoreLockedMode>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,232 @@
+{
+  "runId": "20261118-1323-smoke",
+  "suite": "smoke",
+  "target": "http://127.0.0.1:6792",
+  "startedAt": "2026-11-18T16:23:31.131Z",
+  "finishedAt": "2026-11-18T16:23:35.534Z",
+  "durationMs": 4403,
+  "operator": "claude",
+  "gitSha": "uncommitted",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "totals": {
+    "passed": 13,
+    "failed": 1,
+    "skipped": 0,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [
+        "NEG-030"
+      ],
+      "testTitle": "NEG-030 a project whose slug is exactly 26 characters must still resolve by slug (ULID-length regression)",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "failed",
+      "durationMs": 208,
+      "projects": [
+        "01M7QQGYJP3MQ8V3GAQCDQ8JZY e2e-neg-20261118-1323xrz9v"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "failure": {
+        "message": "Error: project reachable by its 26-char slug\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBeInstanceOf\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected constructor: not \u001b[32mApiError\u001b[39m\n",
+        "stackHead": "Error: project reachable by its 26-char slug\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoBeInstanceOf\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected constructor: not \u001b[32mApiError\u001b[39m\n\n    at C:\\Projects\\orkka\\orkka-r5\\e2e\\tests\\smoke\\negatives.spec.ts:32:65",
+        "logHint": "API + Worker console output of the stack at http://127.0.0.1:6792; runner log .runs/runner.log (grep for 01M7QQGYJP3MQ8V3GAQCDQ8JZY)"
+      },
+      "startedAt": "2026-11-18T16:23:32.590Z"
+    },
+    {
+      "caseIds": [
+        "NEG-031"
+      ],
+      "testTitle": "NEG-031 the removed cloud-execution surface is gone: routes 404",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "passed",
+      "durationMs": 137,
+      "projects": [
+        "01M7QQGYQVM1J3M6DM99887MV6 e2e-neg-20261118-1323-zaet8"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:32.833Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "an unknown project id answers 404, not 403",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "passed",
+      "durationMs": 23,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:32.983Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "API keys cannot mint API keys",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "passed",
+      "durationMs": 21,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:33.020Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "health endpoint answers anonymously",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "passed",
+      "durationMs": 22,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:33.053Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "the local host refuses a foreign Host header (DNS rebinding) with 421",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "passed",
+      "durationMs": 12,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:33.083Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "a cookie-authenticated write without Origin + X-Orkka-Csrf is refused",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "passed",
+      "durationMs": 601,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:33.104Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "API: org/me answers for the harness key and matches the expected workspace @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 17,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:33.839Z"
+    },
+    {
+      "caseIds": [
+        "WSP-001"
+      ],
+      "testTitle": "API: workspaces list answers with exactly one active workspace @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 10,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:33.862Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "API: runner presence answers, with forge CLI status when online @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 12,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:33.877Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-009"
+      ],
+      "testTitle": "API: tracker connections list answers (possibly empty) @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 16,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:33.893Z"
+    },
+    {
+      "caseIds": [
+        "LWF-001"
+      ],
+      "testTitle": "UI: the launch-code session opens the dashboard through the host's front door @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 513,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:33.915Z"
+    },
+    {
+      "caseIds": [
+        "LWF-001"
+      ],
+      "testTitle": "UI: a browser without the session gets the signed-out page, not the app @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 173,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:34.435Z"
+    },
+    {
+      "caseIds": [
+        "SET-012"
+      ],
+      "testTitle": "UI: project settings page renders for the first project (or onboarding when none) @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 744,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:23:34.614Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [
+      {
+        "id": "01M7QQGYJP3MQ8V3GAQCDQ8JZY",
+        "name": "e2e-neg-20261118-1323xrz9v"
+      },
+      {
+        "id": "01M7QQGYJP3MQ8V3GAQCDQ8JZY",
+        "name": "e2e-neg-20261118-1323xrz9v"
+      },
+      {
+        "id": "01M7QQGYQVM1J3M6DM99887MV6",
+        "name": "e2e-neg-20261118-1323-zaet8"
+      }
+    ],
+    "leftovers": []
+  },
+  "notes": []
+}

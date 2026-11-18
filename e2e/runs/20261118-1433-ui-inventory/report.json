@@ -1,0 +1,549 @@
+{
+  "runId": "20261118-1433-ui-inventory",
+  "suite": "ui-inventory",
+  "target": "http://127.0.0.1:6792",
+  "startedAt": "2026-11-18T17:33:24.391Z",
+  "finishedAt": "2026-11-18T17:34:14.366Z",
+  "durationMs": 49975,
+  "operator": "claude",
+  "gitSha": "uncommitted",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "totals": {
+    "passed": 37,
+    "failed": 0,
+    "skipped": 0,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [],
+      "testTitle": "seed: create the inventory project with a repo and a draft task",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 728,
+      "projects": [
+        "01M7QVGXE54ARF5NH3VW47XHTC e2e-inventory-20261118-1433-h3rf"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:25.673Z"
+    },
+    {
+      "caseIds": [
+        "ONB-001"
+      ],
+      "testTitle": "/en/dashboard renders (ONB-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1387,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:26.522Z"
+    },
+    {
+      "caseIds": [
+        "NTF-001"
+      ],
+      "testTitle": "/en/inbox renders (NTF-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1276,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:27.916Z"
+    },
+    {
+      "caseIds": [
+        "NTF-003"
+      ],
+      "testTitle": "/en/notifications renders (NTF-003)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1299,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:29.199Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/en/projects renders ()",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1421,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:30.507Z"
+    },
+    {
+      "caseIds": [
+        "LWF-002"
+      ],
+      "testTitle": "/en/projects/new renders (LWF-002)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1054,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:31.937Z"
+    },
+    {
+      "caseIds": [
+        "SET-001"
+      ],
+      "testTitle": "/en/settings renders (SET-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1355,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:32.998Z"
+    },
+    {
+      "caseIds": [
+        "LWF-013"
+      ],
+      "testTitle": "/en/settings/workspace renders (LWF-013)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1058,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:34.361Z"
+    },
+    {
+      "caseIds": [
+        "LWF-009"
+      ],
+      "testTitle": "/en/settings/machine renders (LWF-009)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1370,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:35.428Z"
+    },
+    {
+      "caseIds": [
+        "LWF-009"
+      ],
+      "testTitle": "/en/settings/trackers renders (LWF-009)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1336,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:36.806Z"
+    },
+    {
+      "caseIds": [
+        "LWF-012"
+      ],
+      "testTitle": "/en/settings/usage renders (LWF-012)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1394,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:38.150Z"
+    },
+    {
+      "caseIds": [
+        "KEY-001"
+      ],
+      "testTitle": "/en/settings/api-keys renders (KEY-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1317,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:39.554Z"
+    },
+    {
+      "caseIds": [
+        "SET-003"
+      ],
+      "testTitle": "/en/settings/preferences renders (SET-003)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1109,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:40.883Z"
+    },
+    {
+      "caseIds": [
+        "SET-005"
+      ],
+      "testTitle": "/en/settings/notifications renders (SET-005)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1058,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:42.002Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "/en/p/{slug} renders ()",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1303,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:43.070Z"
+    },
+    {
+      "caseIds": [
+        "BRD-001"
+      ],
+      "testTitle": "/en/p/{slug}/board renders (BRD-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1384,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:44.382Z"
+    },
+    {
+      "caseIds": [
+        "BRD-004"
+      ],
+      "testTitle": "/en/p/{slug}/board?view=code renders (BRD-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1545,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:45.772Z"
+    },
+    {
+      "caseIds": [
+        "TSK-050"
+      ],
+      "testTitle": "/en/p/{slug}/tasks renders (TSK-050)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1345,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:47.326Z"
+    },
+    {
+      "caseIds": [
+        "TSK-001"
+      ],
+      "testTitle": "/en/p/{slug}/tasks/new renders (TSK-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1678,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:48.681Z"
+    },
+    {
+      "caseIds": [
+        "TSK-011"
+      ],
+      "testTitle": "/en/p/{slug}/tasks/{n} renders (TSK-011)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1539,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:50.366Z"
+    },
+    {
+      "caseIds": [
+        "PR-001"
+      ],
+      "testTitle": "/en/p/{slug}/tasks/{n}/review renders (PR-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1300,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:51.912Z"
+    },
+    {
+      "caseIds": [
+        "TEAM-001"
+      ],
+      "testTitle": "/en/p/{slug}/team renders (TEAM-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1315,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:53.220Z"
+    },
+    {
+      "caseIds": [
+        "ACT-001"
+      ],
+      "testTitle": "/en/p/{slug}/activity renders (ACT-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1319,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:54.541Z"
+    },
+    {
+      "caseIds": [
+        "SKL-001"
+      ],
+      "testTitle": "/en/p/{slug}/skills renders (SKL-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1302,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:55.867Z"
+    },
+    {
+      "caseIds": [
+        "AUTO-001"
+      ],
+      "testTitle": "/en/p/{slug}/automation renders (AUTO-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1291,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:57.175Z"
+    },
+    {
+      "caseIds": [
+        "MEM-001"
+      ],
+      "testTitle": "/en/p/{slug}/memory renders (MEM-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1397,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:58.476Z"
+    },
+    {
+      "caseIds": [
+        "RDM-001"
+      ],
+      "testTitle": "/en/p/{slug}/roadmap renders (RDM-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1297,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:33:59.879Z"
+    },
+    {
+      "caseIds": [
+        "REPO-001"
+      ],
+      "testTitle": "/en/p/{slug}/repos renders (REPO-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 2005,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:34:01.184Z"
+    },
+    {
+      "caseIds": [
+        "DOC-001"
+      ],
+      "testTitle": "/en/p/{slug}/documents renders (DOC-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1411,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:34:03.197Z"
+    },
+    {
+      "caseIds": [
+        "DSN-001"
+      ],
+      "testTitle": "/en/p/{slug}/design renders (DSN-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1505,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:34:04.616Z"
+    },
+    {
+      "caseIds": [
+        "ARC-001"
+      ],
+      "testTitle": "/en/p/{slug}/architect renders (ARC-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1445,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:34:06.130Z"
+    },
+    {
+      "caseIds": [
+        "SET-010"
+      ],
+      "testTitle": "/en/p/{slug}/settings renders (SET-010)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 3480,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:34:07.584Z"
+    },
+    {
+      "caseIds": [
+        "I18N-001",
+        "I18N-004"
+      ],
+      "testTitle": "/es/settings renders localized (I18N-001, I18N-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 832,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:34:11.077Z"
+    },
+    {
+      "caseIds": [
+        "I18N-001",
+        "I18N-004"
+      ],
+      "testTitle": "/pt/settings renders localized (I18N-001, I18N-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 667,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:34:11.917Z"
+    },
+    {
+      "caseIds": [
+        "I18N-001",
+        "I18N-004"
+      ],
+      "testTitle": "/fr/settings renders localized (I18N-001, I18N-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 744,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:34:12.592Z"
+    },
+    {
+      "caseIds": [
+        "I18N-001",
+        "I18N-004"
+      ],
+      "testTitle": "/de/settings renders localized (I18N-001, I18N-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 729,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:34:13.345Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "teardown: delete the inventory project",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 43,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:34:14.080Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [
+      {
+        "id": "01M7QVGXE54ARF5NH3VW47XHTC",
+        "name": "e2e-inventory-20261118-1433-h3rf"
+      }
+    ],
+    "leftovers": []
+  },
+  "notes": []
+}

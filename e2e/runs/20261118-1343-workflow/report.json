@@ -1,0 +1,113 @@
+{
+  "runId": "20261118-1343-workflow",
+  "suite": "workflow",
+  "target": "http://127.0.0.1:6792",
+  "startedAt": "2026-11-18T16:43:37.975Z",
+  "finishedAt": "2026-11-18T16:52:41.219Z",
+  "durationMs": 543244,
+  "operator": "claude",
+  "gitSha": "uncommitted",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "totals": {
+    "passed": 3,
+    "failed": 1,
+    "skipped": 1,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [
+        "LWF-002"
+      ],
+      "testTitle": "1. a base folder becomes a project: api is a remote, web a local folder",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "passed",
+      "durationMs": 2774,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:43:39.954Z"
+    },
+    {
+      "caseIds": [
+        "LWF-003"
+      ],
+      "testTitle": "2. a Jira connection added from Settings → Trackers: the token lives only in the runner's secret store",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "passed",
+      "durationMs": 183,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:43:43.784Z"
+    },
+    {
+      "caseIds": [
+        "LWF-004",
+        "TSRC-004"
+      ],
+      "testTitle": "3. the ticket source: To Do intake and the six-step status map",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "passed",
+      "durationMs": 179,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:43:43.978Z"
+    },
+    {
+      "caseIds": [
+        "LWF-007"
+      ],
+      "testTitle": "6. a Story with two sub-tasks: one branch, draft PR, the second builds on the first, ready at the end",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "failed",
+      "durationMs": 536879,
+      "projects": [],
+      "artifacts": {
+        "trace": "..\\current\\artifacts\\local-workflow-the-develop-72a14--the-first-ready-at-the-end-chromium\\trace.zip",
+        "screenshots": []
+      },
+      "failure": {
+        "message": "PollTimeout: Timed out after 537s waiting for: a task for SHOP-21. Last value: undefined",
+        "stackHead": "PollTimeout: Timed out after 537s waiting for: a task for SHOP-21. Last value: undefined\n    at pollUntil (C:\\Projects\\orkka\\orkka-r5\\e2e\\src\\api\\poll.ts:57:53)\n    at C:\\Projects\\orkka\\orkka-r5\\e2e\\tests\\local\\workflow.spec.ts:178:19",
+        "logHint": "API + Worker console output of the stack at http://127.0.0.1:6792; runner log .runs/runner.log"
+      },
+      "startedAt": "2026-11-18T16:43:44.171Z"
+    },
+    {
+      "caseIds": [
+        "LWF-008"
+      ],
+      "testTitle": "7. Azure DevOps: a PAT connection and a work item in intake",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T16:52:41.141Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [
+      {
+        "id": "01M7QRNV6HENXHACPYEGND06AK",
+        "name": "e2e-shop-mwmcoyxu"
+      }
+    ],
+    "leftovers": []
+  },
+  "notes": [
+    "Playwright overall status: failed",
+    "E2E_KEEP_PROJECTS set: no pre-run sweep, no teardown deletes."
+  ]
+}

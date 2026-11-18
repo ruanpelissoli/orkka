@@ -1,0 +1,528 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace ih0.Claude.Agent.SDK.Types;
+
+/// <summary>
+/// Base class for hook input data.
+/// </summary>
+public abstract record HookInput
+{
+    /// <summary>
+    /// The session ID for the current conversation.
+    /// </summary>
+    [JsonPropertyName("session_id")]
+    public required string SessionId { get; init; }
+
+    /// <summary>
+    /// Path to the conversation transcript file.
+    /// </summary>
+    [JsonPropertyName("transcript_path")]
+    public required string TranscriptPath { get; init; }
+
+    /// <summary>
+    /// Current working directory.
+    /// </summary>
+    [JsonPropertyName("cwd")]
+    public required string Cwd { get; init; }
+
+    /// <summary>
+    /// Current permission mode.
+    /// </summary>
+    [JsonPropertyName("permission_mode")]
+    public string? PermissionMode { get; init; }
+}
+
+/// <summary>
+/// Input data for pre-tool-use hooks.
+/// </summary>
+public sealed record PreToolUseHookInput : HookInput
+{
+    /// <summary>
+    /// The name of the hook event.
+    /// </summary>
+    [JsonPropertyName("hook_event_name")]
+    public string HookEventName => "PreToolUse";
+
+    /// <summary>
+    /// The name of the tool being invoked.
+    /// </summary>
+    [JsonPropertyName("tool_name")]
+    public required string ToolName { get; init; }
+
+    /// <summary>
+    /// The input parameters for the tool.
+    /// </summary>
+    [JsonPropertyName("tool_input")]
+    public required JsonElement ToolInput { get; init; }
+
+    /// <summary>
+    /// The tool use ID.
+    /// </summary>
+    [JsonPropertyName("tool_use_id")]
+    public string? ToolUseId { get; init; }
+}
+
+/// <summary>
+/// Input data for post-tool-use hooks.
+/// </summary>
+public sealed record PostToolUseHookInput : HookInput
+{
+    /// <summary>
+    /// The name of the hook event.
+    /// </summary>
+    [JsonPropertyName("hook_event_name")]
+    public string HookEventName => "PostToolUse";
+
+    /// <summary>
+    /// The name of the tool that was invoked.
+    /// </summary>
+    [JsonPropertyName("tool_name")]
+    public required string ToolName { get; init; }
+
+    /// <summary>
+    /// The input parameters that were passed to the tool.
+    /// </summary>
+    [JsonPropertyName("tool_input")]
+    public required JsonElement ToolInput { get; init; }
+
+    /// <summary>
+    /// The response from the tool execution.
+    /// </summary>
+    [JsonPropertyName("tool_response")]
+    public required JsonElement ToolResponse { get; init; }
+
+    /// <summary>
+    /// The tool use ID.
+    /// </summary>
+    [JsonPropertyName("tool_use_id")]
+    public string? ToolUseId { get; init; }
+}
+
+/// <summary>
+/// Input data for post-tool-use-failure hooks.
+/// </summary>
+public sealed record PostToolUseFailureHookInput : HookInput
+{
+    /// <summary>
+    /// The name of the hook event.
+    /// </summary>
+    [JsonPropertyName("hook_event_name")]
+    public string HookEventName => "PostToolUseFailure";
+
+    /// <summary>
+    /// The name of the tool that failed.
+    /// </summary>
+    [JsonPropertyName("tool_name")]
+    public required string ToolName { get; init; }
+
+    /// <summary>
+    /// The input parameters that were passed to the tool.
+    /// </summary>
+    [JsonPropertyName("tool_input")]
+    public required JsonElement ToolInput { get; init; }
+
+    /// <summary>
+    /// The tool use ID.
+    /// </summary>
+    [JsonPropertyName("tool_use_id")]
+    public required string ToolUseId { get; init; }
+
+    /// <summary>
+    /// The error message.
+    /// </summary>
+    [JsonPropertyName("error")]
+    public required string Error { get; init; }
+
+    /// <summary>
+    /// Whether the failure was due to an interrupt.
+    /// </summary>
+    [JsonPropertyName("is_interrupt")]
+    public bool? IsInterrupt { get; init; }
+}
+
+/// <summary>
+/// Input data for user prompt submission hooks.
+/// </summary>
+public sealed record UserPromptSubmitHookInput : HookInput
+{
+    /// <summary>
+    /// The name of the hook event.
+    /// </summary>
+    [JsonPropertyName("hook_event_name")]
+    public string HookEventName => "UserPromptSubmit";
+
+    /// <summary>
+    /// The user's prompt text.
+    /// </summary>
+    [JsonPropertyName("prompt")]
+    public required string Prompt { get; init; }
+}
+
+/// <summary>
+/// Input data for stop hooks.
+/// </summary>
+public sealed record StopHookInput : HookInput
+{
+    /// <summary>
+    /// The name of the hook event.
+    /// </summary>
+    [JsonPropertyName("hook_event_name")]
+    public string HookEventName => "Stop";
+
+    /// <summary>
+    /// Whether a stop hook is currently active.
+    /// </summary>
+    [JsonPropertyName("stop_hook_active")]
+    public required bool StopHookActive { get; init; }
+}
+
+/// <summary>
+/// Input data for subagent stop hooks.
+/// </summary>
+public sealed record SubagentStopHookInput : HookInput
+{
+    /// <summary>
+    /// The name of the hook event.
+    /// </summary>
+    [JsonPropertyName("hook_event_name")]
+    public string HookEventName => "SubagentStop";
+
+    /// <summary>
+    /// Whether a stop hook is currently active.
+    /// </summary>
+    [JsonPropertyName("stop_hook_active")]
+    public required bool StopHookActive { get; init; }
+
+    /// <summary>
+    /// The agent ID.
+    /// </summary>
+    [JsonPropertyName("agent_id")]
+    public string? AgentId { get; init; }
+
+    /// <summary>
+    /// Path to the agent transcript.
+    /// </summary>
+    [JsonPropertyName("agent_transcript_path")]
+    public string? AgentTranscriptPath { get; init; }
+
+    /// <summary>
+    /// The type of agent.
+    /// </summary>
+    [JsonPropertyName("agent_type")]
+    public string? AgentType { get; init; }
+}
+
+/// <summary>
+/// Input data for pre-compact hooks.
+/// </summary>
+public sealed record PreCompactHookInput : HookInput
+{
+    /// <summary>
+    /// The name of the hook event.
+    /// </summary>
+    [JsonPropertyName("hook_event_name")]
+    public string HookEventName => "PreCompact";
+
+    /// <summary>
+    /// The trigger that caused compaction.
+    /// </summary>
+    [JsonPropertyName("trigger")]
+    public required string Trigger { get; init; }
+
+    /// <summary>
+    /// Custom instructions for the compaction process.
+    /// </summary>
+    [JsonPropertyName("custom_instructions")]
+    public string? CustomInstructions { get; init; }
+}
+
+/// <summary>
+/// Output from a hook callback.
+/// </summary>
+public record HookOutput
+{
+    /// <summary>
+    /// Whether to continue processing.
+    /// </summary>
+    [JsonPropertyName("continue")]
+    public bool? Continue { get; init; }
+
+    /// <summary>
+    /// Whether to suppress output.
+    /// </summary>
+    [JsonPropertyName("suppressOutput")]
+    public bool? SuppressOutput { get; init; }
+
+    /// <summary>
+    /// Reason for stopping, if applicable.
+    /// </summary>
+    [JsonPropertyName("stopReason")]
+    public string? StopReason { get; init; }
+
+    /// <summary>
+    /// The decision made by the hook.
+    /// </summary>
+    [JsonPropertyName("decision")]
+    public string? Decision { get; init; }
+
+    /// <summary>
+    /// A system message to inject.
+    /// </summary>
+    [JsonPropertyName("systemMessage")]
+    public string? SystemMessage { get; init; }
+
+    /// <summary>
+    /// Reason for the decision.
+    /// </summary>
+    [JsonPropertyName("reason")]
+    public string? Reason { get; init; }
+
+    /// <summary>
+    /// Hook-specific output data.
+    /// </summary>
+    [JsonPropertyName("hookSpecificOutput")]
+    public JsonElement? HookSpecificOutput { get; init; }
+}
+
+/// <summary>
+/// Output for asynchronous hook processing.
+/// </summary>
+public record AsyncHookOutput : HookOutput
+{
+    /// <summary>
+    /// Whether this is an async response.
+    /// </summary>
+    [JsonPropertyName("async")]
+    public bool Async { get; init; } = true;
+
+    /// <summary>
+    /// Timeout in milliseconds for async processing.
+    /// </summary>
+    [JsonPropertyName("asyncTimeout")]
+    public int? AsyncTimeout { get; init; }
+}
+
+/// <summary>
+/// Context information passed to hook callbacks.
+/// </summary>
+public sealed record HookContext
+{
+    /// <summary>
+    /// Signal object for async coordination.
+    /// </summary>
+    public object? Signal { get; init; }
+}
+
+/// <summary>
+/// Callback delegate for hook processing.
+/// </summary>
+/// <param name="input">The hook input data.</param>
+/// <param name="toolUseId">The ID of the tool use, if applicable.</param>
+/// <param name="context">The hook context.</param>
+/// <returns>The hook output.</returns>
+public delegate Task<HookOutput> HookCallback(HookInput input, string? toolUseId, HookContext context);
+
+/// <summary>
+/// Configuration for matching and handling hooks.
+/// </summary>
+public sealed record HookMatcher
+{
+    /// <summary>
+    /// Pattern to match against (e.g., tool name).
+    /// </summary>
+    public string? Matcher { get; init; }
+
+    /// <summary>
+    /// List of hook callbacks to invoke.
+    /// </summary>
+    public IReadOnlyList<HookCallback> Hooks { get; init; } = [];
+
+    /// <summary>
+    /// Timeout in seconds for hook execution.
+    /// </summary>
+    public double? Timeout { get; init; }
+}
+
+/// <summary>
+/// Hook-specific output for pre-tool-use hooks.
+/// </summary>
+public sealed record PreToolUseHookSpecificOutput
+{
+    /// <summary>
+    /// The name of the hook event.
+    /// </summary>
+    [JsonPropertyName("hookEventName")]
+    public string HookEventName => "PreToolUse";
+
+    /// <summary>
+    /// Permission decision (allow, deny, ask).
+    /// </summary>
+    [JsonPropertyName("permissionDecision")]
+    public string? PermissionDecision { get; init; }
+
+    /// <summary>
+    /// Reason for the permission decision.
+    /// </summary>
+    [JsonPropertyName("permissionDecisionReason")]
+    public string? PermissionDecisionReason { get; init; }
+
+    /// <summary>
+    /// Modified input to pass to the tool.
+    /// </summary>
+    [JsonPropertyName("updatedInput")]
+    public JsonElement? UpdatedInput { get; init; }
+
+    /// <summary>
+    /// Additional context to add to the conversation.
+    /// </summary>
+    [JsonPropertyName("additionalContext")]
+    public string? AdditionalContext { get; init; }
+}
+
+/// <summary>
+/// Hook-specific output for post-tool-use hooks.
+/// </summary>
+public sealed record PostToolUseHookSpecificOutput
+{
+    /// <summary>
+    /// The name of the hook event.
+    /// </summary>
+    [JsonPropertyName("hookEventName")]
+    public string HookEventName => "PostToolUse";
+
+    /// <summary>
+    /// Additional context to add to the conversation.
+    /// </summary>
+    [JsonPropertyName("additionalContext")]
+    public string? AdditionalContext { get; init; }
+
+    /// <summary>
+    /// Updated MCP tool output.
+    /// </summary>
+    [JsonPropertyName("updatedMCPToolOutput")]
+    public JsonElement? UpdatedMcpToolOutput { get; init; }
+}
+
+/// <summary>
+/// Hook-specific output for post-tool-use-failure hooks.
+/// </summary>
+public sealed record PostToolUseFailureHookSpecificOutput
+{
+    /// <summary>
+    /// The name of the hook event.
+    /// </summary>
+    [JsonPropertyName("hookEventName")]
+    public string HookEventName => "PostToolUseFailure";
+
+    /// <summary>
+    /// Additional context to add to the conversation.
+    /// </summary>
+    [JsonPropertyName("additionalContext")]
+    public string? AdditionalContext { get; init; }
+}
+
+/// <summary>
+/// Hook-specific output for user prompt submission hooks.
+/// </summary>
+public sealed record UserPromptSubmitHookSpecificOutput
+{
+    /// <summary>
+    /// The name of the hook event.
+    /// </summary>
+    [JsonPropertyName("hookEventName")]
+    public string HookEventName => "UserPromptSubmit";
+
+    /// <summary>
+    /// Additional context to add to the conversation.
+    /// </summary>
+    [JsonPropertyName("additionalContext")]
+    public string? AdditionalContext { get; init; }
+}
+
+/// <summary>
+/// Input data for notification hooks.
+/// </summary>
+public sealed record NotificationHookInput : HookInput
+{
+    [JsonPropertyName("hook_event_name")]
+    public string HookEventName => "Notification";
+
+    [JsonPropertyName("message")]
+    public required string Message { get; init; }
+
+    [JsonPropertyName("title")]
+    public string? Title { get; init; }
+
+    [JsonPropertyName("notification_type")]
+    public required string NotificationType { get; init; }
+}
+
+/// <summary>
+/// Input data for subagent start hooks.
+/// </summary>
+public sealed record SubagentStartHookInput : HookInput
+{
+    [JsonPropertyName("hook_event_name")]
+    public string HookEventName => "SubagentStart";
+
+    [JsonPropertyName("agent_id")]
+    public required string AgentId { get; init; }
+
+    [JsonPropertyName("agent_type")]
+    public required string AgentType { get; init; }
+}
+
+/// <summary>
+/// Input data for permission request hooks.
+/// </summary>
+public sealed record PermissionRequestHookInput : HookInput
+{
+    [JsonPropertyName("hook_event_name")]
+    public string HookEventName => "PermissionRequest";
+
+    [JsonPropertyName("tool_name")]
+    public required string ToolName { get; init; }
+
+    [JsonPropertyName("tool_input")]
+    public required JsonElement ToolInput { get; init; }
+
+    [JsonPropertyName("permission_suggestions")]
+    public JsonElement? PermissionSuggestions { get; init; }
+}
+
+/// <summary>
+/// Hook-specific output for notification hooks.
+/// </summary>
+public sealed record NotificationHookSpecificOutput
+{
+    [JsonPropertyName("hookEventName")]
+    public string HookEventName => "Notification";
+
+    [JsonPropertyName("additionalContext")]
+    public string? AdditionalContext { get; init; }
+}
+
+/// <summary>
+/// Hook-specific output for subagent start hooks.
+/// </summary>
+public sealed record SubagentStartHookSpecificOutput
+{
+    [JsonPropertyName("hookEventName")]
+    public string HookEventName => "SubagentStart";
+
+    [JsonPropertyName("additionalContext")]
+    public string? AdditionalContext { get; init; }
+}
+
+/// <summary>
+/// Hook-specific output for permission request hooks.
+/// </summary>
+public sealed record PermissionRequestHookSpecificOutput
+{
+    [JsonPropertyName("hookEventName")]
+    public string HookEventName => "PermissionRequest";
+
+    [JsonPropertyName("decision")]
+    public JsonElement? Decision { get; init; }
+}

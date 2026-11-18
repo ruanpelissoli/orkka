@@ -1,0 +1,254 @@
+{
+  "lanes": {
+    "Drafting": "Borrador",
+    "Ready": "Listo",
+    "Planning": "Planificación",
+    "PlanReady": "Plan listo",
+    "PendingQuestions": "Preguntas pendientes",
+    "Developing": "En desarrollo",
+    "CodeReview": "Revisión de código",
+    "Done": "Hecho"
+  },
+  "priorities": {
+    "low": "Baja",
+    "medium": "Media",
+    "high": "Alta",
+    "critical": "Crítica"
+  },
+  "taskTypes": {
+    "Feature": "Funcionalidad",
+    "BugFix": "Corrección de error",
+    "Refactor": "Refactorización",
+    "Improvement": "Mejora"
+  },
+  "taskStatuses": {
+    "Draft": "Borrador",
+    "Active": "Activa",
+    "InQueue": "En cola",
+    "WaitingPlanApproval": "Esperando revisión del plan",
+    "WaitingCodeReview": "Esperando revisión de código",
+    "ReasoningTimeout": "Tiempo de razonamiento agotado",
+    "OutOfTokens": "Sin tokens",
+    "Blocked": "Bloqueada",
+    "Completed": "Completada",
+    "Archived": "Archivada"
+  },
+  "planStatuses": {
+    "Draft": "Borrador",
+    "WaitingPlanApproval": "Esperando revisión",
+    "Approved": "Aprobado",
+    "Rejected": "Rechazado"
+  },
+  "roles": {
+    "pm": "PM",
+    "dev": "Dev",
+    "reviewer": "Revisor",
+    "admin": "Admin",
+    "root": "Root"
+  },
+  "agentRoles": {
+    "PM": "PM",
+    "Designer": "Diseñador",
+    "FrontendDev": "Dev Frontend",
+    "BackendDev": "Dev Backend",
+    "FullStackDev": "Dev Full Stack",
+    "QA": "QA",
+    "CodeReviewer": "Revisor de código",
+    "DevOps": "DevOps",
+    "SolutionArchitect": "Arquitecto de soluciones",
+    "GameDev": "Dev de videojuegos",
+    "GameDesigner": "Diseñador de videojuegos",
+    "DBA": "DBA",
+    "Legal": "Legal",
+    "MobileDev": "Dev Móvil"
+  },
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "confirm": "Confirmar",
+    "close": "Cerrar",
+    "submit": "Enviar",
+    "retry": "Reintentar",
+    "loading": "Cargando...",
+    "saving": "Guardando...",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "viewAll": "Ver todo",
+    "copy": "Copiar",
+    "copied": "Copiado"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "projects": "Proyectos",
+    "settings": "Configuración",
+    "notifications": "Notificaciones",
+    "overview": "Resumen",
+    "board": "Tablero",
+    "tasks": "Tareas",
+    "repos": "Repositorios",
+    "team": "Equipo"
+  },
+  "locale": {
+    "en": "English",
+    "es": "Español",
+    "pt": "Português",
+    "fr": "Français",
+    "de": "Deutsch",
+    "switchLanguage": "Cambiar idioma"
+  },
+  "meta": {
+    "appTitle": "Orkka",
+    "appDescription": "Tus tickets del tracker, trabajados por un equipo de IA en esta máquina."
+  },
+  "glossary": {
+    "agentTime": {
+      "term": "Tiempo de agente",
+      "definition": "Cuánto trabajaron realmente los agentes, sumado. No lo que tardó la tarea de principio a fin: eso mide sobre todo la rapidez con que respondieron las personas."
+    },
+    "acceptanceCriteria": {
+      "term": "Criterios de aceptación",
+      "definition": "Una lista corta de lo que debe cumplirse para dar la tarea por terminada. El equipo construye y prueba en base a ella."
+    },
+    "agent": {
+      "term": "Agente de IA",
+      "definition": "Una IA que hace trabajo de varios pasos por su cuenta — lee tu proyecto, escribe código, ejecuta pruebas — en lugar de solo responder una pregunta."
+    },
+    "apiKey": {
+      "term": "Clave de API",
+      "definition": "Un código secreto que permite a un programa actuar en tu cuenta. Trátalo como una contraseña."
+    },
+    "autopilot": {
+      "term": "Autopilot",
+      "definition": "Cuando está activado, el equipo aprueba planes, responde sus propias preguntas y avanza por la hoja de ruta sin esperarte — dentro de un límite de gasto que tú fijas."
+    },
+    "backlog": {
+      "term": "Backlog",
+      "definition": "La lista de tareas a la espera de ser tomadas."
+    },
+    "branch": {
+      "term": "Rama (branch)",
+      "definition": "Una copia aparte del código donde se hace un cambio sin tocar la versión en vivo — hasta que se fusiona."
+    },
+    "ci": {
+      "term": "CI",
+      "definition": "Integración continua: comprobaciones automáticas que compilan y prueban cada cambio para detectar problemas antes de que alguien los vea."
+    },
+    "codeReview": {
+      "term": "Revisión de código",
+      "definition": "Una segunda mirada a un cambio propuesto antes de aceptarlo — para detectar errores y mantener el código ordenado."
+    },
+    "commit": {
+      "term": "Commit",
+      "definition": "Una instantánea guardada de cambios en el código, con una nota breve de lo que se hizo."
+    },
+    "deploy": {
+      "term": "Desplegar (deploy)",
+      "definition": "Publicar una nueva versión de la app para que la gente pueda usarla."
+    },
+    "diff": {
+      "term": "Diff",
+      "definition": "Una vista de exactamente qué cambió en el código — líneas añadidas en verde, líneas eliminadas en rojo."
+    },
+    "github": {
+      "term": "GitHub",
+      "definition": "El sitio web donde se guarda y comparte la mayor parte del código del mundo. Orkka puede trabajar sobre código alojado allí."
+    },
+    "lane": {
+      "term": "Carril (lane)",
+      "definition": "Una columna del tablero. Cada tarea avanza por los carriles, de la idea a terminada."
+    },
+    "mcp": {
+      "term": "MCP",
+      "definition": "Un estándar que permite a otras herramientas de IA — como Claude Code o Cursor — hablar directamente con Orkka."
+    },
+    "merge": {
+      "term": "Fusionar (merge)",
+      "definition": "Aceptar un cambio propuesto para que pase a formar parte de la app."
+    },
+    "milestone": {
+      "term": "Hito",
+      "definition": "Un tramo significativo de la hoja de ruta: un grupo de tareas relacionadas que juntas entregan algo usable."
+    },
+    "pipeline": {
+      "term": "Pipeline",
+      "definition": "Los pasos por los que pasa cada tarea: planificar, construir, probar, revisar, terminar."
+    },
+    "plan": {
+      "term": "Plan de ejecución",
+      "definition": "La propuesta paso a paso del agente sobre cómo hará la tarea. No se construye nada hasta que lo apruebas."
+    },
+    "pr": {
+      "term": "Pull request (PR)",
+      "definition": "Un conjunto de cambios de código propuestos, empaquetado para poder revisarlo antes de que pase a formar parte de la app."
+    },
+    "qa": {
+      "term": "QA",
+      "definition": "Control de calidad — probar la app para asegurarse de que funciona como debe antes de que salga nada."
+    },
+    "repo": {
+      "term": "Repositorio (repo)",
+      "definition": "Donde se guarda el código de una app, con el historial completo de cada cambio — normalmente en GitHub. Piensa en él como la carpeta del proyecto."
+    },
+    "roadmap": {
+      "term": "Hoja de ruta",
+      "definition": "El plan ordenado de qué construir, agrupado en hitos, que el equipo va recorriendo."
+    },
+    "runner": {
+      "term": "Runner",
+      "definition": "Un pequeño programa que instalas en tu propio ordenador para que los agentes trabajen ahí, con tus propias suscripciones de IA, en lugar de en los servidores de Orkka."
+    },
+    "stack": {
+      "term": "Stack tecnológico",
+      "definition": "El conjunto de tecnologías con las que está construida una app — lenguajes de programación, frameworks, base de datos."
+    },
+    "tokens": {
+      "term": "Tokens",
+      "definition": "Cómo miden el texto los modelos de IA — aproximadamente tres cuartos de palabra cada uno. Los planes de los proveedores de IA cuentan el uso en tokens."
+    },
+    "worktree": {
+      "term": "Worktree",
+      "definition": "Una copia de trabajo privada del código para una tarea, de modo que sus cambios quedan separados hasta que se revisan."
+    },
+    "laneDrafting": {
+      "term": "Borrador",
+      "definition": "Donde escribes una tarea. No pasa nada con ella hasta que la mueves a Lista."
+    },
+    "laneReady": {
+      "term": "Lista",
+      "definition": "Tu PM recoge aquí la tarea: comprueba que está clara y completa, y te hace preguntas si no lo está."
+    },
+    "lanePlanning": {
+      "term": "Planificando",
+      "definition": "Un agente desarrollador está resolviendo, paso a paso, cómo hará la tarea."
+    },
+    "lanePlanReady": {
+      "term": "Plan listo",
+      "definition": "El plan te está esperando. Apruébalo para empezar el trabajo o pide cambios."
+    },
+    "lanePendingQuestions": {
+      "term": "Preguntas pendientes",
+      "definition": "Un agente necesita algo de ti antes de poder continuar. Responde en la tarea para que vuelva a avanzar."
+    },
+    "laneDeveloping": {
+      "term": "Desarrollando",
+      "definition": "Se está escribiendo el código — en una copia privada del proyecto, así que todavía no se toca nada en vivo."
+    },
+    "laneTesting": {
+      "term": "Probando",
+      "definition": "Scout está probando el cambio en un navegador real y comprobándolo contra la lista de la tarea."
+    },
+    "laneCodeReview": {
+      "term": "Revisión de código",
+      "definition": "Sentinel le está dando una segunda mirada al cambio. Cuando pasa, el cambio queda listo para que lo apruebes."
+    },
+    "laneDone": {
+      "term": "Hecho",
+      "definition": "Aprobado y ya forma parte de la app."
+    }
+  }
+}

@@ -1,0 +1,46 @@
+#!/bin/sh
+# ./orkka - run Orkka from this clone. Readable on purpose: it checks your tools, builds the UI
+# when its sources changed, builds the .NET app, then runs it. It installs nothing and writes
+# only inside this folder and Orkka's data folder (~/.orkka, or $ORKKA_HOME).
+set -eu
+cd "$(dirname "$0")"
+UI_DIST=ui/apps/local/dist
+APP=src/Orkka/bin/Release/net10.0/orkka.dll
+
+die() { printf '%s\n' "$@" >&2; exit 1; }
+
+# 1. The .NET SDK that global.json asks for (dotnet refuses to run without it).
+command -v dotnet >/dev/null 2>&1 || die "Orkka needs the .NET 10 SDK: https://dotnet.microsoft.com/download/dotnet/10.0"
+dotnet --version >/dev/null 2>&1 || die "Your .NET SDK does not match global.json (needs 10.0.300 or newer):" \
+  "https://dotnet.microsoft.com/download/dotnet/10.0"
+
+# 2. The web UI, rebuilt only when ui/ changed (committed or not) since the last build.
+#    The stamp is a hash of ui/'s tracked files, uncommitted edits and new files.
+if [ "${1:-}" = start ] && [ -z "${ORKKA_SKIP_UI_BUILD:-}" ]; then
+  stamp=$({ git ls-files -s -- ui; git diff --no-ext-diff -- ui; git ls-files -o --exclude-standard -- ui; } 2>/dev/null \
+    | git hash-object --stdin 2>/dev/null || echo no-git)
+  if [ ! -f "$UI_DIST/index.html" ] || [ "$(cat "$UI_DIST/.orkka-build-stamp" 2>/dev/null)" != "$stamp" ]; then
+    command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1 \
+      || die "Building the UI needs Node.js 20 or newer with npm: https://nodejs.org/"
+    [ "$(node -p 'process.versions.node.split(".")[0]')" -ge 20 ] || die "Node.js 20 or newer is needed (found $(node --version)): https://nodejs.org/"
+    # npm ci only when package-lock.json changed (its stamp lives in node_modules).
+    lock=$(git hash-object ui/package-lock.json)
+    if [ "$(cat ui/node_modules/.orkka-lock-stamp 2>/dev/null)" != "$lock" ]; then
+      echo "Installing the UI's packages (npm ci)..."
+      (cd ui && npm ci --no-audit --no-fund) && echo "$lock" > ui/node_modules/.orkka-lock-stamp
+    fi
+    echo "Building the UI (npm run build)..."
+    (cd ui && npm run build) || die "The UI build failed (see above)."
+    [ -f "$UI_DIST/index.html" ] || die "The UI build did not produce $UI_DIST/index.html (see above)."
+    echo "$stamp" > "$UI_DIST/.orkka-build-stamp"
+  fi
+fi
+
+# 3. The app: built for `start` (a no-op when nothing changed), otherwise only when missing,
+#    so `./orkka status` and friends answer at once. Then run it in this process.
+#    The build leaves no MSBuild or compiler server running (no node reuse, no shared compilation).
+if [ "${1:-}" = start ] || [ ! -f "$APP" ]; then
+  dotnet build src/Orkka -c Release --nologo -v q -clp:ErrorsOnly -nodeReuse:false -p:UseSharedCompilation=false \
+    || die "The build failed. If Orkka is already running, stop it first: ./orkka stop"
+fi
+exec dotnet "$APP" "$@"

@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#162038"/>
+      <stop offset="100%" style="stop-color:#0A0E1A"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60A5FA"/>
+      <stop offset="100%" style="stop-color:#3B82F6"/>
+    </linearGradient>
+    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E5E7EB"/>
+      <stop offset="100%" style="stop-color:#9CA3AF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect x="16" y="16" width="480" height="480" rx="96" ry="96" fill="url(#bgGrad)"/>
+
+  <!-- Orca body - main shape, leaping/diving silhouette -->
+  <!-- Dark top (dorsal side) -->
+  <path d="M140,300 
+           C140,300 160,200 220,170 
+           C260,150 300,145 340,155 
+           C370,162 395,180 405,210 
+           C415,240 410,270 390,295
+           L385,290
+           C385,290 370,310 350,320
+           L330,328
+           C310,332 280,330 260,325
+           C230,318 190,310 160,308
+           Z" 
+        fill="#1E2D4D"/>
+
+  <!-- Orca belly - white/light underside -->
+  <path d="M165,308 
+           C190,310 230,318 260,325
+           C280,330 310,332 330,328
+           L350,320
+           C350,320 340,345 310,355
+           C280,365 240,360 210,348
+           C185,338 168,318 165,308
+           Z" 
+        fill="url(#bodyGrad)"/>
+
+  <!-- Dorsal fin -->
+  <path d="M280,170 
+           C280,170 275,110 310,90
+           C310,90 305,130 320,155
+           Z" 
+        fill="#1E2D4D"/>
+
+  <!-- Tail flukes -->
+  <path d="M140,300 
+           C140,300 110,290 90,270
+           C90,270 100,300 115,310
+           Z" 
+        fill="#1E2D4D"/>
+  <path d="M140,300 
+           C140,300 105,310 85,330
+           C85,330 110,320 130,312
+           Z" 
+        fill="#1E2D4D"/>
+
+  <!-- Pectoral fin -->
+  <path d="M290,280 
+           C290,280 275,310 250,325
+           C250,325 270,315 285,295
+           Z" 
+        fill="#1E2D4D"/>
+
+  <!-- Eye patch (orca's distinctive white patch) -->
+  <ellipse cx="370" cy="230" rx="18" ry="12" fill="url(#accentGrad)" transform="rotate(-15,370,230)"/>
+
+  <!-- Eye -->
+  <circle cx="380" cy="225" r="5" fill="#0A0E1A"/>
+
+  <!-- Code bracket accent - floating near the orca -->
+  <g fill="none" stroke="url(#accentGrad)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.7">
+    <!-- Left bracket -->
+    <polyline points="400,160 388,175 400,190"/>
+    <!-- Right bracket -->
+    <polyline points="415,160 427,175 415,190"/>
+  </g>
+
+  <!-- Small accent dots (like bubbles/data) -->
+  <circle cx="420" cy="145" r="3" fill="#3B82F6" opacity="0.5"/>
+  <circle cx="435" cy="155" r="2" fill="#60A5FA" opacity="0.4"/>
+  <circle cx="410" cy="135" r="2" fill="#60A5FA" opacity="0.3"/>
+</svg>

@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Orkka.Modules.Projects.Contracts\Orkka.Modules.Projects.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Tasks.Contracts\Orkka.Modules.Tasks.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.SourceControl.Contracts\Orkka.Modules.SourceControl.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Organizations.Contracts\Orkka.Modules.Organizations.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Usage.Contracts\Orkka.Modules.Usage.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Documents.Contracts\Orkka.Modules.Documents.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Agents.Contracts\Orkka.Modules.Agents.Contracts.csproj" />
+    <ProjectReference Include="..\..\Orkka.SharedKernel\Orkka.SharedKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FastEndpoints" Version="8.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Orkka.Tests" />
+    <InternalsVisibleTo Include="Orkka.IntegrationTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The canonical managed-project scaffold, embedded as real reviewable files.
+         Forward slashes in LogicalName keep resource lookups platform-independent. -->
+    <EmbeddedResource Include="Infrastructure\Provisioning\ScaffoldTemplate\**\*">
+      <LogicalName>ScaffoldTemplate/$([System.String]::Copy('%(RecursiveDir)').Replace('\','/'))%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

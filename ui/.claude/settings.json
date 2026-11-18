@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xxd \"c:/Code/orkka/orkka-ui/messages/es/dashboard.json\")",
+      "Bash(node -e \":*)",
+      "Bash(ls \"c:/Code/orkka/orkka-ui/app/[locale]/\\(dashboard\\)/p/[projectId]/\")",
+      "Bash(node -e \"const e = require\\(''''@excalidraw/excalidraw''''\\); console.log\\(Object.keys\\(e\\).slice\\(0, 30\\)\\)\")",
+      "Bash(npx vitest:*)"
+    ],
+    "additionalDirectories": [
+      "c:\\Code\\orkka\\orkka-ui\\app\\[locale]\\(dashboard)\\p\\[projectId]\\team"
+    ]
+  },
+  "extraKnownMarketplaces": {
+    "vercel": {
+      "source": {
+        "source": "github",
+        "repo": "vercel/vercel-plugin"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "vercel-plugin@vercel": true
+  }
+}

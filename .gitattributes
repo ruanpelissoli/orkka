@@ -1,0 +1,4 @@
+# The launcher scripts must keep their line endings on every OS: sh refuses CRLF, cmd wants it.
+orkka text eol=lf
+*.sh text eol=lf
+*.cmd text eol=crlf

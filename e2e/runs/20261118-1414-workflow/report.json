@@ -1,0 +1,106 @@
+{
+  "runId": "20261118-1414-workflow",
+  "suite": "workflow",
+  "target": "http://127.0.0.1:6792",
+  "startedAt": "2026-11-18T17:14:34.219Z",
+  "finishedAt": "2026-11-18T17:20:42.128Z",
+  "durationMs": 367909,
+  "operator": "claude",
+  "gitSha": "uncommitted",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "totals": {
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [
+        "LWF-002"
+      ],
+      "testTitle": "1. a base folder becomes a project: api is a remote, web a local folder",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "passed",
+      "durationMs": 2694,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:14:35.787Z"
+    },
+    {
+      "caseIds": [
+        "LWF-003"
+      ],
+      "testTitle": "2. a Jira connection added from Settings → Trackers: the token lives only in the runner's secret store",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "passed",
+      "durationMs": 161,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:14:39.438Z"
+    },
+    {
+      "caseIds": [
+        "LWF-004",
+        "TSRC-004"
+      ],
+      "testTitle": "3. the ticket source: To Do intake and the six-step status map",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "passed",
+      "durationMs": 162,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:14:39.607Z"
+    },
+    {
+      "caseIds": [
+        "LWF-007"
+      ],
+      "testTitle": "6. a Story with two sub-tasks: one branch, draft PR, the second builds on the first, ready at the end",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "passed",
+      "durationMs": 336045,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:14:39.774Z"
+    },
+    {
+      "caseIds": [
+        "LWF-008"
+      ],
+      "testTitle": "7. Azure DevOps: a PAT connection and a work item in intake",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "passed",
+      "durationMs": 26196,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T17:20:15.837Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [
+      {
+        "id": "01M7QTRT9ZPFS6CBJGBY7063Y7",
+        "name": "e2e-shop-ado-mwme00e2"
+      }
+    ],
+    "leftovers": []
+  },
+  "notes": [
+    "Offline run: only offline specs ran; environment-bound specs were skipped."
+  ]
+}

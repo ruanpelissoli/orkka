@@ -1,0 +1,19 @@
+{
+  "stack": "node",
+  "check": "npm test",
+  "run": {
+    "targets": [
+      {
+        "key": "api",
+        "label": "API",
+        "kind": "api",
+        "command": "npm start",
+        "port": 4000,
+        "previewPath": "/health",
+        "autoSelect": true,
+        "restartOnMerge": true
+      }
+    ],
+    "notes": "Dependency-free Node HTTP server; no install step needed."
+  }
+}

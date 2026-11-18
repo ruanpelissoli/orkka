@@ -1,0 +1,197 @@
+{
+  "runId": "20260915-1212-hybrid-folder",
+  "suite": "hybrid-folder",
+  "target": "prod",
+  "startedAt": "2026-09-15T15:12:37.791Z",
+  "finishedAt": "2026-09-15T15:12:51.054Z",
+  "durationMs": 13263,
+  "operator": "claude",
+  "gitSha": "uncommitted",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "spend": {
+    "startCredits": 2814,
+    "endCredits": 2814,
+    "totalUsd": 0,
+    "capUsd": 5,
+    "aborted": false
+  },
+  "totals": {
+    "passed": 0,
+    "failed": 0,
+    "skipped": 9,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [
+        "HYF-001"
+      ],
+      "testTitle": "HYF-001 browse the runner's file system through the relay",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 1413,
+      "costUsd": 0,
+      "projects": [],
+      "runner": "LAPTOP-B v0.3.154",
+      "skipReason": "the online runner is LAPTOP-B, but the fixture folders live on LAPTOP-A — run this suite where the runner runs",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:12:43.016Z"
+    },
+    {
+      "caseIds": [
+        "HYF-002",
+        "HYF-003",
+        "HYF-010"
+      ],
+      "testTitle": "HYF-002 link a git folder from this machine: provider local, execution pinned to the runner",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 610,
+      "costUsd": 0,
+      "projects": [],
+      "runner": "LAPTOP-B v0.3.154",
+      "skipReason": "the online runner is LAPTOP-B, but the fixture folders live on LAPTOP-A — run this suite where the runner runs",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:12:44.460Z"
+    },
+    {
+      "caseIds": [
+        "HYF-004"
+      ],
+      "testTitle": "HYF-004 link a plain (non-git) folder: Orkka initialises the repository in place",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 628,
+      "costUsd": 0,
+      "projects": [],
+      "runner": "LAPTOP-B v0.3.154",
+      "skipReason": "the online runner is LAPTOP-B, but the fixture folders live on LAPTOP-A — run this suite where the runner runs",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:12:45.078Z"
+    },
+    {
+      "caseIds": [
+        "HYF-005"
+      ],
+      "testTitle": "HYF-005 linking a folder that does not exist answers 4xx with a reason",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 631,
+      "costUsd": 0,
+      "projects": [],
+      "runner": "LAPTOP-B v0.3.154",
+      "skipReason": "the online runner is LAPTOP-B, but the fixture folders live on LAPTOP-A — run this suite where the runner runs",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:12:45.714Z"
+    },
+    {
+      "caseIds": [
+        "HYF-006"
+      ],
+      "testTitle": "HYF-006 sync-status of a freshly linked folder: no remote, nothing to push",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 634,
+      "costUsd": 0,
+      "projects": [],
+      "runner": "LAPTOP-B v0.3.154",
+      "skipReason": "the online runner is LAPTOP-B, but the fixture folders live on LAPTOP-A — run this suite where the runner runs",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:12:46.353Z"
+    },
+    {
+      "caseIds": [
+        "HYF-007",
+        "HYF-008"
+      ],
+      "testTitle": "HYF-007 'Let Orkka host it' publishes the folder to a private repo under orkka-repos",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 615,
+      "costUsd": 0,
+      "projects": [],
+      "runner": "LAPTOP-B v0.3.154",
+      "skipReason": "the online runner is LAPTOP-B, but the fixture folders live on LAPTOP-A — run this suite where the runner runs",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:12:46.997Z"
+    },
+    {
+      "caseIds": [
+        "HYF-009",
+        "HYF-011"
+      ],
+      "testTitle": "HYF-009 connect an EMPTY GitHub repo the user created and push; a second push says up to date",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 613,
+      "costUsd": 0,
+      "projects": [],
+      "runner": "LAPTOP-B v0.3.154",
+      "skipReason": "the online runner is LAPTOP-B, but the fixture folders live on LAPTOP-A — run this suite where the runner runs",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:12:47.619Z"
+    },
+    {
+      "caseIds": [
+        "HYF-012"
+      ],
+      "testTitle": "HYF-012 attach-remote to a NON-empty repo is refused with a clear reason",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 618,
+      "costUsd": 0,
+      "projects": [],
+      "runner": "LAPTOP-B v0.3.154",
+      "skipReason": "the online runner is LAPTOP-B, but the fixture folders live on LAPTOP-A — run this suite where the runner runs",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:12:48.239Z"
+    },
+    {
+      "caseIds": [
+        "HYF-020",
+        "HYF-021",
+        "HYF-022"
+      ],
+      "testTitle": "HYF-020 task on a linked folder lands in the working copy on this machine ($0)",
+      "file": "tests/hybrid-folder/local-folder.spec.ts",
+      "status": "skipped",
+      "durationMs": 624,
+      "costUsd": 0,
+      "projects": [],
+      "runner": "LAPTOP-B v0.3.154",
+      "skipReason": "the online runner is LAPTOP-B, but the fixture folders live on LAPTOP-A — run this suite where the runner runs",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:12:48.865Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [],
+    "leftovers": []
+  },
+  "notes": [
+    "Harness API key acts as a Member with all 18 permissions (by design); Owner-only endpoints (org rename/settings, role changes, admin) use the Clerk session.",
+    "Org plan has no team features (not Enterprise); Members cases will be skipped."
+  ]
+}

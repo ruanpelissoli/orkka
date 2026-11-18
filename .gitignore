@@ -1,0 +1,73 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio files
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.csproj.user
+
+# Rider files
+.idea/
+
+# VS Code
+.vscode/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+TestResults/
+coverage*/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# User secrets
+appsettings.*.local.json
+appsettings.Local.json
+
+# Environment files
+.env
+.env.*
+
+# Docker
+docker-compose.override.yml
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!**/environments/*.tfvars
+crash.log
+
+# Misc
+*.swp
+*.bak
+*.tmp
+
+# Node (ui/, e2e/ carry their own ignores)
+node_modules/
+
+# The built web UI (./orkka start builds it; see orkka / orkka.cmd)
+/ui/apps/local/dist/

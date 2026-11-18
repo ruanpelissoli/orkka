@@ -1,0 +1,139 @@
+{
+  "runId": "20261118-0101-workflow",
+  "suite": "workflow",
+  "target": "http://127.0.0.1:6750",
+  "startedAt": "2026-11-18T04:01:46.627Z",
+  "finishedAt": "2026-11-18T04:02:14.441Z",
+  "durationMs": 27814,
+  "operator": "claude",
+  "gitSha": "7c790e44baab",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "totals": {
+    "passed": 4,
+    "failed": 0,
+    "skipped": 3,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [
+        "LWF-002"
+      ],
+      "testTitle": "1. a base folder becomes a project: api is a remote, web a local folder",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "passed",
+      "durationMs": 3145,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T04:01:47.925Z"
+    },
+    {
+      "caseIds": [
+        "LWF-003"
+      ],
+      "testTitle": "2. a Jira connection added from Settings → Trackers: the token lives only in the runner's secret store",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "passed",
+      "durationMs": 347,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T04:01:52.058Z"
+    },
+    {
+      "caseIds": [
+        "LWF-004",
+        "TSRC-004"
+      ],
+      "testTitle": "3. the ticket source: To Do intake and the six-step status map",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "passed",
+      "durationMs": 144,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T04:01:52.413Z"
+    },
+    {
+      "caseIds": [
+        "LWF-005"
+      ],
+      "testTitle": "4. a standalone ticket: Discuss, plan, build, review, publish; Jira follows",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "skipped",
+      "durationMs": 1,
+      "projects": [],
+      "skipReason": "real agent runs — set E2E_WORKFLOW_AGENTS=1",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T04:01:52.563Z"
+    },
+    {
+      "caseIds": [
+        "LWF-006"
+      ],
+      "testTitle": "5. a ticket that names no repository: the question routes it; moving it in Jira does not retire it",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "skipped",
+      "durationMs": 1,
+      "projects": [],
+      "skipReason": "real agent runs — set E2E_WORKFLOW_AGENTS=1",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T04:01:52.568Z"
+    },
+    {
+      "caseIds": [
+        "LWF-007"
+      ],
+      "testTitle": "6. a Story with two sub-tasks: one branch, draft PR, the second builds on the first, ready at the end",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "skipped",
+      "durationMs": 1,
+      "projects": [],
+      "skipReason": "real agent runs — set E2E_WORKFLOW_AGENTS=1",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T04:01:52.574Z"
+    },
+    {
+      "caseIds": [
+        "LWF-008"
+      ],
+      "testTitle": "7. Azure DevOps: a PAT connection and a work item in intake",
+      "file": "tests/local/workflow.spec.ts",
+      "status": "passed",
+      "durationMs": 21586,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T04:01:52.580Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [
+      {
+        "id": "01M7PD2TPXQTMCASZ9S2K8CX3S",
+        "name": "e2e-shop-mwllh78h"
+      },
+      {
+        "id": "01M7PD2Y0MZ094Z9DSZPWYC4VG",
+        "name": "e2e-shop-ado-mwllha4k"
+      }
+    ],
+    "leftovers": []
+  },
+  "notes": []
+}

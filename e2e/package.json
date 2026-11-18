@@ -1,0 +1,51 @@
+{
+  "name": "orkka-e2e-tests",
+  "version": "0.1.0",
+  "private": true,
+  "description": "End-to-end test programme for Orkka (local-only: one machine, no account): catalogue, Playwright + API harness on a sandboxed local stack, fake Jira/ADO, stub gh, run reports.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "auth:check": "tsx scripts/auth-check.ts",
+    "runner:status": "tsx scripts/runner-status.ts",
+    "fake-tracker": "tsx scripts/fake-tracker.ts",
+    "sweep": "tsx scripts/sweep.ts",
+    "sweep:dry": "tsx scripts/sweep.ts --dry-run",
+    "catalog:index": "tsx scripts/catalog-index.ts",
+    "catalog:coverage": "tsx scripts/catalog-index.ts --coverage",
+    "catalog:sync-automation": "tsx scripts/catalog-index.ts --sync-automation",
+    "manifest": "tsx scripts/surface-manifest.ts",
+    "manifest:update": "tsx scripts/surface-manifest.ts --update",
+    "sync-check": "tsx scripts/sync-check.ts",
+    "test": "playwright test",
+    "test:smoke": "cross-env E2E_SUITE=smoke playwright test --grep @smoke",
+    "test:offline": "cross-env E2E_SUITE=offline playwright test --grep @offline",
+    "test:api": "cross-env E2E_SUITE=api playwright test --grep @api",
+    "test:ui-inventory": "cross-env E2E_SUITE=ui-inventory playwright test --grep @ui-inventory",
+    "report:open": "playwright show-report .runs/html",
+    "typecheck": "tsc --noEmit",
+    "stack:start": "tsx scripts/stack.ts start",
+    "stack:stop": "tsx scripts/stack.ts stop",
+    "stack:status": "tsx scripts/stack.ts status",
+    "stack:auth": "tsx scripts/stack.ts auth",
+    "test:screens": "cross-env E2E_SUITE=screens playwright test --grep @screens",
+    "test:workflow": "cross-env E2E_SUITE=workflow playwright test --grep @workflow",
+    "runner:wait": "tsx scripts/runner-wait.ts"
+  },
+  "devDependencies": {
+    "@microsoft/signalr": "^10.0.11",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^24.6.0",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.4.2",
+    "eventsource-parser": "^4.1.0",
+    "execa": "^10.0.1",
+    "gray-matter": "^4.0.3",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.5"
+  }
+}

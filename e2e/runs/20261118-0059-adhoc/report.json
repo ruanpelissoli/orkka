@@ -1,0 +1,77 @@
+{
+  "runId": "20261118-0059-adhoc",
+  "suite": "adhoc",
+  "target": "http://127.0.0.1:6750",
+  "startedAt": "2026-11-18T03:59:00.856Z",
+  "finishedAt": "2026-11-18T03:59:03.402Z",
+  "durationMs": 2546,
+  "operator": "claude",
+  "gitSha": "7c790e44baab",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "totals": {
+    "passed": 0,
+    "failed": 2,
+    "skipped": 0,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [
+        "TSRC-003"
+      ],
+      "testTitle": "TSRC-003 validation: poll interval, branch template, epics, subfolder, scope",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "failed",
+      "durationMs": 152,
+      "projects": [
+        "01M7PCXPWJX96KD43BY8W1V260 e2e-tsrc-20261118-0059-r65v"
+      ],
+      "artifacts": {
+        "trace": "..\\current\\artifacts\\api-ticket-source-ticket-s-fe17a-plate-epics-subfolder-scope-chromium\\trace.zip",
+        "screenshots": []
+      },
+      "failure": {
+        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/at least one epic/\u001b[39m\nReceived string:  \u001b[31m\"PUT /api/projects/01M7PCXPWJX96KD43BY8W1V260/tracker → 400: trackerConnectionId: Pick one of your own tracker connections — add one in Settings → Trackers (or `orkka-local tracker add`).\"\u001b[39m",
+        "stackHead": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/at least one epic/\u001b[39m\nReceived string:  \u001b[31m\"PUT /api/projects/01M7PCXPWJX96KD43BY8W1V260/tracker → 400: trackerConnectionId: Pick one of your own tracker connections — add one in Settings → Trackers (or `orkka-local tracker add`).\"\u001b[39m\n    at C:\\Projects\\orkka\\orkka-e2e-tests\\tests\\api\\ticket-source.spec.ts:47:60",
+        "logHint": "API + Worker console output of the stack at http://127.0.0.1:6750; runner log .runs/runner.log (grep for 01M7PCXPWJX96KD43BY8W1V260)"
+      },
+      "startedAt": "2026-11-18T03:59:01.989Z"
+    },
+    {
+      "caseIds": [
+        "WSP-001"
+      ],
+      "testTitle": "WSP-001 GET /api/me/workspaces lists my workspaces with exactly one active",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "failed",
+      "durationMs": 39,
+      "projects": [],
+      "artifacts": {
+        "trace": "..\\current\\artifacts\\api-workspaces-workspaces--25a0e-ces-with-exactly-one-active-chromium\\trace.zip",
+        "screenshots": []
+      },
+      "failure": {
+        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatchObject\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 0\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[2m    \"name\": Any<String>,\u001b[22m\n\u001b[2m    \"orgId\": Any<String>,\u001b[22m\n\u001b[2m    \"role\": StringMatching /Owner|Member/,\u001b[22m\n\u001b[2m    \"slug\": Any<String>,\u001b[22m\n\u001b[32m-   \"suspended\": Any<Boolean>,\u001b[39m\n\u001b[2m  }\u001b[22m",
+        "stackHead": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatchObject\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 0\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[2m    \"name\": Any<String>,\u001b[22m\n\u001b[2m    \"orgId\": Any<String>,\u001b[22m",
+        "logHint": "API + Worker console output of the stack at http://127.0.0.1:6750; runner log .runs/runner.log"
+      },
+      "startedAt": "2026-11-18T03:59:02.880Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [
+      {
+        "id": "01M7PCXPWJX96KD43BY8W1V260",
+        "name": "e2e-tsrc-20261118-0059-r65v"
+      }
+    ],
+    "leftovers": []
+  },
+  "notes": [
+    "Playwright overall status: failed"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "stack": "node",
+  "setup": "npm install",
+  "check": "npm run lint && npm test",
+  "run": {
+    "targets": [
+      {
+        "key": "web",
+        "label": "Web app",
+        "kind": "web",
+        "command": "npm run dev",
+        "installCommand": "npm install",
+        "port": 3000,
+        "previewPath": "/",
+        "autoSelect": true,
+        "restartOnMerge": false
+      }
+    ],
+    "notes": "Fixture for Orkka's end-to-end tests. No database, no env vars needed."
+  }
+}

@@ -1,0 +1,40 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Orkka/Orkka.csproj" />
+    <Project Path="src/Orkka.Local/Orkka.Local.csproj" />
+    <Project Path="src/Orkka.SharedKernel/Orkka.SharedKernel.csproj" />
+    <Project Path="src/Orkka.AgentRuntime/Orkka.AgentRuntime.csproj" />
+    <Project Path="src/Orkka.Git/Orkka.Git.csproj" />
+    <Project Path="src/Orkka.LocalRunner/Orkka.LocalRunner.csproj" />
+    <Project Path="src/Orkka.LocalRunner.Contracts/Orkka.LocalRunner.Contracts.csproj" />
+    <Project Path="src/Orkka.Runners.Server/Orkka.Runners.Server.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/">
+    <Project Path="src/Modules/Orkka.Modules.Organizations/Orkka.Modules.Organizations.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Organizations.Contracts/Orkka.Modules.Organizations.Contracts.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Projects/Orkka.Modules.Projects.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Projects.Contracts/Orkka.Modules.Projects.Contracts.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Tasks/Orkka.Modules.Tasks.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Tasks.Contracts/Orkka.Modules.Tasks.Contracts.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Agents/Orkka.Modules.Agents.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Agents.Contracts/Orkka.Modules.Agents.Contracts.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Usage/Orkka.Modules.Usage.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Usage.Contracts/Orkka.Modules.Usage.Contracts.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.SourceControl/Orkka.Modules.SourceControl.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.SourceControl.Contracts/Orkka.Modules.SourceControl.Contracts.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Execution/Orkka.Modules.Execution.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Runners/Orkka.Modules.Runners.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Runners.Contracts/Orkka.Modules.Runners.Contracts.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Trackers/Orkka.Modules.Trackers.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Trackers.Contracts/Orkka.Modules.Trackers.Contracts.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Documents/Orkka.Modules.Documents.csproj" />
+    <Project Path="src/Modules/Orkka.Modules.Documents.Contracts/Orkka.Modules.Documents.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/src/ThirdParty/">
+    <Project Path="src/ThirdParty/ih0.Claude.Agent.SDK/ih0.Claude.Agent.SDK.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Orkka.IntegrationTests/Orkka.IntegrationTests.csproj" />
+    <Project Path="tests/Orkka.Tests/Orkka.Tests.csproj" />
+  </Folder>
+</Solution>

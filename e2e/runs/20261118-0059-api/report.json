@@ -1,0 +1,273 @@
+{
+  "runId": "20261118-0059-api",
+  "suite": "api",
+  "target": "http://127.0.0.1:6750",
+  "startedAt": "2026-11-18T03:59:14.494Z",
+  "finishedAt": "2026-11-18T03:59:18.021Z",
+  "durationMs": 3527,
+  "operator": "claude",
+  "gitSha": "7c790e44baab",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "totals": {
+    "passed": 12,
+    "failed": 1,
+    "skipped": 2,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [
+        "TSRC-001"
+      ],
+      "testTitle": "TSRC-001 a project with no ticket source answers 204",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "passed",
+      "durationMs": 106,
+      "projects": [
+        "01M7PCY4R8HBV5757NDD6TD3GM e2e-tsrc-20261118-0059-r6au"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:59:16.195Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-002"
+      ],
+      "testTitle": "TSRC-002 PUT with a connection that is not mine → 400 on trackerConnectionId",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "passed",
+      "durationMs": 126,
+      "projects": [
+        "01M7PCY4VKACNS57PBPZF1SSJN e2e-tsrc-20261118-0059-kf2j"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:59:16.327Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-003"
+      ],
+      "testTitle": "TSRC-003 validation: poll interval, branch template, epics, subfolder, scope",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "failed",
+      "durationMs": 255,
+      "projects": [
+        "01M7PCY501MV3JS3081SCMGBK6 e2e-tsrc-20261118-0059-8g9s"
+      ],
+      "artifacts": {
+        "trace": "..\\current\\artifacts\\api-ticket-source-ticket-s-fe17a-plate-epics-subfolder-scope-chromium\\trace.zip",
+        "screenshots": []
+      },
+      "failure": {
+        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/Pick the Jira project or Azure DevOps project/\u001b[39m\nReceived string:  \u001b[31m\"PUT /api/projects/01M7PCY501MV3JS3081SCMGBK6/tracker → 400: scope: 'scope' must not be empty.\"\u001b[39m",
+        "stackHead": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/Pick the Jira project or Azure DevOps project/\u001b[39m\nReceived string:  \u001b[31m\"PUT /api/projects/01M7PCY501MV3JS3081SCMGBK6/tracker → 400: scope: 'scope' must not be empty.\"\u001b[39m\n    at C:\\Projects\\orkka\\orkka-e2e-tests\\tests\\api\\ticket-source.spec.ts:52:60",
+        "logHint": "API + Worker console output of the stack at http://127.0.0.1:6750; runner log .runs/runner.log (grep for 01M7PCY501MV3JS3081SCMGBK6)"
+      },
+      "startedAt": "2026-11-18T03:59:16.462Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-005"
+      ],
+      "testTitle": "TSRC-005 DELETE without a ticket source is a no-op 204; GET stays 204",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "passed",
+      "durationMs": 105,
+      "projects": [
+        "01M7PCY5XH1PAR8CH75BPZ45WB e2e-tsrc-20261118-0059-vab3"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:59:17.387Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-007"
+      ],
+      "testTitle": "TSRC-007 tracker query with an unknown kind → 400",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "passed",
+      "durationMs": 10,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:59:17.518Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-008"
+      ],
+      "testTitle": "TSRC-008 tracker query on an unknown connection → 404 (not 403)",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "passed",
+      "durationMs": 11,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:59:17.533Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-009"
+      ],
+      "testTitle": "TSRC-009 GET /api/trackers/connections lists my connections with metadata only",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "passed",
+      "durationMs": 11,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:59:17.550Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-006"
+      ],
+      "testTitle": "TSRC-006 a query while my runner is offline answers supported:false, not an error",
+      "file": "tests/api/ticket-source.spec.ts",
+      "status": "skipped",
+      "durationMs": 24,
+      "projects": [],
+      "skipReason": "the runner is online — stop it (npm run runner:status) to exercise this case",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:59:17.566Z"
+    },
+    {
+      "caseIds": [
+        "WSP-001"
+      ],
+      "testTitle": "WSP-001 GET /api/me/workspaces lists my workspaces with exactly one active",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "passed",
+      "durationMs": 33,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:59:17.607Z"
+    },
+    {
+      "caseIds": [
+        "WSP-003"
+      ],
+      "testTitle": "WSP-003 switching the active workspace answers 204; an unknown org answers 404",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "passed",
+      "durationMs": 49,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:59:17.649Z"
+    },
+    {
+      "caseIds": [
+        "WSP-004"
+      ],
+      "testTitle": "WSP-004 a non-ULID X-Orkka-Workspace answers 400 Invalid workspace.",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "passed",
+      "durationMs": 15,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:59:17.704Z"
+    },
+    {
+      "caseIds": [
+        "WSP-005"
+      ],
+      "testTitle": "WSP-005 naming a workspace I am not in answers 403",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "passed",
+      "durationMs": 9,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:59:17.724Z"
+    },
+    {
+      "caseIds": [
+        "WSP-006"
+      ],
+      "testTitle": "WSP-006 the same call in two workspaces returns disjoint projects",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "skipped",
+      "durationMs": 27,
+      "projects": [],
+      "skipReason": "only one workspace exists (WSP-002 creates a second one)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:59:17.737Z"
+    },
+    {
+      "caseIds": [
+        "WSP-007"
+      ],
+      "testTitle": "WSP-007 an API key ignores X-Orkka-Workspace and stays in its own org",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "passed",
+      "durationMs": 15,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:59:17.769Z"
+    },
+    {
+      "caseIds": [
+        "WSP-002"
+      ],
+      "testTitle": "WSP-002 creating a workspace makes it mine and active (restores the previous active one)",
+      "file": "tests/api/workspaces.spec.ts",
+      "status": "passed",
+      "durationMs": 104,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:59:17.789Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [
+      {
+        "id": "01M7PCY4R8HBV5757NDD6TD3GM",
+        "name": "e2e-tsrc-20261118-0059-r6au"
+      },
+      {
+        "id": "01M7PCY4VKACNS57PBPZF1SSJN",
+        "name": "e2e-tsrc-20261118-0059-kf2j"
+      },
+      {
+        "id": "01M7PCY501MV3JS3081SCMGBK6",
+        "name": "e2e-tsrc-20261118-0059-8g9s"
+      },
+      {
+        "id": "01M7PCY5XH1PAR8CH75BPZ45WB",
+        "name": "e2e-tsrc-20261118-0059-vab3"
+      }
+    ],
+    "leftovers": []
+  },
+  "notes": [
+    "Playwright overall status: failed"
+  ]
+}

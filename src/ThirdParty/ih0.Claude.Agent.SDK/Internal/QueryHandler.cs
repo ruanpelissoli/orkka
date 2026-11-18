@@ -1,0 +1,928 @@
+using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Threading.Channels;
+using ih0.Claude.Agent.SDK.Exceptions;
+using ih0.Claude.Agent.SDK.Internal.Transport;
+using ih0.Claude.Agent.SDK.Types;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
+namespace ih0.Claude.Agent.SDK.Internal;
+
+public sealed class QueryHandler : IAsyncDisposable
+{
+    private readonly ITransport _transport;
+    private readonly bool _isStreamingMode;
+    private readonly CanUseToolCallback? _canUseTool;
+    private readonly Dictionary<string, List<HookMatcherConfig>> _hooks;
+    private readonly Dictionary<string, ISdkMcpServer> _sdkMcpServers;
+    private readonly Dictionary<string, object>? _agents;
+    private readonly double _initializeTimeout;
+    private readonly ILogger _logger;
+
+    private readonly ConcurrentDictionary<string, TaskCompletionSource<JsonElement>> _pendingResponses = new();
+    private readonly ConcurrentDictionary<string, HookCallback> _hookCallbacks = new();
+    private readonly SemaphoreSlim _writeLock = new(1, 1);
+    private readonly Channel<JsonElement> _messageChannel;
+    private readonly CancellationTokenSource _cts = new();
+
+    private int _nextCallbackId;
+    private int _requestCounter;
+    private Task? _readTask;
+    private volatile bool _closed;
+
+    // [orkka patch] Set once the input stream has been ended (stdin EOF). stdin is ALSO the
+    // control-protocol response channel, so an SDK-MCP tool call that arrives afterwards can
+    // never be answered — the CLI waits and then reports "The tool call was interrupted before
+    // a result was received". Diagnosing that from the outside is close to impossible (the
+    // host sees a tool that lists fine and never works), so it is logged here.
+    private volatile bool _inputEnded;
+    private JsonElement? _initializationResult;
+    private readonly TaskCompletionSource _firstResultEvent = new();
+
+    public QueryHandler(
+        ITransport transport,
+        bool isStreamingMode,
+        CanUseToolCallback? canUseTool = null,
+        Dictionary<string, List<HookMatcherConfig>>? hooks = null,
+        Dictionary<string, ISdkMcpServer>? sdkMcpServers = null,
+        Dictionary<string, object>? agents = null,
+        double initializeTimeout = 60.0,
+        ILogger<QueryHandler>? logger = null)
+    {
+        _transport = transport;
+        _isStreamingMode = isStreamingMode;
+        _canUseTool = canUseTool;
+        _hooks = hooks ?? new Dictionary<string, List<HookMatcherConfig>>();
+        _sdkMcpServers = sdkMcpServers ?? new Dictionary<string, ISdkMcpServer>();
+        _agents = agents;
+        _initializeTimeout = initializeTimeout;
+        _logger = logger ?? NullLogger<QueryHandler>.Instance;
+
+        _messageChannel = Channel.CreateBounded<JsonElement>(
+            new BoundedChannelOptions(100)
+            {
+                FullMode = BoundedChannelFullMode.Wait
+            });
+    }
+
+    public JsonElement? InitializationResult => _initializationResult;
+
+    public Task StartAsync(CancellationToken cancellationToken = default)
+    {
+        if (_readTask != null)
+            return Task.CompletedTask;
+
+        _readTask = Task.Run(async () => await ReadMessagesLoopAsync(_cts.Token), _cts.Token);
+        return Task.CompletedTask;
+    }
+
+    public async Task<JsonElement?> InitializeAsync(CancellationToken cancellationToken = default)
+    {
+        if (!_isStreamingMode)
+            return null;
+
+        var hooksConfig = new Dictionary<string, object>();
+
+        foreach (var (eventName, matchers) in _hooks)
+        {
+            var matcherList = new List<object>();
+            foreach (var matcher in matchers)
+            {
+                var callbackIds = new List<string>();
+                foreach (var callback in matcher.Hooks)
+                {
+                    var callbackId = $"hook_{Interlocked.Increment(ref _nextCallbackId)}";
+                    _hookCallbacks[callbackId] = callback;
+                    callbackIds.Add(callbackId);
+                }
+
+                var matcherConfig = new Dictionary<string, object?>
+                {
+                    ["matcher"] = matcher.Matcher,
+                    ["hookCallbackIds"] = callbackIds
+                };
+
+                if (matcher.Timeout.HasValue)
+                {
+                    matcherConfig["timeout"] = matcher.Timeout.Value;
+                }
+
+                matcherList.Add(matcherConfig);
+            }
+            hooksConfig[eventName] = matcherList;
+        }
+
+        var request = new Dictionary<string, object?>
+        {
+            ["subtype"] = "initialize",
+            ["hooks"] = hooksConfig.Count > 0 ? hooksConfig : null,
+            ["agents"] = _agents
+        };
+
+        var response = await SendControlRequestAsync(request, _initializeTimeout, cancellationToken);
+        _initializationResult = response;
+        return response;
+    }
+
+    private async Task ReadMessagesLoopAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await foreach (var message in _transport.ReadMessagesAsync(cancellationToken))
+            {
+                if (_closed)
+                    break;
+
+                if (!message.TryGetProperty("type", out var typeEl))
+                {
+                    await _messageChannel.Writer.WriteAsync(message, cancellationToken);
+                    continue;
+                }
+
+                var msgType = typeEl.GetString();
+
+                if (msgType == "control_response")
+                {
+                    HandleControlResponse(message);
+                    continue;
+                }
+
+                if (msgType == "control_request")
+                {
+                    _ = Task.Run(async () => await HandleControlRequestAsync(message, cancellationToken), cancellationToken);
+                    continue;
+                }
+
+                if (msgType == "control_cancel_request")
+                {
+                    // TODO: Implement cancellation support
+                    continue;
+                }
+
+                if (msgType == "result")
+                {
+                    _firstResultEvent.TrySetResult();
+                }
+
+                await _messageChannel.Writer.WriteAsync(message, cancellationToken);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected during shutdown
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing messages from transport");
+
+            foreach (var pending in _pendingResponses.Values)
+            {
+                pending.TrySetException(ex);
+            }
+
+            var errorMessage = JsonSerializer.SerializeToElement(new { type = "error", error = ex.Message });
+            await _messageChannel.Writer.WriteAsync(errorMessage, cancellationToken);
+        }
+        finally
+        {
+            var endMessage = JsonSerializer.SerializeToElement(new { type = "end" });
+            await _messageChannel.Writer.WriteAsync(endMessage, CancellationToken.None);
+            _messageChannel.Writer.Complete();
+        }
+    }
+
+    private void HandleControlResponse(JsonElement message)
+    {
+        if (!message.TryGetProperty("response", out var responseEl))
+            return;
+
+        if (!responseEl.TryGetProperty("request_id", out var requestIdEl))
+            return;
+
+        var requestId = requestIdEl.GetString();
+        if (string.IsNullOrEmpty(requestId))
+            return;
+
+        if (_pendingResponses.TryRemove(requestId, out var tcs))
+        {
+            if (responseEl.TryGetProperty("subtype", out var subtypeEl) && subtypeEl.GetString() == "error")
+            {
+                var error = responseEl.TryGetProperty("error", out var errorEl)
+                    ? errorEl.GetString() ?? "Unknown error"
+                    : "Unknown error";
+                tcs.TrySetException(new ClaudeAgentException(error));
+            }
+            else
+            {
+                tcs.TrySetResult(responseEl);
+            }
+        }
+    }
+
+    private async Task HandleControlRequestAsync(JsonElement message, CancellationToken cancellationToken)
+    {
+        var requestId = message.GetProperty("request_id").GetString() ?? "";
+        var request = message.GetProperty("request");
+        var subtype = request.GetProperty("subtype").GetString();
+
+        try
+        {
+            JsonElement responseData;
+
+            switch (subtype)
+            {
+                case "can_use_tool":
+                    responseData = await HandleCanUseToolAsync(request, cancellationToken);
+                    break;
+
+                case "hook_callback":
+                    responseData = await HandleHookCallbackAsync(request, cancellationToken);
+                    break;
+
+                case "mcp_message":
+                    responseData = await HandleMcpMessageAsync(request, cancellationToken);
+                    break;
+
+                default:
+                    throw new InvalidOperationException($"Unsupported control request subtype: {subtype}");
+            }
+
+            var successResponse = new
+            {
+                type = "control_response",
+                response = new
+                {
+                    subtype = "success",
+                    request_id = requestId,
+                    response = responseData
+                }
+            };
+
+            var json = JsonSerializer.Serialize(successResponse);
+            await WriteAsync(json + "\n", cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error handling control request {RequestId}", requestId);
+
+            var errorResponse = new
+            {
+                type = "control_response",
+                response = new
+                {
+                    subtype = "error",
+                    request_id = requestId,
+                    error = ex.Message
+                }
+            };
+
+            var json = JsonSerializer.Serialize(errorResponse);
+            await WriteAsync(json + "\n", cancellationToken);
+        }
+    }
+
+    private async Task<JsonElement> HandleCanUseToolAsync(JsonElement request, CancellationToken cancellationToken)
+    {
+        if (_canUseTool == null)
+            throw new InvalidOperationException("canUseTool callback is not provided");
+
+        var toolName = request.GetProperty("tool_name").GetString() ?? "";
+        var input = request.GetProperty("input");
+        var originalInput = input.Clone();
+
+        var suggestions = new List<PermissionUpdate>();
+        if (request.TryGetProperty("permission_suggestions", out var suggestionsEl) &&
+            suggestionsEl.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var suggestionEl in suggestionsEl.EnumerateArray())
+            {
+                if (suggestionEl.ValueKind != JsonValueKind.Object)
+                    continue;
+
+                var typeStr = suggestionEl.TryGetProperty("type", out var typeEl) ? typeEl.GetString() : null;
+                if (typeStr == null)
+                    continue;
+
+                var permissionUpdate = new PermissionUpdate
+                {
+                    Type = typeStr switch
+                    {
+                        "addRules" => PermissionUpdateType.AddRules,
+                        "replaceRules" => PermissionUpdateType.ReplaceRules,
+                        "removeRules" => PermissionUpdateType.RemoveRules,
+                        "setMode" => PermissionUpdateType.SetMode,
+                        "addDirectories" => PermissionUpdateType.AddDirectories,
+                        "removeDirectories" => PermissionUpdateType.RemoveDirectories,
+                        _ => PermissionUpdateType.AddRules
+                    },
+                    Behavior = suggestionEl.TryGetProperty("behavior", out var behaviorEl) && behaviorEl.ValueKind == JsonValueKind.String
+                        ? behaviorEl.GetString() switch
+                        {
+                            "allow" => PermissionBehavior.Allow,
+                            "deny" => PermissionBehavior.Deny,
+                            "ask" => PermissionBehavior.Ask,
+                            _ => null
+                        }
+                        : null,
+                    Mode = suggestionEl.TryGetProperty("mode", out var modeEl) && modeEl.ValueKind == JsonValueKind.String
+                        ? modeEl.GetString() switch
+                        {
+                            "default" => Types.PermissionMode.Default,
+                            "acceptEdits" => Types.PermissionMode.AcceptEdits,
+                            "plan" => Types.PermissionMode.Plan,
+                            "bypassPermissions" => Types.PermissionMode.BypassPermissions,
+                            _ => null
+                        }
+                        : null,
+                    Destination = suggestionEl.TryGetProperty("destination", out var destEl) && destEl.ValueKind == JsonValueKind.String
+                        ? destEl.GetString() switch
+                        {
+                            "userSettings" => PermissionUpdateDestination.UserSettings,
+                            "projectSettings" => PermissionUpdateDestination.ProjectSettings,
+                            "localSettings" => PermissionUpdateDestination.LocalSettings,
+                            "session" => PermissionUpdateDestination.Session,
+                            _ => null
+                        }
+                        : null,
+                    Rules = suggestionEl.TryGetProperty("rules", out var rulesEl) && rulesEl.ValueKind == JsonValueKind.Array
+                        ? rulesEl.EnumerateArray()
+                            .Where(r => r.ValueKind == JsonValueKind.Object)
+                            .Select(r => new PermissionRuleValue
+                            {
+                                ToolName = r.TryGetProperty("toolName", out var tn) ? tn.GetString() ?? "" : "",
+                                RuleContent = r.TryGetProperty("ruleContent", out var rc) ? rc.GetString() : null
+                            })
+                            .ToList()
+                        : null,
+                    Directories = suggestionEl.TryGetProperty("directories", out var dirsEl) && dirsEl.ValueKind == JsonValueKind.Array
+                        ? dirsEl.EnumerateArray()
+                            .Where(d => d.ValueKind == JsonValueKind.String)
+                            .Select(d => d.GetString() ?? "")
+                            .ToList()
+                        : null
+                };
+
+                suggestions.Add(permissionUpdate);
+            }
+        }
+
+        var context = new ToolPermissionContext
+        {
+            Signal = null,
+            Suggestions = suggestions
+        };
+
+        var result = await _canUseTool(toolName, input, context);
+
+        if (result is PermissionAllow allow)
+        {
+            var responseDict = new Dictionary<string, object?>
+            {
+                ["behavior"] = "allow",
+                ["updatedInput"] = allow.UpdatedInput.HasValue && allow.UpdatedInput.Value.ValueKind != JsonValueKind.Undefined
+                    ? allow.UpdatedInput
+                    : originalInput
+            };
+
+            if (allow.UpdatedPermissions != null)
+            {
+                responseDict["updatedPermissions"] = allow.UpdatedPermissions.Select(p => p.ToDictionary()).ToList();
+            }
+
+            return JsonSerializer.SerializeToElement(responseDict);
+        }
+        else if (result is PermissionDeny deny)
+        {
+            var responseDict = new Dictionary<string, object?>
+            {
+                ["behavior"] = "deny",
+                ["message"] = deny.Message
+            };
+
+            if (deny.Interrupt)
+            {
+                responseDict["interrupt"] = true;
+            }
+
+            return JsonSerializer.SerializeToElement(responseDict);
+        }
+
+        throw new InvalidOperationException($"Unknown permission result type: {result.GetType()}");
+    }
+
+    private async Task<JsonElement> HandleHookCallbackAsync(JsonElement request, CancellationToken cancellationToken)
+    {
+        var callbackId = request.GetProperty("callback_id").GetString() ?? "";
+
+        if (!_hookCallbacks.TryGetValue(callbackId, out var callback))
+        {
+            throw new InvalidOperationException($"No hook callback found for ID: {callbackId}");
+        }
+
+        var inputEl = request.GetProperty("input");
+        var toolUseId = request.TryGetProperty("tool_use_id", out var tEl) && tEl.ValueKind == JsonValueKind.String
+            ? tEl.GetString()
+            : null;
+
+        // Parse hook input based on hook_event_name
+        HookInput hookInput;
+        var eventName = inputEl.GetProperty("hook_event_name").GetString();
+
+        switch (eventName)
+        {
+            case "PreToolUse":
+                hookInput = new PreToolUseHookInput
+                {
+                    SessionId = inputEl.GetProperty("session_id").GetString() ?? "",
+                    TranscriptPath = inputEl.GetProperty("transcript_path").GetString() ?? "",
+                    Cwd = inputEl.GetProperty("cwd").GetString() ?? "",
+                    PermissionMode = inputEl.TryGetProperty("permission_mode", out var pm) ? pm.GetString() : null,
+                    ToolName = inputEl.GetProperty("tool_name").GetString() ?? "",
+                    ToolInput = inputEl.GetProperty("tool_input"),
+                    ToolUseId = inputEl.TryGetProperty("tool_use_id", out var ptuId) ? ptuId.GetString() : null
+                };
+                break;
+
+            case "PostToolUse":
+                hookInput = new PostToolUseHookInput
+                {
+                    SessionId = inputEl.GetProperty("session_id").GetString() ?? "",
+                    TranscriptPath = inputEl.GetProperty("transcript_path").GetString() ?? "",
+                    Cwd = inputEl.GetProperty("cwd").GetString() ?? "",
+                    PermissionMode = inputEl.TryGetProperty("permission_mode", out var pm2) ? pm2.GetString() : null,
+                    ToolName = inputEl.GetProperty("tool_name").GetString() ?? "",
+                    ToolInput = inputEl.GetProperty("tool_input"),
+                    ToolResponse = inputEl.GetProperty("tool_response"),
+                    ToolUseId = inputEl.TryGetProperty("tool_use_id", out var potuId) ? potuId.GetString() : null
+                };
+                break;
+
+            case "PostToolUseFailure":
+                hookInput = new PostToolUseFailureHookInput
+                {
+                    SessionId = inputEl.GetProperty("session_id").GetString() ?? "",
+                    TranscriptPath = inputEl.GetProperty("transcript_path").GetString() ?? "",
+                    Cwd = inputEl.GetProperty("cwd").GetString() ?? "",
+                    PermissionMode = inputEl.TryGetProperty("permission_mode", out var pm2f) ? pm2f.GetString() : null,
+                    ToolName = inputEl.GetProperty("tool_name").GetString() ?? "",
+                    ToolInput = inputEl.GetProperty("tool_input"),
+                    ToolUseId = inputEl.GetProperty("tool_use_id").GetString() ?? "",
+                    Error = inputEl.GetProperty("error").GetString() ?? "",
+                    IsInterrupt = inputEl.TryGetProperty("is_interrupt", out var ii) && (ii.ValueKind == JsonValueKind.True || ii.ValueKind == JsonValueKind.False)
+                        ? ii.GetBoolean()
+                        : null
+                };
+                break;
+
+            case "UserPromptSubmit":
+                hookInput = new UserPromptSubmitHookInput
+                {
+                    SessionId = inputEl.GetProperty("session_id").GetString() ?? "",
+                    TranscriptPath = inputEl.GetProperty("transcript_path").GetString() ?? "",
+                    Cwd = inputEl.GetProperty("cwd").GetString() ?? "",
+                    PermissionMode = inputEl.TryGetProperty("permission_mode", out var pm3) ? pm3.GetString() : null,
+                    Prompt = inputEl.GetProperty("prompt").GetString() ?? ""
+                };
+                break;
+
+            case "Stop":
+                hookInput = new StopHookInput
+                {
+                    SessionId = inputEl.GetProperty("session_id").GetString() ?? "",
+                    TranscriptPath = inputEl.GetProperty("transcript_path").GetString() ?? "",
+                    Cwd = inputEl.GetProperty("cwd").GetString() ?? "",
+                    PermissionMode = inputEl.TryGetProperty("permission_mode", out var pm4) ? pm4.GetString() : null,
+                    StopHookActive = inputEl.GetProperty("stop_hook_active").GetBoolean()
+                };
+                break;
+
+            case "SubagentStop":
+                hookInput = new SubagentStopHookInput
+                {
+                    SessionId = inputEl.GetProperty("session_id").GetString() ?? "",
+                    TranscriptPath = inputEl.GetProperty("transcript_path").GetString() ?? "",
+                    Cwd = inputEl.GetProperty("cwd").GetString() ?? "",
+                    PermissionMode = inputEl.TryGetProperty("permission_mode", out var pm5) ? pm5.GetString() : null,
+                    StopHookActive = inputEl.GetProperty("stop_hook_active").GetBoolean(),
+                    AgentId = inputEl.TryGetProperty("agent_id", out var saId) ? saId.GetString() : null,
+                    AgentTranscriptPath = inputEl.TryGetProperty("agent_transcript_path", out var satp) ? satp.GetString() : null,
+                    AgentType = inputEl.TryGetProperty("agent_type", out var saType) ? saType.GetString() : null
+                };
+                break;
+
+            case "PreCompact":
+                hookInput = new PreCompactHookInput
+                {
+                    SessionId = inputEl.GetProperty("session_id").GetString() ?? "",
+                    TranscriptPath = inputEl.GetProperty("transcript_path").GetString() ?? "",
+                    Cwd = inputEl.GetProperty("cwd").GetString() ?? "",
+                    PermissionMode = inputEl.TryGetProperty("permission_mode", out var pm6) ? pm6.GetString() : null,
+                    Trigger = inputEl.GetProperty("trigger").GetString() ?? "",
+                    CustomInstructions = inputEl.TryGetProperty("custom_instructions", out var ci) ? ci.GetString() : null
+                };
+                break;
+
+            case "Notification":
+                hookInput = new NotificationHookInput
+                {
+                    SessionId = inputEl.GetProperty("session_id").GetString() ?? "",
+                    TranscriptPath = inputEl.GetProperty("transcript_path").GetString() ?? "",
+                    Cwd = inputEl.GetProperty("cwd").GetString() ?? "",
+                    PermissionMode = inputEl.TryGetProperty("permission_mode", out var pm7) ? pm7.GetString() : null,
+                    Message = inputEl.GetProperty("message").GetString() ?? "",
+                    Title = inputEl.TryGetProperty("title", out var titleEl) ? titleEl.GetString() : null,
+                    NotificationType = inputEl.GetProperty("notification_type").GetString() ?? ""
+                };
+                break;
+
+            case "SubagentStart":
+                hookInput = new SubagentStartHookInput
+                {
+                    SessionId = inputEl.GetProperty("session_id").GetString() ?? "",
+                    TranscriptPath = inputEl.GetProperty("transcript_path").GetString() ?? "",
+                    Cwd = inputEl.GetProperty("cwd").GetString() ?? "",
+                    PermissionMode = inputEl.TryGetProperty("permission_mode", out var pm8) ? pm8.GetString() : null,
+                    AgentId = inputEl.GetProperty("agent_id").GetString() ?? "",
+                    AgentType = inputEl.GetProperty("agent_type").GetString() ?? ""
+                };
+                break;
+
+            case "PermissionRequest":
+                hookInput = new PermissionRequestHookInput
+                {
+                    SessionId = inputEl.GetProperty("session_id").GetString() ?? "",
+                    TranscriptPath = inputEl.GetProperty("transcript_path").GetString() ?? "",
+                    Cwd = inputEl.GetProperty("cwd").GetString() ?? "",
+                    PermissionMode = inputEl.TryGetProperty("permission_mode", out var pm9) ? pm9.GetString() : null,
+                    ToolName = inputEl.GetProperty("tool_name").GetString() ?? "",
+                    ToolInput = inputEl.GetProperty("tool_input"),
+                    PermissionSuggestions = inputEl.TryGetProperty("permission_suggestions", out var permSug) ? permSug : null
+                };
+                break;
+
+            default:
+                throw new InvalidOperationException($"Unknown hook event: {eventName}");
+        }
+
+        var context = new HookContext { Signal = null };
+        var output = await callback(hookInput, toolUseId, context);
+
+        // Serialize output (already has correct JSON property names)
+        return JsonSerializer.SerializeToElement(output);
+    }
+
+    private async Task<JsonElement> HandleMcpMessageAsync(JsonElement request, CancellationToken cancellationToken)
+    {
+        var serverName = request.GetProperty("server_name").GetString() ?? "";
+        var message = request.GetProperty("message");
+
+        if (!_sdkMcpServers.TryGetValue(serverName, out var server))
+        {
+            return JsonSerializer.SerializeToElement(new
+            {
+                mcp_response = new
+                {
+                    jsonrpc = "2.0",
+                    id = message.TryGetProperty("id", out var idEl) ? idEl : (JsonElement?)null,
+                    error = new { code = -32601, message = $"Server '{serverName}' not found" }
+                }
+            });
+        }
+
+        var method = message.GetProperty("method").GetString();
+        // [orkka patch] JSON-RPC notifications (e.g. "notifications/initialized") carry no "id".
+        // Upstream captured `default(JsonElement)` here and serialized it into the response —
+        // System.Text.Json throws a parameterless InvalidOperationException ("Operation is not
+        // valid due to the current state of the object") for a default JsonElement, the catch
+        // below re-serialized the same default id and threw again, and the CLI received a
+        // control_response error → "Failed to connect SDK MCP server". A null id serializes
+        // as JSON null, which the CLI's SDK-MCP transport accepts (mirrors the Python SDK).
+        JsonElement? messageId = message.TryGetProperty("id", out var msgIdEl) ? msgIdEl : null;
+
+        try
+        {
+            object? result;
+
+            switch (method)
+            {
+                case "initialize":
+                    result = new
+                    {
+                        protocolVersion = "2024-11-05",
+                        capabilities = new { tools = new { } },
+                        serverInfo = new { name = server.Name, version = server.Version }
+                    };
+                    break;
+
+                case "tools/list":
+                    var tools = await server.ListToolsAsync(cancellationToken);
+                    result = new
+                    {
+                        tools = tools.Select(t =>
+                        {
+                            var toolDict = new Dictionary<string, object>
+                            {
+                                ["name"] = t.Name,
+                                ["description"] = t.Description,
+                                ["inputSchema"] = t.InputSchema
+                            };
+                            if (t.Annotations != null)
+                            {
+                                var annotations = new Dictionary<string, object>();
+                                if (t.Annotations.ReadOnlyHint.HasValue)
+                                    annotations["readOnlyHint"] = t.Annotations.ReadOnlyHint.Value;
+                                if (t.Annotations.DestructiveHint.HasValue)
+                                    annotations["destructiveHint"] = t.Annotations.DestructiveHint.Value;
+                                if (t.Annotations.IdempotentHint.HasValue)
+                                    annotations["idempotentHint"] = t.Annotations.IdempotentHint.Value;
+                                if (t.Annotations.OpenWorldHint.HasValue)
+                                    annotations["openWorldHint"] = t.Annotations.OpenWorldHint.Value;
+                                if (annotations.Count > 0)
+                                    toolDict["annotations"] = annotations;
+                            }
+                            return toolDict;
+                        }).ToList()
+                    };
+                    break;
+
+                case "tools/call":
+                    var @params = message.GetProperty("params");
+                    var toolName = @params.GetProperty("name").GetString() ?? "";
+
+                    // [orkka patch] See _inputEnded: the response has nowhere to go.
+                    if (_inputEnded)
+                    {
+                        DiagnosticHelper.Warn(
+                            $"[orkka] SDK MCP tool call '{toolName}' on server '{serverName}' arrived AFTER the "
+                            + "input stream was closed — its response cannot reach the CLI, which will report the "
+                            + "call as interrupted. The input stream is closed once the run's first `result` "
+                            + "message is seen (QueryHandler.StreamInputAsync).");
+                    }
+                    var arguments = @params.TryGetProperty("arguments", out var argsEl)
+                        ? argsEl
+                        : JsonSerializer.SerializeToElement(new { });
+
+                    var toolResult = await server.CallToolAsync(toolName, arguments, cancellationToken);
+
+                    var content = toolResult.Content.Select<SdkMcpContent, object>(c => c switch
+                    {
+                        SdkMcpTextContent text => new { type = "text", text = text.Text },
+                        SdkMcpImageContent img => new { type = "image", data = img.Data, mimeType = img.MimeType },
+                        _ => new { type = "text", text = "" }
+                    }).ToList();
+
+                    result = new { content, is_error = toolResult.IsError };
+                    break;
+
+                case "notifications/initialized":
+                    result = new { };
+                    break;
+
+                default:
+                    return JsonSerializer.SerializeToElement(new
+                    {
+                        mcp_response = new
+                        {
+                            jsonrpc = "2.0",
+                            id = messageId,
+                            error = new { code = -32601, message = $"Method '{method}' not found" }
+                        }
+                    });
+            }
+
+            return JsonSerializer.SerializeToElement(new
+            {
+                mcp_response = new
+                {
+                    jsonrpc = "2.0",
+                    id = messageId,
+                    result
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            return JsonSerializer.SerializeToElement(new
+            {
+                mcp_response = new
+                {
+                    jsonrpc = "2.0",
+                    id = messageId,
+                    error = new { code = -32603, message = ex.Message }
+                }
+            });
+        }
+    }
+
+    private async Task<JsonElement> SendControlRequestAsync(
+        Dictionary<string, object?> request,
+        double timeout,
+        CancellationToken cancellationToken)
+    {
+        if (!_isStreamingMode)
+            throw new InvalidOperationException("Control requests require streaming mode");
+
+        var requestId = $"req_{Interlocked.Increment(ref _requestCounter)}_{Guid.NewGuid():N}";
+        var tcs = new TaskCompletionSource<JsonElement>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        _pendingResponses[requestId] = tcs;
+
+        var controlRequest = new
+        {
+            type = "control_request",
+            request_id = requestId,
+            request
+        };
+
+        var json = JsonSerializer.Serialize(controlRequest);
+        await WriteAsync(json + "\n", cancellationToken);
+
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
+
+            return await tcs.Task.WaitAsync(linkedCts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            _pendingResponses.TryRemove(requestId, out _);
+            throw new ClaudeAgentException($"Control request timeout: {request.GetValueOrDefault("subtype")}");
+        }
+    }
+
+    private async Task WriteAsync(string data, CancellationToken cancellationToken)
+    {
+        await _writeLock.WaitAsync(cancellationToken);
+        try
+        {
+            await _transport.WriteAsync(data, cancellationToken);
+        }
+        finally
+        {
+            _writeLock.Release();
+        }
+    }
+
+    public async Task InterruptAsync(CancellationToken cancellationToken = default)
+    {
+        await SendControlRequestAsync(new Dictionary<string, object?> { ["subtype"] = "interrupt" }, 60, cancellationToken);
+    }
+
+    public async Task SetPermissionModeAsync(string mode, CancellationToken cancellationToken = default)
+    {
+        await SendControlRequestAsync(
+            new Dictionary<string, object?>
+            {
+                ["subtype"] = "set_permission_mode",
+                ["mode"] = mode
+            },
+            60,
+            cancellationToken);
+    }
+
+    public async Task SetModelAsync(string? model, CancellationToken cancellationToken = default)
+    {
+        await SendControlRequestAsync(
+            new Dictionary<string, object?>
+            {
+                ["subtype"] = "set_model",
+                ["model"] = model
+            },
+            60,
+            cancellationToken);
+    }
+
+    public async Task RewindFilesAsync(string userMessageId, CancellationToken cancellationToken = default)
+    {
+        await SendControlRequestAsync(
+            new Dictionary<string, object?>
+            {
+                ["subtype"] = "rewind_files",
+                ["user_message_id"] = userMessageId
+            },
+            60,
+            cancellationToken);
+    }
+
+    public async Task<JsonElement> GetMcpStatusAsync(CancellationToken cancellationToken = default)
+    {
+        return await SendControlRequestAsync(
+            new Dictionary<string, object?>
+            {
+                ["subtype"] = "mcp_status"
+            },
+            60,
+            cancellationToken);
+    }
+
+    public async Task StreamInputAsync(IAsyncEnumerable<JsonElement> stream, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await foreach (var message in stream.WithCancellation(cancellationToken))
+            {
+                if (_closed)
+                    break;
+
+                var json = message.GetRawText();
+                await WriteAsync(json + "\n", cancellationToken);
+            }
+
+            // [orkka patch] stdin doubles as the control-protocol response channel: every
+            // hook callback, canUseTool decision and in-process (SDK MCP) tool call is
+            // answered over it. Upstream waited for the run's FIRST result here but capped
+            // the wait at CLAUDE_CODE_STREAM_CLOSE_TIMEOUT (default 60s) and closed stdin
+            // when the cap fired — mid-run. From that moment no hook response could reach
+            // the CLI, so its next hook-matched tool call was cancelled ~30ms after the
+            // tool_use with the CLI's generic "The user doesn't want to take this action
+            // right now" denial (toolDenialKind "cancelled"), written into the session
+            // transcript — which a later --resume replayed to the model as a human refusal
+            // (observed: agents concluded new-file creation was forbidden and parked to ask).
+            // Pipeline runs routinely produce their first result many minutes in, so the cap
+            // poisoned every run whose first guarded tool call came after it. Wait for the
+            // actual result instead, with no timer. Cancellation or CloseAsync releases the
+            // wait, and those paths tear the transport down themselves — stdin must NOT be
+            // closed here on their behalf, or the still-live CLI gets EOF mid-tool-call.
+            if (_sdkMcpServers.Count > 0 || _hooks.Count > 0 || _canUseTool != null)
+            {
+                using var closeOrCancel = CancellationTokenSource.CreateLinkedTokenSource(
+                    cancellationToken, _cts.Token);
+                try
+                {
+                    await _firstResultEvent.Task.WaitAsync(closeOrCancel.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+            }
+
+            await _transport.EndInputAsync(cancellationToken);
+            _inputEnded = true;
+        }
+        catch (Exception ex)
+        {
+            DiagnosticHelper.LogIgnoredException(ex);
+        }
+    }
+
+    public async IAsyncEnumerable<JsonElement> ReceiveMessagesAsync(
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var message in _messageChannel.Reader.ReadAllAsync(cancellationToken))
+        {
+            if (message.TryGetProperty("type", out var typeEl))
+            {
+                var type = typeEl.GetString();
+                if (type == "end")
+                    break;
+                if (type == "error")
+                {
+                    var error = message.TryGetProperty("error", out var errorEl)
+                        ? errorEl.GetString() ?? "Unknown error"
+                        : "Unknown error";
+                    throw new ClaudeAgentException(error);
+                }
+            }
+
+            yield return message;
+        }
+    }
+
+    public async Task CloseAsync(CancellationToken cancellationToken = default)
+    {
+        _closed = true;
+        _cts.Cancel();
+
+        if (_readTask != null)
+        {
+            try
+            {
+                await _readTask.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                DiagnosticHelper.LogIgnoredException(ex);
+            }
+        }
+
+        await _transport.CloseAsync(cancellationToken);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await CloseAsync();
+        _cts.Dispose();
+        _writeLock.Dispose();
+    }
+}
+
+public sealed record HookMatcherConfig
+{
+    public string? Matcher { get; init; }
+    public IReadOnlyList<HookCallback> Hooks { get; init; } = [];
+    public double? Timeout { get; init; }
+}

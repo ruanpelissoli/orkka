@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Vendored copy of the ih0.Claude.Agent.SDK NuGet package (v0.1.6, MIT), built from
+    https://github.com/jimmystridh/claude-agent-sdk-csharp @ 1260639e95489cffa5435471e89082099da9aaa9,
+    carrying Orkka patches the published package lacks. See VENDORED.md for the why, the list of
+    local changes, and how to re-sync. Assembly name, version and namespaces are kept identical to
+    the package so every consumer compiles unchanged and a stale bin built against the NuGet
+    assembly still binds.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>ih0.Claude.Agent.SDK</AssemblyName>
+    <RootNamespace>ih0.Claude.Agent.SDK</RootNamespace>
+    <Version>0.1.6</Version>
+    <InformationalVersion>0.1.6+orkka.1</InformationalVersion>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.3" />
+    <!-- 10.0.10 is the floor the rest of the solution resolves (SharedKernel -> Caching.Hybrid);
+         Logging.Abstractions 10.0.10 requires DependencyInjection.Abstractions >= 10.0.10. -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
+    <PackageReference Include="OneOf" Version="3.0.271" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Orkka.Tests" />
+  </ItemGroup>
+
+</Project>

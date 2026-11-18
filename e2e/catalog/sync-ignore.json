@@ -1,0 +1,27 @@
+{
+  "i18nNamespaces": {
+    "common:actions": "shared button labels (Save, Cancel, Delete, Retry…), exercised by every UI case; not a feature",
+    "common:agentRoles": "enum label table for AgentRole — rendered wherever an agent is named (TEAM/TSK cases)",
+    "common:lanes": "enum label table for Lane — asserted through the board lane headings (BRD-001)",
+    "common:nav": "shared navigation item labels — asserted through the sidebar cases (NAV-001…)",
+    "common:planStatuses": "enum label table for plan status badges (PLN cases)",
+    "common:priorities": "enum label table for task priority badges (TSK-015)",
+    "common:roles": "enum label table for org member roles (MEM cases)",
+    "common:taskStatuses": "enum label table for task status badges (TSK/BRD cases)",
+    "common:taskTypes": "enum label table for task type badges (TSK-014)",
+    "dashboard:paywall": "PaywallModal is not mounted anywhere in apps/remote (2026-10-26) — no reachable surface; add a case when it is used again"
+  },
+  "cliVerbs": {
+    "trackers": "alias of tracker — covered by the TCLI cases (cli:tracker)",
+    "workspaces": "alias of workspace — covered by WSP-013 (cli:workspace)",
+    "command": "alias of commands — covered by RUN-030…RUN-034 (cli:commands)"
+  },
+  "apiRoutes": {
+    "POST /internal/runner/*": "the host's own loopback relays to the in-process runner (X-Worker-Key + loopback only) — not callable from outside; every one is exercised through the public /api route that relays it, and NEG-032 asserts they refuse every outside caller"
+  },
+  "uiPages": {},
+  "hubEvents": {},
+  "danglingRefs": {
+    "NEG-031 orkka-api:GET /api/org/settings": "NEG-031 asserts the route is gone (404) — org settings went with the cloud product on 2026-11-17"
+  }
+}

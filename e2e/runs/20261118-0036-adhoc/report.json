@@ -1,0 +1,130 @@
+{
+  "runId": "20261118-0036-adhoc",
+  "suite": "adhoc",
+  "target": "http://127.0.0.1:6750",
+  "startedAt": "2026-11-18T03:36:51.435Z",
+  "finishedAt": "2026-11-18T03:37:20.542Z",
+  "durationMs": 29107,
+  "operator": "claude",
+  "gitSha": "7c790e44baab",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "totals": {
+    "passed": 3,
+    "failed": 1,
+    "skipped": 3,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [],
+      "testTitle": "dashboard",
+      "file": "tests/local/screens.spec.ts",
+      "status": "passed",
+      "durationMs": 3236,
+      "projects": [],
+      "artifacts": {
+        "screenshots": [
+          "..\\current\\artifacts\\local-screens-key-screens-screens-dashboard-chromium\\attachments\\01-dashboard-499260ba0221df3efe4b8c2af490a08161a26cce.png"
+        ]
+      },
+      "startedAt": "2026-11-18T03:36:52.769Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "create from folder: the preview lists both repositories with their location",
+      "file": "tests/local/screens.spec.ts",
+      "status": "passed",
+      "durationMs": 3199,
+      "projects": [],
+      "artifacts": {
+        "screenshots": [
+          "..\\current\\artifacts\\local-screens-key-screens--edc70-itories-with-their-location-chromium\\attachments\\02-create-from-folder-preview-faae52a1fb6cb123c0f1796aca04cd1bf249428d.png"
+        ]
+      },
+      "startedAt": "2026-11-18T03:36:56.125Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "board (with the Story chip when a Story is on it)",
+      "file": "tests/local/screens.spec.ts",
+      "status": "passed",
+      "durationMs": 2717,
+      "projects": [],
+      "artifacts": {
+        "screenshots": [
+          "..\\current\\artifacts\\local-screens-key-screens--8ab4e-chip-when-a-Story-is-on-it--chromium\\attachments\\03-board-7fefa6f1206f994c2f13f467f951415a9d675439.png"
+        ]
+      },
+      "startedAt": "2026-11-18T03:36:59.335Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "task detail with the Story panel, then the Discuss tab",
+      "file": "tests/local/screens.spec.ts",
+      "status": "failed",
+      "durationMs": 18209,
+      "projects": [],
+      "artifacts": {
+        "trace": "..\\current\\artifacts\\local-screens-key-screens--881b3--panel-then-the-Discuss-tab-chromium\\trace.zip",
+        "screenshots": [
+          "..\\current\\artifacts\\local-screens-key-screens--881b3--panel-then-the-Discuss-tab-chromium\\attachments\\04-task-detail-story-6bd7d6338b53f7306e3e51ea169aa87583dfe3ae.png",
+          "..\\current\\artifacts\\local-screens-key-screens--881b3--panel-then-the-Discuss-tab-chromium\\test-failed-1.png"
+        ]
+      },
+      "failure": {
+        "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('tab', { name: /discuss/i }).or(getByRole('button', { name: /^discuss$/i })).first()\u001b[22m\n",
+        "stackHead": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('tab', { name: /discuss/i }).or(getByRole('button', { name: /^discuss$/i })).first()\u001b[22m\n\n    at C:\\Projects\\orkka\\orkka-e2e-tests\\tests\\local\\screens.spec.ts:108:116",
+        "logHint": "API + Worker console output of the stack at http://127.0.0.1:6750; runner log .runs/runner.log"
+      },
+      "startedAt": "2026-11-18T03:37:02.061Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "Settings → Trackers",
+      "file": "tests/local/screens.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:37:20.437Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "project settings: the ticket source card with status sync",
+      "file": "tests/local/screens.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:37:20.438Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "Machine page",
+      "file": "tests/local/screens.spec.ts",
+      "status": "skipped",
+      "durationMs": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-18T03:37:20.438Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [],
+    "leftovers": []
+  },
+  "notes": [
+    "Playwright overall status: failed",
+    "E2E_KEEP_PROJECTS set: no pre-run sweep, no teardown deletes."
+  ]
+}

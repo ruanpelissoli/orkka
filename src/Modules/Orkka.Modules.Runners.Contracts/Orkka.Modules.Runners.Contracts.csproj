@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Orkka.SharedKernel\Orkka.SharedKernel.csproj" />
+    <!-- The execution-target decision is made from a model (Agents.Contracts), lands on a
+         task (Tasks.Contracts) and reads the runner's provider snapshot (LocalRunner.Contracts).
+         All three reference only SharedKernel, so this stays acyclic. -->
+    <ProjectReference Include="..\..\Orkka.LocalRunner.Contracts\Orkka.LocalRunner.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Agents.Contracts\Orkka.Modules.Agents.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Tasks.Contracts\Orkka.Modules.Tasks.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

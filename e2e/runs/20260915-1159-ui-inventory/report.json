@@ -1,0 +1,782 @@
+{
+  "runId": "20260915-1159-ui-inventory",
+  "suite": "ui-inventory",
+  "target": "prod",
+  "startedAt": "2026-09-15T14:59:39.985Z",
+  "finishedAt": "2026-09-15T15:03:58.846Z",
+  "durationMs": 258861,
+  "operator": "claude",
+  "gitSha": "uncommitted",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "spend": {
+    "startCredits": 3294,
+    "endCredits": 3294,
+    "totalUsd": 0,
+    "capUsd": 5,
+    "aborted": false
+  },
+  "totals": {
+    "passed": 49,
+    "failed": 0,
+    "skipped": 0,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [],
+      "testTitle": "seed: create the inventory project with a repo and a draft task",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1553,
+      "costUsd": 0,
+      "projects": [
+        "01M2JS9FJ5ZZ2A41NN7XJX87K9 e2e-inventory-20260915-1159-s4rv",
+        "01M2JS9FJ5ZZ2A41NN7XJX87K9 e2e-inventory-20260915-1159-s4rv"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T14:59:44.463Z"
+    },
+    {
+      "caseIds": [
+        "MKT-001"
+      ],
+      "testTitle": "/ renders (MKT-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 6963,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T14:59:46.128Z"
+    },
+    {
+      "caseIds": [
+        "MKT-005"
+      ],
+      "testTitle": "/pricing renders (MKT-005)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 4591,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T14:59:53.106Z"
+    },
+    {
+      "caseIds": [
+        "MKT-006"
+      ],
+      "testTitle": "/docs renders (MKT-006)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 3894,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T14:59:57.706Z"
+    },
+    {
+      "caseIds": [
+        "MKT-007"
+      ],
+      "testTitle": "/local renders (MKT-007)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 3714,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:00:01.607Z"
+    },
+    {
+      "caseIds": [
+        "MKT-008"
+      ],
+      "testTitle": "/terms renders (MKT-008)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 4079,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:00:05.329Z"
+    },
+    {
+      "caseIds": [
+        "MKT-008"
+      ],
+      "testTitle": "/privacy renders (MKT-008)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 4690,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:00:09.416Z"
+    },
+    {
+      "caseIds": [
+        "MKT-008"
+      ],
+      "testTitle": "/dpa renders (MKT-008)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 3398,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:00:14.112Z"
+    },
+    {
+      "caseIds": [
+        "ONB-001"
+      ],
+      "testTitle": "/dashboard renders (ONB-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 6569,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:00:17.517Z"
+    },
+    {
+      "caseIds": [
+        "NTF-001"
+      ],
+      "testTitle": "/inbox renders (NTF-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 5034,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:00:24.095Z"
+    },
+    {
+      "caseIds": [
+        "NTF-003"
+      ],
+      "testTitle": "/notifications renders (NTF-003)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 6605,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:00:29.138Z"
+    },
+    {
+      "caseIds": [
+        "ONB-002"
+      ],
+      "testTitle": "/onboarding renders (ONB-002)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 5007,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:00:35.750Z"
+    },
+    {
+      "caseIds": [
+        "SET-001"
+      ],
+      "testTitle": "/settings renders (SET-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 4897,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:00:40.766Z"
+    },
+    {
+      "caseIds": [
+        "SET-003"
+      ],
+      "testTitle": "/settings/preferences renders (SET-003)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 4987,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:00:45.672Z"
+    },
+    {
+      "caseIds": [
+        "BIL-002"
+      ],
+      "testTitle": "/settings/billing renders (BIL-002)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 5368,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:00:50.666Z"
+    },
+    {
+      "caseIds": [
+        "BIL-004"
+      ],
+      "testTitle": "/settings/billing/credits renders (BIL-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 5515,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:00:56.042Z"
+    },
+    {
+      "caseIds": [
+        "BIL-012"
+      ],
+      "testTitle": "/settings/billing/budget renders (BIL-012)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 4992,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:01:01.565Z"
+    },
+    {
+      "caseIds": [
+        "BIL-014"
+      ],
+      "testTitle": "/settings/billing/invoices renders (BIL-014)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 5507,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:01:06.564Z"
+    },
+    {
+      "caseIds": [
+        "BIL-016"
+      ],
+      "testTitle": "/settings/billing/payment renders (BIL-016)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 7634,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:01:12.080Z"
+    },
+    {
+      "caseIds": [
+        "SET-005"
+      ],
+      "testTitle": "/settings/notifications renders (SET-005)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 5217,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:01:19.723Z"
+    },
+    {
+      "caseIds": [
+        "RUN-002"
+      ],
+      "testTitle": "/settings/runner renders (RUN-002)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 4989,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:01:24.947Z"
+    },
+    {
+      "caseIds": [
+        "SET-006"
+      ],
+      "testTitle": "/settings/organization renders (SET-006)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 5744,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:01:29.944Z"
+    },
+    {
+      "caseIds": [
+        "KEY-001"
+      ],
+      "testTitle": "/settings/api-keys renders (KEY-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 4878,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:01:35.697Z"
+    },
+    {
+      "caseIds": [
+        "INT-001"
+      ],
+      "testTitle": "/settings/integrations renders (INT-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 4935,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:01:40.583Z"
+    },
+    {
+      "caseIds": [
+        "AUD-001"
+      ],
+      "testTitle": "/settings/audit renders (AUD-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 5160,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:01:45.524Z"
+    },
+    {
+      "caseIds": [
+        "NAV-003"
+      ],
+      "testTitle": "/p/{slug} renders (NAV-003)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 6121,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:01:50.692Z"
+    },
+    {
+      "caseIds": [
+        "BRD-001"
+      ],
+      "testTitle": "/p/{slug}/board renders (BRD-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 6111,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:01:56.821Z"
+    },
+    {
+      "caseIds": [
+        "BRD-004"
+      ],
+      "testTitle": "/p/{slug}/board?view=code renders (BRD-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 6732,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:02:02.939Z"
+    },
+    {
+      "caseIds": [
+        "TSK-050"
+      ],
+      "testTitle": "/p/{slug}/tasks renders (TSK-050)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 5809,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:02:09.677Z"
+    },
+    {
+      "caseIds": [
+        "TSK-001"
+      ],
+      "testTitle": "/p/{slug}/tasks/new renders (TSK-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 5889,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:02:15.493Z"
+    },
+    {
+      "caseIds": [
+        "TSK-011"
+      ],
+      "testTitle": "/p/{slug}/tasks/{n} renders (TSK-011)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 6076,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:02:21.389Z"
+    },
+    {
+      "caseIds": [
+        "PR-001"
+      ],
+      "testTitle": "/p/{slug}/tasks/{n}/review renders (PR-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 6489,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:02:27.471Z"
+    },
+    {
+      "caseIds": [
+        "TEAM-001"
+      ],
+      "testTitle": "/p/{slug}/team renders (TEAM-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 6089,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:02:33.969Z"
+    },
+    {
+      "caseIds": [
+        "ACT-001"
+      ],
+      "testTitle": "/p/{slug}/activity renders (ACT-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 5948,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:02:40.070Z"
+    },
+    {
+      "caseIds": [
+        "SKL-001"
+      ],
+      "testTitle": "/p/{slug}/skills renders (SKL-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 6056,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:02:46.027Z"
+    },
+    {
+      "caseIds": [
+        "AUTO-001"
+      ],
+      "testTitle": "/p/{slug}/automation renders (AUTO-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 6133,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:02:52.091Z"
+    },
+    {
+      "caseIds": [
+        "MEM-001"
+      ],
+      "testTitle": "/p/{slug}/memory renders (MEM-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 6419,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:02:58.231Z"
+    },
+    {
+      "caseIds": [
+        "RDM-001"
+      ],
+      "testTitle": "/p/{slug}/roadmap renders (RDM-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 5901,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:03:04.658Z"
+    },
+    {
+      "caseIds": [
+        "REPO-001"
+      ],
+      "testTitle": "/p/{slug}/repos renders (REPO-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 7046,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:03:10.567Z"
+    },
+    {
+      "caseIds": [
+        "DOC-001"
+      ],
+      "testTitle": "/p/{slug}/documents renders (DOC-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 6094,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:03:17.620Z"
+    },
+    {
+      "caseIds": [
+        "DSN-001"
+      ],
+      "testTitle": "/p/{slug}/design renders (DSN-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 5661,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:03:23.721Z"
+    },
+    {
+      "caseIds": [
+        "ARC-001"
+      ],
+      "testTitle": "/p/{slug}/architect renders (ARC-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 5069,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:03:29.390Z"
+    },
+    {
+      "caseIds": [
+        "MBR-001"
+      ],
+      "testTitle": "/p/{slug}/members renders (MBR-001)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 5935,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:03:34.467Z"
+    },
+    {
+      "caseIds": [
+        "SET-010"
+      ],
+      "testTitle": "/p/{slug}/settings renders (SET-010)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 6078,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:03:40.409Z"
+    },
+    {
+      "caseIds": [
+        "I18N-001",
+        "I18N-004"
+      ],
+      "testTitle": "/es/settings renders localized (I18N-001, I18N-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 2620,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:03:46.493Z"
+    },
+    {
+      "caseIds": [
+        "I18N-001",
+        "I18N-004"
+      ],
+      "testTitle": "/pt/settings renders localized (I18N-001, I18N-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 2239,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:03:49.122Z"
+    },
+    {
+      "caseIds": [
+        "I18N-001",
+        "I18N-004"
+      ],
+      "testTitle": "/fr/settings renders localized (I18N-001, I18N-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 2223,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:03:51.368Z"
+    },
+    {
+      "caseIds": [
+        "I18N-001",
+        "I18N-004"
+      ],
+      "testTitle": "/de/settings renders localized (I18N-001, I18N-004)",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 2073,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:03:53.600Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "teardown: delete the inventory project",
+      "file": "tests/ui-inventory/pages.spec.ts",
+      "status": "passed",
+      "durationMs": 1075,
+      "costUsd": 0,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-09-15T15:03:55.681Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [
+      {
+        "id": "01M2JS9FJ5ZZ2A41NN7XJX87K9",
+        "name": "e2e-inventory-20260915-1159-s4rv",
+        "type": "Unmanaged"
+      }
+    ],
+    "leftovers": []
+  },
+  "notes": [
+    "Credentials are not an Owner (role=Member); permission-gated cases may fail.",
+    "Org plan has no team features (not Enterprise); Members cases will be skipped."
+  ]
+}

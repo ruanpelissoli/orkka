@@ -1,0 +1,6 @@
+{
+  "name": "@orkka/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared API client, types, SignalR/SSE plumbing and app-agnostic hooks. Source-only package: apps compile these files directly via their @/* path fallbacks; imports of app-contract modules (@/lib/actions, @/hooks/use-client-api, auth providers) are provided by each consuming app."
+}

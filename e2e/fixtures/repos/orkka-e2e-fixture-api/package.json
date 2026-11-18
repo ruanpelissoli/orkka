@@ -1,0 +1,14 @@
+{
+  "name": "orkka-e2e-fixture-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Tiny dependency-free Node HTTP API used by the Orkka end-to-end test suite.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test",
+    "lint": "node --check src/server.js && node --check src/features.js"
+  }
+}
