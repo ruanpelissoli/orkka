@@ -15,6 +15,13 @@
  *   GET   /{org}/_apis/wit/workitems/{id}?fields=System.State&api-version=7.1   (write-back)
  *   PATCH /{org}/_apis/wit/workitems/{id}?api-version=7.1  json-patch [{op:"add",path:"/fields/System.State",value}]
  *   GET   /{org}/_apis/wit/attachments/{guid}?fileName=…                        (attachment download)
+ *   GET   /{org}/_apis/projects/{project}/teams?$top=500&api-version=7.1        (a project's teams — the Board select)
+ *   GET   /{org}/{project}/{team}/_apis/work/teamsettings/teamfieldvalues?api-version=7.1
+ *           (a team's board = its area paths; {team} is its id or name; 404 when the team is gone)
+ *
+ * Every project has a default team, "<project> Team", owning the whole project's area path. Work
+ * items carry `System.AreaPath` (default: the project) and the WIQL evaluator understands
+ * `[System.AreaPath] UNDER '…'` / `= '…'`.
  *
  * Auth: Basic base64(":" + pat). A wrong PAT gets 203 + an HTML sign-in page, which is what the
  * real service does and what the runner reads as "bad token".
@@ -37,6 +44,8 @@ export interface AdoWorkItem {
   reproHtml: string | null;
   tags: string[];
   priority: number | null;
+  /** `Shop\Web`; default: the project itself. */
+  areaPath: string;
   changed: Date;
   rev: number;
   comments: FakeComment[];
@@ -50,6 +59,15 @@ export type AdoWorkItemSeed = Partial<Omit<AdoWorkItem, "id" | "changed" | "rev"
   comments?: Omit<FakeComment, "id" | "created">[];
   attachments?: Omit<FakeAttachment, "id">[];
 };
+
+/** A team: its board is the work items under its area paths. */
+export interface AdoTeam {
+  id: string;
+  name: string;
+  project: string;
+  values: { value: string; includeChildren: boolean }[];
+  defaultValue: string;
+}
 
 export interface FakeAdoOptions {
   org?: string;
@@ -113,7 +131,9 @@ export class FakeAdo {
   readonly displayName: string;
   readonly items = new Map<number, AdoWorkItem>();
   readonly transitions: AppliedTransition[] = [];
+  readonly teams = new Map<string, AdoTeam>();
   private nextId = 100;
+  private teamSeq = 1;
   private commentSeq = 9000;
 
   constructor(opts: FakeAdoOptions = {}) {
@@ -122,6 +142,8 @@ export class FakeAdo {
     this.projects = opts.projects ?? ["Shop"];
     this.userId = opts.userId ?? "6f1c3a5e-0000-4000-8000-00000000e2e0";
     this.displayName = opts.displayName ?? "E2E Developer";
+    // Azure DevOps creates a default team per project, owning the whole project.
+    for (const project of this.projects) this.addTeam({ name: `${project} Team`, project, values: [{ value: project, includeChildren: true }] });
   }
 
   get authorization() {
@@ -148,6 +170,7 @@ export class FakeAdo {
       reproHtml: seed.reproHtml ?? null,
       tags: seed.tags ?? [],
       priority: seed.priority ?? 2,
+      areaPath: seed.areaPath ?? seed.project ?? this.projects[0],
       changed: new Date(),
       rev: 1,
       comments: [],
@@ -165,7 +188,7 @@ export class FakeAdo {
     return i;
   }
 
-  update(id: number, patch: Partial<Pick<AdoWorkItem, "title" | "state" | "descriptionHtml" | "acceptanceHtml" | "reproHtml" | "tags" | "priority" | "assignedToMe" | "parentId">>) {
+  update(id: number, patch: Partial<Pick<AdoWorkItem, "title" | "state" | "descriptionHtml" | "acceptanceHtml" | "reproHtml" | "tags" | "priority" | "assignedToMe" | "parentId" | "areaPath">>) {
     const i = this.item(id);
     Object.assign(i, patch);
     i.changed = new Date();
@@ -192,6 +215,29 @@ export class FakeAdo {
 
   remove(id: number) {
     this.items.delete(id);
+  }
+
+  /** A team of `project` (default: the first) whose board is the work items under `values`. */
+  addTeam(seed: { name: string; project?: string; values: { value: string; includeChildren?: boolean }[]; defaultValue?: string }): AdoTeam {
+    const n = this.teamSeq++;
+    const team: AdoTeam = {
+      id: `7e2e0000-0000-4000-8000-${String(n).padStart(12, "0")}`,
+      name: seed.name,
+      project: seed.project ?? this.projects[0],
+      values: seed.values.map((v) => ({ value: v.value, includeChildren: v.includeChildren ?? true })),
+      defaultValue: seed.defaultValue ?? seed.values[0]?.value ?? seed.project ?? this.projects[0],
+    };
+    this.teams.set(team.id, team);
+    return team;
+  }
+
+  removeTeam(id: string) {
+    this.teams.delete(id);
+  }
+
+  private team(project: string, idOrName: string): AdoTeam | undefined {
+    const key = idOrName.toLowerCase();
+    return [...this.teams.values()].find((t) => t.project.toLowerCase() === project.toLowerCase() && (t.id === key || t.name.toLowerCase() === key));
   }
 
   categoryOf(type: string, state: string): AdoCategory | undefined {
@@ -228,11 +274,35 @@ export class FakeAdo {
         }
         if (ctx.method === "POST" && p === "wit/workitemsbatch") return this.batch(ctx, base);
         let m: RegExpExecArray | null;
+        if (ctx.method === "GET" && (m = /^projects\/([^/]+)\/teams$/i.exec(p))) {
+          const project = m[1];
+          if (!this.projects.some((x) => x.toLowerCase() === project.toLowerCase())) {
+            return send(ctx, 404, { message: `TF200016: The following project does not exist: ${project}.` });
+          }
+          const value = [...this.teams.values()]
+            .filter((t) => t.project.toLowerCase() === project.toLowerCase())
+            .map((t) => ({ id: t.id, name: t.name, url: `${base}/_apis/projects/${encodeURIComponent(t.project)}/teams/${t.id}`, projectName: t.project }));
+          return send(ctx, 200, { count: value.length, value });
+        }
         if ((m = /^wit\/workitems\/(\d+)$/i.exec(p))) {
           if (ctx.method === "GET") return this.getItem(ctx, Number(m[1]), base);
           if (ctx.method === "PATCH") return this.patchItem(ctx, Number(m[1]), base);
         }
         if (ctx.method === "GET" && (m = /^wit\/attachments\/([^/]+)$/i.exec(p))) return this.attachment(ctx, m[1]);
+      }
+      // /{org}/{project}/{team}/_apis/work/teamsettings/teamfieldvalues
+      if (rest.length >= 3 && rest[2] === "_apis") {
+        const project = rest[0];
+        const p = rest.slice(3).join("/").toLowerCase();
+        if (ctx.method === "GET" && p === "work/teamsettings/teamfieldvalues") {
+          const team = this.team(project, rest[1]);
+          if (!team) return send(ctx, 404, { message: `TF400299: The team with id or name '${rest[1]}' does not exist in project '${project}'.` });
+          return send(ctx, 200, {
+            field: { referenceName: "System.AreaPath", url: `${base}/_apis/wit/fields/System.AreaPath` },
+            defaultValue: team.defaultValue,
+            values: team.values,
+          });
+        }
       }
       // /{org}/{project}/_apis/…
       if (rest.length >= 2 && rest[1] === "_apis") {
@@ -279,6 +349,7 @@ export class FakeAdo {
       "Microsoft.VSTS.TCM.ReproSteps": i.reproHtml ?? undefined,
       "System.Tags": i.tags.length ? i.tags.join("; ") : undefined,
       "Microsoft.VSTS.Common.Priority": i.priority ?? undefined,
+      "System.AreaPath": i.areaPath,
       "System.ChangedDate": i.changed.toISOString(),
       "System.Parent": i.parentId ?? undefined,
     };
@@ -481,6 +552,15 @@ export class FakeAdo {
       const v = one(m[2]).toLowerCase();
       const neg = /NOT/i.test(m[1]);
       return (i) => i.tags.some((tag) => tag.toLowerCase() === v) !== neg;
+    }
+    if ((m = /^\[System\.AreaPath\]\s+UNDER\s+(.+)$/i.exec(t))) {
+      const v = one(m[1]).toLowerCase();
+      return (i) => i.areaPath.toLowerCase() === v || i.areaPath.toLowerCase().startsWith(`${v}\\`);
+    }
+    if ((m = /^\[System\.AreaPath\]\s*(=|<>)\s*(.+)$/i.exec(t))) {
+      const v = one(m[2]).toLowerCase();
+      const neg = m[1] === "<>";
+      return (i) => (i.areaPath.toLowerCase() === v) !== neg;
     }
     if ((m = /^\[Microsoft\.VSTS\.Common\.Priority\]\s*(=|<>|<=|>=|<|>)\s*(\d+)$/i.exec(t))) {
       const v = Number(m[2]);

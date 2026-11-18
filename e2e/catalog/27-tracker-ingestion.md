@@ -327,3 +327,60 @@ since: 2026-10-26
 1. `GET …/pull-request`.
 **Expected**:
 - `headBranch` = `feature/SHOP-101-add-coupon-field` — the tracker can link it to the ticket.
+
+## TING-021 A board narrows intake only; tracked tickets keep syncing
+```yaml
+priority: P1
+surface: [api]
+automation: planned
+refs:
+  - orkka-api:GET /api/projects/{projectId}/tasks
+  - orkka-api:src/Orkka.LocalRunner/Trackers/JiraCloudClient.cs
+  - orkka-api:src/Orkka.LocalRunner/Trackers/AzureDevOpsClient.cs
+since: 2026-11-18
+```
+**Preconditions**: Jira source on SHOP limited to "Web board" (filter `project = SHOP AND component = Web ORDER BY Rank ASC`); To Do tickets SHOP-10 (component Web) and SHOP-20 (component Api) assigned to the token's owner; SHOP-10 already a task.
+**Steps**:
+1. Wait two intervals.
+2. In the fake, change SHOP-10's component to Api and add a comment; change the board's filter to `project = SHOP AND component = Api`.
+3. Wait two intervals.
+**Expected**:
+- 1: only SHOP-10 is a task; the intake JQL is `… AND (project = SHOP AND component = Web) ORDER BY key ASC` and the fake logged `GET /rest/agile/1.0/board/{id}/configuration` and `GET /rest/api/3/filter/{id}` on every poll.
+- 3: SHOP-10's comment reaches its task (tracking reads tracked keys whatever the board — intake only, like the extra clause), and SHOP-20 now becomes a task (the filter is read live). The ADO variant: the intake WIQL carries the team's `[System.AreaPath] UNDER/=` condition, read from `teamsettings/teamfieldvalues` on every poll.
+
+## TING-022 A board that is gone fails the poll; it never widens to the whole project
+```yaml
+priority: P1
+surface: [api, ui]
+automation: planned
+refs:
+  - orkka-api:GET /api/projects/{projectId}/tracker
+  - orkka-ui:packages/ui/src/components/project/TicketSourceCard.tsx
+since: 2026-11-18
+```
+**Preconditions**: An ADO source limited to team "Web"; work items in other area paths assigned to the token's owner.
+**Steps**:
+1. Delete the team in the fake (`removeTeam`); wait two intervals.
+2. `GET …/tracker`; open Settings → "Ticket source".
+**Expected**:
+- No new tasks; nothing is retired (a failed poll changes nothing else).
+- `lastPollError` = "The board 'Web' was not found in Shop — pick another board in the ticket source settings."; the card's status line shows it.
+- The same for a Jira board that answers 404 on its configuration; a board whose filter is not shared fails with "The filter of the board '<name>' cannot be read by this Jira account…".
+
+## TING-023 A runner too old to know boards is not given a board-limited source
+```yaml
+priority: P2
+surface: [api, hub]
+automation: planned
+refs:
+  - orkka-api:GET /api/projects/{projectId}/tracker
+  - orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.cs
+since: 2026-11-18
+```
+**Preconditions**: A source limited to a board; a runner whose `SyncTrackers` request carries no `features: ["boards"]`.
+**Steps**:
+1. Let that runner call `SyncTrackers`.
+2. `GET …/tracker`.
+**Expected**:
+- No assignment for the source (it would ignore the board and pick up the whole project); `lastPollError` says the polling Orkka is too old to know boards and to update it (`git pull`, then `./orkka start`). A current runner gets the assignment with `boardId`/`boardName`.
+**Notes**: covered at unit level by `tests/Orkka.IntegrationTests/TrackerBoardEndpointTests.cs`.

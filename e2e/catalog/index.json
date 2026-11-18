@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-18T17:38:36.410Z",
+  "generatedAt": "2026-11-18T19:25:17.702Z",
   "counts": {
-    "total": 708,
+    "total": 713,
     "files": 37,
     "byArea": {
       "ONB": 4,
@@ -10,7 +10,7 @@
       "HYF": 20,
       "RURL": 12,
       "FRG": 13,
-      "TSRC": 22,
+      "TSRC": 24,
       "TCLI": 13,
       "BRD": 37,
       "TSK": 52,
@@ -18,7 +18,7 @@
       "PR": 20,
       "RDK": 21,
       "SES": 15,
-      "TING": 20,
+      "TING": 23,
       "TWB": 13,
       "AIR": 7,
       "TEAM": 35,
@@ -43,14 +43,14 @@
       "GRD": 8
     },
     "byAutomation": {
-      "planned": 588,
+      "planned": 593,
       "automated": 86,
       "manual": 33,
       "blocked": 1
     },
     "byPriority": {
-      "P1": 342,
-      "P2": 217,
+      "P1": 346,
+      "P2": 218,
       "P0": 126,
       "P3": 23
     },
@@ -59,7 +59,7 @@
       "hybrid-repo": 225,
       "hybrid-folder": 51,
       "offline": 17,
-      "tracker": 68
+      "tracker": 73
     },
     "linkedToSpecs": 34
   },
@@ -3078,6 +3078,50 @@
         "i18n:trackers"
       ],
       "since": "2026-10-26",
+      "tests": []
+    },
+    {
+      "id": "TSRC-023",
+      "area": "TSRC",
+      "title": "Pick a board on the card; cleared when the project changes",
+      "file": "catalog/18-ticket-source.md",
+      "line": 368,
+      "priority": "P1",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "ui"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/p/[projectId]/settings",
+        "orkka-ui:packages/ui/src/components/project/TicketSourceCard.tsx",
+        "i18n:ticketSource"
+      ],
+      "since": "2026-11-18",
+      "tests": []
+    },
+    {
+      "id": "TSRC-024",
+      "area": "TSRC",
+      "title": "Save, read back and preview a board; clearing it means the whole project",
+      "file": "catalog/18-ticket-source.md",
+      "line": 391,
+      "priority": "P1",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:PUT /api/projects/{projectId}/tracker",
+        "orkka-api:GET /api/projects/{projectId}/tracker",
+        "orkka-api:POST /api/trackers/connections/{connectionId}/query"
+      ],
+      "since": "2026-11-18",
       "tests": []
     },
     {
@@ -7482,6 +7526,72 @@
         "orkka-api:GET /api/tasks/{taskId}/pull-request"
       ],
       "since": "2026-10-26",
+      "tests": []
+    },
+    {
+      "id": "TING-021",
+      "area": "TING",
+      "title": "A board narrows intake only; tracked tickets keep syncing",
+      "file": "catalog/27-tracker-ingestion.md",
+      "line": 331,
+      "priority": "P1",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:GET /api/projects/{projectId}/tasks",
+        "orkka-api:src/Orkka.LocalRunner/Trackers/JiraCloudClient.cs",
+        "orkka-api:src/Orkka.LocalRunner/Trackers/AzureDevOpsClient.cs"
+      ],
+      "since": "2026-11-18",
+      "tests": []
+    },
+    {
+      "id": "TING-022",
+      "area": "TING",
+      "title": "A board that is gone fails the poll; it never widens to the whole project",
+      "file": "catalog/27-tracker-ingestion.md",
+      "line": 351,
+      "priority": "P1",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api",
+        "ui"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:GET /api/projects/{projectId}/tracker",
+        "orkka-ui:packages/ui/src/components/project/TicketSourceCard.tsx"
+      ],
+      "since": "2026-11-18",
+      "tests": []
+    },
+    {
+      "id": "TING-023",
+      "area": "TING",
+      "title": "A runner too old to know boards is not given a board-limited source",
+      "file": "catalog/27-tracker-ingestion.md",
+      "line": 370,
+      "priority": "P2",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api",
+        "hub"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:GET /api/projects/{projectId}/tracker",
+        "orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.cs"
+      ],
+      "since": "2026-11-18",
       "tests": []
     },
     {

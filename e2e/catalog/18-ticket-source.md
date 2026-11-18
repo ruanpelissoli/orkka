@@ -364,3 +364,51 @@ since: 2026-10-26
 **Expected**:
 - Intro "Your Jira and Azure DevOps connections. Each one lives on the machine that added it — the token never leaves that machine, and only your runner talks to the tracker."; rows show kind, site, "as <account>", "on <machine>", "last seen <when>" and "Connected" / "Not working" with the health detail.
 - With none: "No tracker connections yet. Add one below — your runner tests the token and keeps it on this machine.", the add form, and "Prefer the terminal? Add a connection with ./orkka" with the `./orkka tracker add …` commands and the token note.
+
+## TSRC-023 Pick a board on the card; cleared when the project changes
+```yaml
+priority: P1
+surface: [ui]
+automation: planned
+refs:
+  - orkka-ui:/p/[projectId]/settings
+  - orkka-ui:packages/ui/src/components/project/TicketSourceCard.tsx
+  - i18n:ticketSource
+since: 2026-11-18
+```
+**Preconditions**: Runner online; the fake Jira has boards "Web board" (filter `project = SHOP AND component = Web ORDER BY Rank ASC`) and "Api board" on SHOP; the fake ADO has teams "Shop Team" and "Web" on Shop.
+**Steps**:
+1. Open Settings → "Ticket source" with the Jira connection; pick "Jira project" SHOP; open "Board".
+2. Pick "Web board"; Preview; Save; reload.
+3. Pick another project.
+4. Switch to the ADO connection; pick Shop; open "Board".
+**Expected**:
+- "Board" is disabled until a project is picked; its options are "Whole project (every board)" (selected by default) then the project's boards by name; the hint reads "Only tickets on this board are picked up. Leave empty to use every board in the project."
+- The preview's query gains `AND (project = SHOP AND component = Web)` (the filter's JQL without its ORDER BY); after reload "Web board" is still selected.
+- Changing the project resets "Board" to "Whole project (every board)" and lists the new project's boards.
+- ADO options are the teams, named "Shop Team board" and "Web board".
+
+## TSRC-024 Save, read back and preview a board; clearing it means the whole project
+```yaml
+priority: P1
+surface: [api]
+automation: planned
+refs:
+  - orkka-api:PUT /api/projects/{projectId}/tracker
+  - orkka-api:GET /api/projects/{projectId}/tracker
+  - orkka-api:POST /api/trackers/connections/{connectionId}/query
+since: 2026-11-18
+```
+**Preconditions**: Runner online with an ADO connection to the fake; team "Web" (area paths `Shop\Web` with children, `Shop\Shared` alone).
+**Steps**:
+1. `query {kind:"boards", scope:"Shop"}`.
+2. `query {kind:"preview", scope:"Shop", boardId:<Web's id>, boardName:"Web"}`.
+3. `PUT …/tracker {…, scope:"Shop", boardId:<Web's id>, boardName:"Web"}`; `GET …/tracker`.
+4. `PUT …/tracker {…, boardId:null}`; `GET …/tracker`.
+5. `query {kind:"preview", scope:"Shop", boardId:"no-such-team", boardName:"Gone"}`.
+**Expected**:
+- 1: `result.boards` lists the teams by name with their ids.
+- 2: the effective WIQL contains `AND ([System.AreaPath] UNDER 'Shop\Web' OR [System.AreaPath] = 'Shop\Shared')`.
+- 3: the source reads back `boardId` and `boardName:"Web"`; 4: both null.
+- 5: `result.ok:false`, `error:"The board 'Gone' was not found in Shop — pick another board in the ticket source settings."`
+**Notes**: a runner without the `tracker-boards` capability answers the boards query (and a preview with a board) with "Your runner does not know boards yet — update Orkka…". Covered at unit level by `tests/Orkka.IntegrationTests/TrackerBoardEndpointTests.cs`.

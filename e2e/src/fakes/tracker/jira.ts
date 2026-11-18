@@ -13,10 +13,14 @@
  *   GET  /rest/api/3/issue/{key}/transitions                 (write-back: available moves)
  *   POST /rest/api/3/issue/{key}/transitions {transition:{id}} → 204
  *   GET  /rest/api/3/attachment/content/{id} → 303 → /__media/jira/{id}  (attachment download, redirect like Atlassian's media service)
+ *   GET  /rest/agile/1.0/board?projectKeyOrId&maxResults&startAt  (a project's boards — the ticket source's Board select)
+ *   GET  /rest/agile/1.0/board/{id}/configuration            (a board's filter id; 404 when the board is gone)
+ *   GET  /rest/api/3/filter/{id}                             (the filter's JQL, AND-ed onto intake; 404 when not shared)
  *
  * Auth: Basic base64(email:token); anything else is 401 like Jira. The JQL evaluator understands
  * the clauses the runner builds (JiraQueries) plus `labels`, `priority`, `status`, `issuetype`
- * in the project's extra clause; any other clause answers 400 with Jira's error shape.
+ * in the project's extra clause, and `component` in a board's filter; any other clause answers
+ * 400 with Jira's error shape.
  */
 import { adfOf, basicOf, jiraDate, parseLiterals, QueryError, send, splitTopLevel, unwrap, type Ctx, type FakeAttachment, type FakeComment } from "./common.js";
 
@@ -60,6 +64,23 @@ export interface FakeJiraOptions {
   acceptanceFieldId?: string | null;
 }
 
+/** An agile board: what the board shows is its saved filter's JQL. */
+export interface JiraBoard {
+  id: number;
+  name: string;
+  type: "scrum" | "kanban" | "simple";
+  /** The project the board is listed under (`projectKeyOrId`). */
+  project: string;
+  filterId: string;
+}
+
+export interface JiraFilter {
+  id: string;
+  jql: string;
+  /** False = not shared with the token's owner: GET /filter/{id} answers 404 like Jira. */
+  shared: boolean;
+}
+
 export interface AppliedTransition {
   tracker: "jira" | "ado";
   key: string;
@@ -81,6 +102,10 @@ export class FakeJira {
   acceptanceFieldId: string | null;
   readonly issues = new Map<string, JiraIssue>();
   readonly transitions: AppliedTransition[] = [];
+  readonly boards = new Map<number, JiraBoard>();
+  readonly filters = new Map<string, JiraFilter>();
+  private boardSeq = 1;
+  private filterSeq = 10040;
   /** Optional workflow: status → statuses reachable from it. Unset = any other status. */
   workflow: Record<string, string[]> | null = null;
   private seq = 10000;
@@ -171,10 +196,29 @@ export class FakeJira {
     this.issues.delete(key.toUpperCase());
   }
 
+  /** A board of `project` (default: the first) showing what `jql` matches. */
+  addBoard(seed: { name: string; jql: string; project?: string; type?: JiraBoard["type"]; shared?: boolean }): JiraBoard {
+    const filter: JiraFilter = { id: String(this.filterSeq++), jql: seed.jql, shared: seed.shared ?? true };
+    this.filters.set(filter.id, filter);
+    const board: JiraBoard = {
+      id: this.boardSeq++,
+      name: seed.name,
+      type: seed.type ?? "scrum",
+      project: (seed.project ?? this.projects[0].key).toUpperCase(),
+      filterId: filter.id,
+    };
+    this.boards.set(board.id, board);
+    return board;
+  }
+
+  removeBoard(id: number) {
+    this.boards.delete(id);
+  }
+
   // ── HTTP ───────────────────────────────────────────────────────────────
 
   handles(path: string) {
-    return path.startsWith("/rest/api/3/") || path.startsWith("/__media/jira/");
+    return path.startsWith("/rest/api/3/") || path.startsWith("/rest/agile/1.0/") || path.startsWith("/__media/jira/");
   }
 
   handle(ctx: Ctx) {
@@ -182,10 +226,12 @@ export class FakeJira {
     if (!ctx.record.authOk) {
       return send(ctx, 401, { errorMessages: ["Client must be authenticated to access this resource."], errors: {} });
     }
+    if (ctx.path.startsWith("/rest/agile/1.0/")) return this.agile(ctx);
     const p = ctx.path.slice("/rest/api/3".length);
     const m = ctx.method;
     let match: RegExpExecArray | null;
     try {
+      if (m === "GET" && (match = /^\/filter\/([^/]+)$/.exec(p))) return this.filter(ctx, decodeURIComponent(match[1]));
       if (m === "GET" && p === "/myself") return send(ctx, 200, { accountId: this.accountId, displayName: this.displayName, emailAddress: this.email, active: true });
       if (m === "GET" && p === "/project/search") return this.projectSearch(ctx);
       if (m === "GET" && (match = /^\/project\/([^/]+)\/statuses$/.exec(p))) return this.projectStatuses(ctx, decodeURIComponent(match[1]));
@@ -210,6 +256,44 @@ export class FakeJira {
       throw e;
     }
     return send(ctx, 404, { errorMessages: [`fake jira: no route ${m} ${ctx.path}`], errors: {} });
+  }
+
+  private agile(ctx: Ctx) {
+    const p = ctx.path.slice("/rest/agile/1.0".length);
+    let match: RegExpExecArray | null;
+    if (ctx.method === "GET" && p === "/board") {
+      const project = (ctx.query.projectKeyOrId ?? "").toUpperCase();
+      const max = Number(ctx.query.maxResults ?? 50);
+      const start = Number(ctx.query.startAt ?? 0);
+      const all = [...this.boards.values()].filter((b) => !project || b.project === project).sort((a, b) => a.id - b.id);
+      const values = all.slice(start, start + max).map((b) => ({
+        id: b.id,
+        self: `${ctx.origin}/rest/agile/1.0/board/${b.id}`,
+        name: b.name,
+        type: b.type,
+        location: { projectKey: b.project, displayName: b.project },
+      }));
+      return send(ctx, 200, { maxResults: max, startAt: start, total: all.length, isLast: start + values.length >= all.length, values });
+    }
+    if (ctx.method === "GET" && (match = /^\/board\/(\d+)\/configuration$/.exec(p))) {
+      const board = this.boards.get(Number(match[1]));
+      if (!board) return send(ctx, 404, { errorMessages: [`Board does not exist or you do not have permission to see it.`], errors: {} });
+      return send(ctx, 200, {
+        id: board.id,
+        name: board.name,
+        type: board.type,
+        self: `${ctx.origin}/rest/agile/1.0/board/${board.id}/configuration`,
+        filter: { id: board.filterId, self: `${ctx.origin}/rest/api/3/filter/${board.filterId}` },
+        columnConfig: { columns: this.statuses.map((s) => ({ name: s.name, statuses: [] })) },
+      });
+    }
+    return send(ctx, 404, { errorMessages: [`fake jira: no route ${ctx.method} ${ctx.path}`], errors: {} });
+  }
+
+  private filter(ctx: Ctx, id: string) {
+    const filter = this.filters.get(id);
+    if (!filter || !filter.shared) return send(ctx, 404, { errorMessages: [`The selected filter is not available to you, perhaps it has been deleted or had its permissions changed.`], errors: {} });
+    return send(ctx, 200, { id: filter.id, name: `Filter for board ${filter.id}`, jql: filter.jql, self: `${ctx.origin}/rest/api/3/filter/${filter.id}` });
   }
 
   private projectSearch(ctx: Ctx) {
@@ -488,11 +572,21 @@ export class FakeJira {
       const neg = /not/i.test(m[1]);
       return (i) => vs.some((v) => i.labels.includes(v)) !== neg;
     }
+    if ((m = /^component\s*(=|!=)\s*(.+)$/i.exec(t))) {
+      const v = one(m[2]).toLowerCase();
+      const neg = m[1] === "!=";
+      return (i) => i.components.some((c) => c.toLowerCase() === v) !== neg;
+    }
+    if ((m = /^component\s+(not\s+in|in)\s*\((.*)\)$/i.exec(t))) {
+      const vs = parseLiterals(m[2]).map((x) => x.toLowerCase());
+      const neg = /not/i.test(m[1]);
+      return (i) => i.components.some((c) => vs.includes(c.toLowerCase())) !== neg;
+    }
     if ((m = /^priority\s*(=|!=)\s*(.+)$/i.exec(t))) {
       const v = one(m[2]).toLowerCase();
       const neg = m[1] === "!=";
       return (i) => ((i.priority ?? "").toLowerCase() === v) !== neg;
     }
-    throw new QueryError(`Error in the JQL Query: the fake tracker does not understand '${t}' (supported: project, issuetype, key, key in, summary ~, parent in, assignee = currentUser(), statusCategory, status, labels, priority).`);
+    throw new QueryError(`Error in the JQL Query: the fake tracker does not understand '${t}' (supported: project, issuetype, key, key in, summary ~, parent in, assignee = currentUser(), statusCategory, status, labels, component, priority).`);
   }
 }

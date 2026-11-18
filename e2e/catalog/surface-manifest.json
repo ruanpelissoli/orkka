@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-11-18T16:47:52.790Z",
+  "generatedAt": "2026-11-18T19:25:25.747Z",
   "sources": {
     "ui": {
-      "path": "C:\\Projects\\orkka\\orkka-r5\\ui",
-      "sha": "fbedc71bddd8"
+      "path": "C:\\Projects\\orkka\\orkka-boards\\ui",
+      "sha": "a2ee52fc0f4b"
     },
     "api": {
-      "path": "C:\\Projects\\orkka\\orkka-r5",
-      "sha": "fbedc71bddd8"
+      "path": "C:\\Projects\\orkka\\orkka-boards",
+      "sha": "a2ee52fc0f4b"
     }
   },
   "uiPages": [
@@ -2617,7 +2617,7 @@
         "workspaces"
       ]
     },
-    "leafCount": 2272
+    "leafCount": 2276
   },
   "counts": {
     "uiPages": 39,
