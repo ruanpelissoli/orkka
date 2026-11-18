@@ -24,7 +24,7 @@ public static class ProviderModelDefaults
     {
         AiProvider.OpenAI => "gpt-5.6-sol",
         AiProvider.Google => "gemini-3.1-pro-preview",
-        AiProvider.GitHubCopilot => "copilot/claude-sonnet-5",
+        AiProvider.GitHubCopilot => "copilot/auto",
         AiProvider.Ollama => "ollama/gpt-oss:20b",
         AiProvider.XAI => "grok-4.6",
         AiProvider.OpenCode => OpenCodeDefault,
@@ -45,12 +45,19 @@ public static class ProviderModelDefaults
     {
         AiProvider.OpenAI => "gpt-5.6-sol",
         AiProvider.Google => "gemini-3.1-pro-preview",
-        AiProvider.GitHubCopilot => "copilot/claude-sonnet-5",
+        AiProvider.GitHubCopilot => "copilot/auto",
         AiProvider.Ollama => "ollama/gpt-oss:20b",
         AiProvider.XAI => "grok-4.6",
         AiProvider.OpenCode => OpenCodeDefault,
         _ => "claude-sonnet-5",
     };
+
+    // Copilot gets "copilot/auto" on every tier (user decision 2026-11-18): Auto lets Copilot
+    // pick the model and bills DISCOUNTED premium requests on the user's Copilot plan. Nothing
+    // is lost against a pinned Copilot model: every copilot/* row is SupportsMcp=false alike
+    // (the QA role stays on the provider-independent QaModel either way), and the Copilot CLI
+    // invocation is identical apart from the --model value. Users who want a specific Copilot
+    // model pick it per agent, or for the whole team at once, on the Team page.
 
     /// <summary>Every OpenCode tier resolves to the same anchor, for the same reason Ollama
     /// does: OpenCode ships no models, and which vendors are actually reachable depends on

@@ -208,8 +208,8 @@ public sealed class ListModelsEndpointTests
     public void CopilotTierDefaults_PointAtOfferedCopilotRows()
     {
         Catalog.FastModel(AiProvider.GitHubCopilot).Should().Be("copilot/auto");
-        Catalog.UtilityModel(AiProvider.GitHubCopilot).Should().Be("copilot/claude-sonnet-5");
-        Catalog.CapableModel(AiProvider.GitHubCopilot).Should().Be("copilot/claude-sonnet-5");
+        Catalog.UtilityModel(AiProvider.GitHubCopilot).Should().Be("copilot/auto");
+        Catalog.CapableModel(AiProvider.GitHubCopilot).Should().Be("copilot/auto");
 
         foreach (var tier in new[] { AiModelTier.Fast, AiModelTier.Utility, AiModelTier.Capable })
             Catalog.IsSelectable(Catalog.TierModel(AiProvider.GitHubCopilot, tier))

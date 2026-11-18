@@ -102,7 +102,7 @@ public sealed class ProviderReadinessTests
     [Fact]
     public void SelectMergeResolver_CopilotOnly_UsesCopilotCapableModel()
         => TaskOrchestrator.SelectMergeResolver(new FakeReadiness(AiProvider.GitHubCopilot), Catalog)
-            .Should().Be((AiProvider.GitHubCopilot, "copilot/claude-sonnet-5"));
+            .Should().Be((AiProvider.GitHubCopilot, "copilot/auto"));
 
     [Fact]
     public void SelectMergeResolver_OllamaOnly_UsesOllamaCapableModel()
@@ -146,7 +146,7 @@ public sealed class ProviderReadinessTests
     [Theory]
     [InlineData(AiProvider.OpenAI, "gpt-5.6-sol", "gpt-5.6-sol")]
     [InlineData(AiProvider.Google, "gemini-3.6-flash", "gemini-3.1-pro-preview")]
-    [InlineData(AiProvider.GitHubCopilot, "copilot/auto", "copilot/claude-sonnet-5")]
+    [InlineData(AiProvider.GitHubCopilot, "copilot/auto", "copilot/auto")]
     [InlineData(AiProvider.Ollama, "ollama/gpt-oss:20b", "ollama/gpt-oss:20b")]
     [InlineData(AiProvider.XAI, "grok-4.6", "grok-4.6")]
     [InlineData(AiProvider.OpenCode,
