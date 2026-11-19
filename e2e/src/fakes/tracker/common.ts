@@ -18,20 +18,20 @@ export interface FakeAttachment {
 
 export interface RecordedRequest {
   at: string;
-  tracker: "jira" | "ado" | "admin" | "unknown";
+  tracker: "jira" | "ado" | "github" | "admin" | "unknown";
   method: string;
   path: string;
   query: Record<string, string>;
   body: unknown;
   /** Whether the Authorization header carried the configured credential. */
   authOk: boolean;
-  /** The raw Authorization header (Basic …) — kept so specs can assert who sent what. */
+  /** The raw Authorization header (Basic … / Bearer … for GitHub) — kept so specs can assert who sent what. */
   authorization: string | null;
   status: number;
 }
 
 export interface InjectedFailure {
-  tracker?: "jira" | "ado";
+  tracker?: "jira" | "ado" | "github";
   method?: string;
   path: RegExp;
   status: number;

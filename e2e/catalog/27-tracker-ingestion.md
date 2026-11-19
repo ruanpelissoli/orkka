@@ -427,3 +427,95 @@ since: 2026-11-18
 - 3: SHOP-64's task keeps going with exactly one note "SHOP-64 is not assigned to you in Jira; Orkka will not pick up more of it — archive this task if it isn't yours."
 - 4: the story group is cancelled and SHOP-60, still in To Do and mine, becomes a plain task (on the next poll at the latest).
 **Notes**: covered at unit level by `tests/Orkka.Tests/Features/Trackers/TrackerStoryTests.cs` (AMemberNotAssignedToMe…, AStartedMemberNotAssignedToMe…, WhenNoMemberIsLeft…) and `tests/Orkka.Tests/Features/Tasks/StoryTasksTests.cs` (AReleasedMember…).
+
+## TING-026 GitHub intake: my open pickup-status issues become tasks; drafts and PRs never
+```yaml
+priority: P0
+surface: [api]
+automation: planned
+refs:
+  - orkka-api:GET /api/projects/{projectId}/tasks
+  - orkka-api:src/Orkka.LocalRunner/Trackers/GitHubProjectsClient.cs
+since: 2026-11-19
+```
+**Preconditions**: A GitHub source on "Shop roadmap" (pickup "Todo", repository filter `e2e-local/app`); on the project: `e2e-local/app#1` (mine, Todo, body with an HTML comment from an issue template), `#2` (colleague's, Todo), `e2e-local/api#3` (mine, Todo — outside the filter), `e2e-local/app#7` (mine, In Progress), `e2e-local/app#8` (mine, Todo, closed), a DRAFT_ISSUE and a PULL_REQUEST item in Todo; `e2e-local/app` is one of the project's repositories.
+**Steps**:
+1. Wait two intervals; `GET …/tasks`.
+**Expected**:
+- Only `[e2e-local/app#1] …` is a task (ExternalRef `github:127.0.0.1:<port>/github:e2e-local/app#1`), in the repository whose remote is `https://github.com/e2e-local/app` (matched by remote URL when the project has several), its description the issue's markdown without the HTML comment, its labels the issue's.
+- Draft issues (no repository to branch from) and pull requests (already code) never count; nor do the colleague's issue, the other repository's, the In Progress one or the closed one.
+- The fake logged `items(first: 50 …)` pages for the whole project on every poll (never a partial set: a project over 5,000 items fails the poll).
+
+## TING-027 A tracked GitHub issue keeps syncing when it moves, leaves the filter or gets comments
+```yaml
+priority: P1
+surface: [api]
+automation: planned
+refs:
+  - orkka-api:GET /api/tasks/{taskId}/messages
+  - orkka-api:src/Orkka.LocalRunner/Trackers/GitHubProjectsClient.cs
+since: 2026-11-19
+```
+**Preconditions**: `e2e-local/app#1` is a task (TING-026).
+**Steps**:
+1. In the fake: move it to "In Progress"; add a comment; edit its body.
+2. Remove its project item (or move it to a repository outside the filter).
+3. Assign it to "colleague".
+**Expected**:
+- 1: status "In Progress" synced, the comment arrives as "**colleague** commented on e2e-local/app#1 in GitHub (…)", the new text rewrites the task while nothing started (else a note). The issue is read by key (`iN: repository(owner, name) { issue(number) }`), whatever its status or project.
+- 2: still tracked — intake filters only pick up.
+- 3: retired like a Jira ticket: archived if nothing started, else a note.
+
+## TING-028 Sub-issues make a Story: only mine that have not started, in GitHub's order
+```yaml
+priority: P0
+surface: [api]
+automation: planned
+refs:
+  - orkka-api:GET /api/projects/{projectId}/tasks
+  - orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.Stories.cs
+since: 2026-11-19
+```
+**Preconditions**: Stories on; `e2e-local/app#40` (mine, Todo) with sub-issues `#41` (mine, no project item = No Status), `#42` (colleague's), `#43` (mine, In Progress on the project), `#44` (mine, closed); `e2e-local/app#50` (mine, Todo) whose only sub-issue `#51` is the colleague's.
+**Steps**:
+1. Wait two intervals; `GET …/tasks`.
+**Expected**:
+- `#40` is a Story with one member, `#41` (no status reads as to do); `#42`–`#44` are not tasks. `#50` is a plain task.
+- Every member and the Story move together, as for Jira (TING-024/025 hold for GitHub).
+
+## TING-029 GitHub refusals become the poll error: SSO, a missing scope, a rate limit
+```yaml
+priority: P1
+surface: [api, ui]
+automation: planned
+refs:
+  - orkka-api:GET /api/projects/{projectId}/tracker
+  - orkka-api:POST /api/trackers/connections/{connectionId}/query
+since: 2026-11-19
+```
+**Preconditions**: A GitHub source on the fake; one connection with a token, one with the gh login.
+**Steps**:
+1. Make `e2e-local` enforce SAML SSO in the fake (`ssoOrgs`); wait an interval; `GET …/tracker`; re-test both connections.
+2. Drop `project` from `X-OAuth-Scopes`; re-test.
+3. Make the next request a secondary rate limit with `Retry-After: 3`, then with `Retry-After: 600`.
+**Expected**:
+- 1: `lastPollError` (token) "GitHub refused access: the organization enforces SAML single sign-on and this token is not authorized for it — authorize it for the organization (GitHub → Settings → Developer settings → Personal access tokens → Configure SSO), then try again."; gh login: "… your gh login is not authorized for it — run `gh auth login -h <host>` again and authorize the organization when the browser asks." Nothing is retired.
+- 2: test fails: token "The token lacks the 'project' scope — …"; gh "… run `gh auth refresh -h <host> -s project`."
+- 3: a 3-second wait is waited out once and the poll succeeds; 600 s fails the poll with "GitHub is rate limiting this account — Orkka tries again in about 10 minutes."
+
+## TING-030 A runner too old for GitHub is not given a GitHub source
+```yaml
+priority: P2
+surface: [api, hub]
+automation: planned
+refs:
+  - orkka-api:GET /api/projects/{projectId}/tracker
+  - orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.cs
+since: 2026-11-19
+```
+**Preconditions**: A GitHub source; a runner whose `SyncTrackers` request carries no `features: ["github"]`.
+**Steps**:
+1. Let that runner call `SyncTrackers`; `GET …/tracker`.
+**Expected**:
+- No assignment for the source; `lastPollError` says the polling Orkka is too old to know GitHub and to update it (`git pull`, then `./orkka start`). A current runner gets the assignment with `boardId`, `statusField` and `repoFilter`.
+**Notes**: covered at unit level by `tests/Orkka.IntegrationTests/TrackerGitHubEndpointTests.cs` (Poll_HandsTheSourceOnlyToARunnerThatKnowsGitHub).

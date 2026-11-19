@@ -1,6 +1,6 @@
 # orkka-e2e-tests
 
-End-to-end tests for Orkka, the local-only developer harness: a **test-case catalogue** (`catalog/`), a **Playwright + API harness** that drives a **sandboxed Orkka** (`orkka.dll start` in its own `ORKKA_HOME`, on its own port), offline **test doubles** (fake Jira Cloud / Azure DevOps, stub `gh`, local bare git remotes), and **run reports** (`runs/`).
+End-to-end tests for Orkka, the local-only developer harness: a **test-case catalogue** (`catalog/`), a **Playwright + API harness** that drives a **sandboxed Orkka** (`orkka.dll start` in its own `ORKKA_HOME`, on its own port), offline **test doubles** (fake Jira Cloud / Azure DevOps / GitHub Projects, stub `gh`, local bare git remotes), and **run reports** (`runs/`).
 
 ## One-time setup
 

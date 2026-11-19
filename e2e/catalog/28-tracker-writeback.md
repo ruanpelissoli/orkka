@@ -204,3 +204,40 @@ since: 2026-10-26
 1. Let the task start; read the ack/thread.
 **Expected**:
 - "Your Jira account cannot move this ticket (SHOP-101). (…***…)" — the token is masked.
+
+## TWB-014 GitHub: a move sets the Status option; an issue off the project is added first
+```yaml
+priority: P0
+surface: [api]
+automation: planned
+refs:
+  - orkka-api:src/Orkka.LocalRunner/Trackers/GitHubProjectsClient.cs
+  - orkka-api:GET /api/tasks/{taskId}/messages
+since: 2026-11-19
+```
+**Preconditions**: A GitHub source on "Shop roadmap" with Developing = "In Progress"; a task for `e2e-local/app#1` (Todo); a Story member for `e2e-local/app#41`, which has no item on the project.
+**Steps**:
+1. Approve the plan so development starts; wait for the next sync.
+2. Let the member start developing.
+3. Rename the option "In Progress" to "Doing" in the fake; let another mapped step come due.
+**Expected**:
+- 1: the fake's `statusChanges` gain `{key:"e2e-local/app#1", from:"Todo", to:"In Progress"}` (`updateProjectV2ItemFieldValue` with the Status field and the option's id); "Moved e2e-local/app#1 to “In Progress”"; an issue already there is not written again.
+- 2: `addProjectV2ItemById` for `#41` (recorded in `addedItems`), then its status set.
+- 3: the ack fails with "The project's Status field has no option 'In Progress' — available: Todo, Doing, In Review, Done."; five failures give up with a note, as for Jira.
+
+## TWB-015 A GitHub issue's pull request says "Closes owner/repo#n"
+```yaml
+priority: P1
+surface: [api]
+automation: planned
+refs:
+  - orkka-api:src/Modules/Orkka.Modules.SourceControl/Infrastructure/Services/OrkkaPullRequestService.cs
+  - orkka-api:src/Modules/Orkka.Modules.SourceControl/Infrastructure/Services/StoryLandingService.cs
+since: 2026-11-19
+```
+**Preconditions**: A task from `e2e-local/app#1` worked in the repository `https://github.com/e2e-local/app` (a bare remote behind the alias); a Story `e2e-local/app#40` with member `#41`; a task from `e2e-local/api#3` worked in `e2e-local/app`.
+**Steps**:
+1. Approve and merge each; read the stub gh's PR bodies.
+**Expected**:
+- `#1`'s PR body ends with "Closes e2e-local/app#1" (GitHub links it and closes the issue on merge); the Story's draft/ready PR body ends with "Closes e2e-local/app#40" and "Closes e2e-local/app#41".
+- `#3`'s PR (another repository) has no Closes line. Jira/ADO PRs never get one.

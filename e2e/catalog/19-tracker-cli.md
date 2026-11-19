@@ -221,3 +221,43 @@ since: 2026-10-26
 - Step 3: `side`'s tracker tokens are deleted from the secret store with its folder; `acme`'s connection remains.
 **Notes**: Orkka runs from the clone (R4), so there is no binary to remove; before R4 `uninstall` deleted every workspace's tracker tokens itself. Deleting the data folder by hand leaves secret-store entries behind on a real home — remove workspaces first.
 
+
+## TCLI-014 Add a GitHub connection with a token; GitHub Enterprise Server is refused
+```yaml
+priority: P1
+surface: [cli]
+automation: automated
+refs:
+  - cli:tracker
+since: 2026-11-19
+```
+**Preconditions**: The fake GitHub (`<fake>/github`, its API at `<fake>/github/graphql`) and the runner's test opt-ins (`ORKKA_TRACKER_ALLOW_INSECURE_SITE=1`, `ORKKA_SECRET_STORE=file`).
+**Steps**:
+1. `echo <token> | ./orkka tracker add github --host <fake>/github --token --workspace e2e`.
+2. `./orkka tracker list`.
+3. `echo x | ./orkka tracker add github --host github.acme-corp.example --token`.
+**Expected**:
+- 1: one `POST /github/graphql` with `Authorization: Bearer <token>` (`viewer { login name }`, `X-OAuth-Scopes` checked); "Added github-… — signed in as E2E Developer (e2e-dev)."; exit 0. trackers.json has `{kind:"github", siteUrl:"<fake>/github", healthy:true}` with no `auth` and no token; the token is in `secrets/<id>` only, never printed.
+- 2: the row reads `<id>  github  <fake>/github  E2E Developer (e2e-dev)  ok`.
+- 3: "Give github.com or your GHE.com host (like acme.ghe.com) — GitHub Enterprise Server is not supported."; exit 1. A real host: `--host` empty or `github.com` → `https://github.com` (id `github`), `acme.ghe.com` / `api.acme.ghe.com` → `https://acme.ghe.com` (id `github-acme`, API `https://api.acme.ghe.com/graphql`).
+
+## TCLI-015 Add a GitHub connection that uses the gh login: nothing is stored
+```yaml
+priority: P0
+surface: [cli]
+automation: automated
+refs:
+  - cli:tracker
+  - cli:doctor
+since: 2026-11-19
+```
+**Preconditions**: The fake GitHub; the stub `gh` first on PATH, signed in as e2e-dev (its `gh auth token` prints `gho_stub_e2e-dev`, which the fake accepts).
+**Steps**:
+1. `./orkka tracker add github --host <fake>/github` (no `--token`).
+2. Drop `project` from the fake's `X-OAuth-Scopes`; `./orkka tracker test <id>`.
+3. Sign the stub gh out; `./orkka tracker test <id>`; `./orkka doctor`.
+**Expected**:
+- 1: "Using your GitHub CLI login for 127.0.0.1:<port> (`gh auth token -h 127.0.0.1:<port>`) — Orkka stores nothing."; exit 0; the entry has `auth:"gh"` and NO secret file; the only gh call is `auth token --hostname 127.0.0.1:<port>` (read-only); the gh token is never printed.
+- 2: exit 1, "Your gh login lacks the 'project' scope Orkka needs to read and move project items — run `gh auth refresh -h 127.0.0.1:<port> -s project`."
+- 3: exit 1, "The GitHub CLI is not signed in to 127.0.0.1:<port> — run `gh auth login -h 127.0.0.1:<port>`, then `gh auth refresh -h … -s project`."; `doctor` prints the same for that connection ("uses your gh login for … — …"), and "gh is signed in" once it is.
+**Notes**: with gh not installed: "The GitHub CLI (gh) is not installed on this machine — install it from https://cli.github.com and run `gh auth login -h <host>`, or connect GitHub with a token instead." Orkka never installs gh, never runs `gh auth login` for the developer, and the agent command guard still refuses `gh auth token`.

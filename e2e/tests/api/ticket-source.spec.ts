@@ -49,7 +49,7 @@ test.describe("ticket source @api", () => {
     for (const subpath of ["../outside", "C:/code", "/abs", "~/home", "a/./b"]) {
       expect((await badRequest(put({ epics: [{ epicKey: "SHOP-1", repoId: repo.id, subpath }] }))).message, subpath).toMatch(/relative path inside the repository/);
     }
-    expect((await badRequest(put({ scope: "" }))).message).toMatch(/Pick the Jira project or Azure DevOps project/);
+    expect((await badRequest(put({ scope: "" }))).message).toMatch(/Pick the Jira project, Azure DevOps project or GitHub owner/);
   });
 
   test("TSRC-005 DELETE without a ticket source is a no-op 204; GET stays 204", caseIds("TSRC-005"), async ({ api, projects }) => {
@@ -73,7 +73,7 @@ test.describe("ticket source @api", () => {
     const list = await api.trackers.connections();
     expect(Array.isArray(list)).toBe(true);
     for (const c of list) {
-      expect(c).toMatchObject({ id: expect.any(String), key: expect.any(String), kind: expect.stringMatching(/jira|ado/), siteUrl: expect.any(String), machineName: expect.any(String) });
+      expect(c).toMatchObject({ id: expect.any(String), key: expect.any(String), kind: expect.stringMatching(/^(jira|ado|github)$/), siteUrl: expect.any(String), machineName: expect.any(String) });
       expect(JSON.stringify(c), "no token-looking field").not.toMatch(/"(token|secret|pat|password)"/i);
     }
   });
