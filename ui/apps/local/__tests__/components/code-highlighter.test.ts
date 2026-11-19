@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { beforeAll, describe, it, expect } from "vitest";
 import {
   highlightToLines,
   plainLines,
@@ -54,6 +54,13 @@ describe("langForAlias", () => {
 });
 
 describe("highlightToLines", () => {
+  // The first call loads the highlighter and its grammars. That cold start can take
+  // longer than vitest's 5 s default on a loaded machine, so do it once here with
+  // room to spare instead of inside the first test.
+  beforeAll(async () => {
+    await highlightToLines("const warm = 1;\n", "typescript");
+  }, 60_000);
+
   it("returns exactly one HTML string per input line, in order", async () => {
     const code = 'import { x } from "y";\n\nexport const n = 42; // answer\n';
     const lines = await highlightToLines(code, "typescript");

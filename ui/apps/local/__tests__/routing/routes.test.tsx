@@ -97,7 +97,11 @@ describe("route table", () => {
 
   it("forwards an old /projects URL to its /p page", async () => {
     const router = start("/de/projects/01ABC/board");
-    await waitFor(() => expect(router.state.location.pathname).toBe("/de/p/01ABC/board"));
+    // The forward goes through a lazily loaded route module; on a loaded machine that
+    // import can take longer than waitFor's 1 s default.
+    await waitFor(() => expect(router.state.location.pathname).toBe("/de/p/01ABC/board"), {
+      timeout: 10_000,
+    });
   });
 
   it("remembers the locale of the page in the NEXT_LOCALE cookie", async () => {
