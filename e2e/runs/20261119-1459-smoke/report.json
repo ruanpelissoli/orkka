@@ -1,0 +1,227 @@
+{
+  "runId": "20261119-1459-smoke",
+  "suite": "smoke",
+  "target": "http://127.0.0.1:6760",
+  "startedAt": "2026-11-19T17:59:20.515Z",
+  "finishedAt": "2026-11-19T17:59:27.619Z",
+  "durationMs": 7104,
+  "operator": "claude",
+  "gitSha": "uncommitted",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "totals": {
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [
+        "NEG-030"
+      ],
+      "testTitle": "NEG-030 a project whose slug is exactly 26 characters must still resolve by slug (ULID-length regression)",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "passed",
+      "durationMs": 400,
+      "projects": [
+        "01M7TFD5B5XZWYH4VCKMJWX8BJ e2e-neg-20261119-14597mryd"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:59:23.041Z"
+    },
+    {
+      "caseIds": [
+        "NEG-031"
+      ],
+      "testTitle": "NEG-031 the removed cloud-execution surface is gone: routes 404",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "passed",
+      "durationMs": 118,
+      "projects": [
+        "01M7TFD5M0JHPWEJP5NWZ02YG4 e2e-neg-20261119-1459-rj7ab"
+      ],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:59:23.488Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "an unknown project id answers 404, not 403",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "passed",
+      "durationMs": 37,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:59:23.618Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "API keys cannot mint API keys",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "passed",
+      "durationMs": 26,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:59:23.663Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "health endpoint answers anonymously",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "passed",
+      "durationMs": 17,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:59:23.701Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "the local host refuses a foreign Host header (DNS rebinding) with 421",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "passed",
+      "durationMs": 12,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:59:23.726Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "a cookie-authenticated write without Origin + X-Orkka-Csrf is refused",
+      "file": "tests/smoke/negatives.spec.ts",
+      "status": "passed",
+      "durationMs": 999,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:59:23.746Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "API: org/me answers for the harness key and matches the expected workspace @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 15,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:59:24.890Z"
+    },
+    {
+      "caseIds": [
+        "WSP-001"
+      ],
+      "testTitle": "API: workspaces list answers with exactly one active workspace @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 32,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:59:24.915Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "API: runner presence answers, with forge CLI status when online @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 14,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:59:24.956Z"
+    },
+    {
+      "caseIds": [
+        "TSRC-009"
+      ],
+      "testTitle": "API: tracker connections list answers (possibly empty) @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 36,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:59:24.980Z"
+    },
+    {
+      "caseIds": [
+        "LWF-001"
+      ],
+      "testTitle": "UI: the launch-code session opens the dashboard through the host's front door @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 904,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:59:25.025Z"
+    },
+    {
+      "caseIds": [
+        "LWF-001"
+      ],
+      "testTitle": "UI: a browser without the session gets the signed-out page, not the app @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 287,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:59:25.942Z"
+    },
+    {
+      "caseIds": [
+        "SET-012"
+      ],
+      "testTitle": "UI: project settings page renders for the first project (or onboarding when none) @smoke",
+      "file": "tests/smoke/smoke.spec.ts",
+      "status": "passed",
+      "durationMs": 1124,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:59:26.244Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [
+      {
+        "id": "01M7TFD5B5XZWYH4VCKMJWX8BJ",
+        "name": "e2e-neg-20261119-14597mryd"
+      },
+      {
+        "id": "01M7TFD5B5XZWYH4VCKMJWX8BJ",
+        "name": "e2e-neg-20261119-14597mryd"
+      },
+      {
+        "id": "01M7TFD5M0JHPWEJP5NWZ02YG4",
+        "name": "e2e-neg-20261119-1459-rj7ab"
+      }
+    ],
+    "leftovers": []
+  },
+  "notes": []
+}

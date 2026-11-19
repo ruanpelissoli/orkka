@@ -64,3 +64,5 @@ Every run of the harness appends one row. Reports live next to this file.
 | 2026-11-19 14:54 | ui-inventory | http://127.0.0.1:6760 | 40/40 passed | — | [20261119-1454-ui-inventory](20261119-1454-ui-inventory/report.md) |  |
 | 2026-11-19 14:55 | offline | offline | 28/36 passed, 8 skipped | — | [20261119-1455-offline](20261119-1455-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |
 | 2026-11-19 14:56 | offline | offline | 28/36 passed, 8 skipped | — | [20261119-1456-offline](20261119-1456-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |
+| 2026-11-19 14:59 | smoke | http://127.0.0.1:6760 | 14/14 passed | — | [20261119-1459-smoke](20261119-1459-smoke/report.md) |  |
+| 2026-11-19 14:59 | offline | http://127.0.0.1:6760 | 36/36 passed | — | [20261119-1459-offline](20261119-1459-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |
