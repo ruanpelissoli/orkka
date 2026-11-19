@@ -235,6 +235,10 @@ namespace Orkka.Modules.Organizations.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("AiProvider")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
                     b.Property<long>("CreatedAt")
                         .HasColumnType("INTEGER");
 

@@ -1024,6 +1024,7 @@
           "Orkka.LocalRunner.Contracts": "[1.0.0, )",
           "Orkka.Modules.Agents.Contracts": "[1.0.0, )",
           "Orkka.Modules.Documents.Contracts": "[1.0.0, )",
+          "Orkka.Modules.Organizations.Contracts": "[1.0.0, )",
           "Orkka.Modules.Projects.Contracts": "[1.0.0, )",
           "Orkka.Modules.Runners.Contracts": "[1.0.0, )",
           "Orkka.Modules.SourceControl.Contracts": "[1.0.0, )",

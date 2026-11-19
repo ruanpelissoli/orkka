@@ -13,6 +13,11 @@
     "skippedQa": "{count, plural, one {# QA-Agent hat sein Modell behalten.} other {# QA-Agenten haben ihr Modell behalten.}}",
     "error": "Das Modell des Teams konnte nicht geändert werden"
   },
+  "teamProvider": {
+    "qaNeedsClaude": "Automatisierte Browser-QA braucht Claude: {name} bleibt auf einem Claude-Modell, und die Testphase kann erst laufen, wenn Claude Code auf diesem Rechner angemeldet ist. Ausführen:",
+    "chooseProvider": "Copilot und Claude sind angemeldet, und die Teams dieses Workspace nutzen Claude. Um dein Copilot-Abo zu nutzen, wähle es unter",
+    "chooseProviderLink": "Einstellungen → Workspace"
+  },
   "agentConfig": {
     "updateError": "Agent konnte nicht aktualisiert werden",
     "deleteError": "Agent konnte nicht gelöscht werden",
@@ -1508,7 +1513,39 @@
     "saved": "Gespeichert.",
     "errorGeneric": "Der Workspace konnte nicht umbenannt werden. Bitte versuche es erneut.",
     "gitIdentityTitle": "Git-Identität",
-    "gitIdentityBody": "Commits und Pushes in diesem Workspace verwenden die Git-Identität, die auf diesem Rechner dafür festgelegt ist. Lege sie im Terminal fest mit:"
+    "gitIdentityBody": "Commits und Pushes in diesem Workspace verwenden die Git-Identität, die auf diesem Rechner dafür festgelegt ist. Lege sie im Terminal fest mit:",
+    "aiProvider": {
+      "title": "KI-Anbieter",
+      "body": "Auf welchem KI-Abo die Agenten-Teams dieses Workspace laufen. Die Agenten neuer Projekte werden darauf eingerichtet; Systemarbeit (Pläne, Titel, Merge-Korrekturen) bevorzugt ihn ebenfalls.",
+      "automatic": "Automatisch",
+      "descriptions": {
+        "automatic": "Claude, wenn es auf diesem Rechner angemeldet ist, sonst die erste angemeldete KI-CLI.",
+        "claude": "Claude Code mit deinem Claude-Abo oder API-Schlüssel.",
+        "codex": "Codex mit deinem ChatGPT-Abo oder OpenAI-Schlüssel.",
+        "copilot": "GitHub Copilot: Jeder Agent nutzt Copilot Auto, abgerechnet als vergünstigte Premium-Requests in deinem Copilot-Abo.",
+        "gemini": "Gemini CLI. Sie lässt sich nicht absichern und läuft nur, wenn dieser Rechner ungesicherte Anbieter erlaubt.",
+        "grok": "Grok CLI. Sie lässt sich nicht absichern und läuft nur, wenn dieser Rechner ungesicherte Anbieter erlaubt."
+      },
+      "readiness": {
+        "ready": "Bereit",
+        "notSignedIn": "Nicht angemeldet",
+        "notInstalled": "Nicht installiert"
+      },
+      "fix": "Zum Anmelden auf diesem Rechner ausführen:",
+      "runnerUnknown": "Dein Runner hat sich noch nicht gemeldet, daher ist der Status unbekannt. Starte ihn mit ./orkka start.",
+      "effective": "Die Agenten neuer Projekte nutzen {provider}.",
+      "blocked": "{provider} kann auf diesem Rechner nicht laufen: {reason} Neue Projekte nutzen {effective}, bis es geht.",
+      "qaNote": "QA bleibt bei Claude: Automatisierte Browsertests brauchen es.",
+      "save": "Anbieter speichern",
+      "confirmTitle": "{provider} für diesen Workspace verwenden?",
+      "confirmMessage": "Neue Projekte in diesem Workspace bekommen Agenten auf {provider}.",
+      "applyExisting": "Auch die Agenten bestehender Projekte umstellen",
+      "confirm": "Speichern",
+      "saved": "Gespeichert. Neue Projekte nutzen {provider}.",
+      "savedApplied": "Gespeichert. {count, plural, =0 {Kein Agent musste geändert werden} one {# Agent wurde auf {provider} umgestellt} other {# Agenten wurden auf {provider} umgestellt}} in {projects, plural, one {# Projekt} other {# Projekten}}.",
+      "savedQa": "{count, plural, one {# QA-Agent bleibt für Browsertests bei Claude.} other {# QA-Agenten bleiben für Browsertests bei Claude.}}",
+      "error": "Der KI-Anbieter konnte nicht gespeichert werden"
+    }
   },
   "preferencesPage": {
     "title": "Darstellung",

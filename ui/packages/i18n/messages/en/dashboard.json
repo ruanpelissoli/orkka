@@ -13,6 +13,11 @@
     "skippedQa": "{count, plural, one {# QA agent kept its model.} other {# QA agents kept their model.}}",
     "error": "Couldn't change the team's model"
   },
+  "teamProvider": {
+    "qaNeedsClaude": "Automated browser QA needs Claude: {name} stays on a Claude model, and the Testing lane can't run until Claude Code is signed in on this machine. Run",
+    "chooseProvider": "Both Copilot and Claude are signed in, and this workspace's teams use Claude. To use your Copilot plan instead, choose it in",
+    "chooseProviderLink": "Settings → Workspace"
+  },
   "agentConfig": {
     "updateError": "Failed to update agent",
     "deleteError": "Failed to delete agent",
@@ -1508,7 +1513,39 @@
     "saved": "Saved.",
     "errorGeneric": "Could not rename the workspace. Please try again.",
     "gitIdentityTitle": "Git identity",
-    "gitIdentityBody": "Commits and pushes in this workspace use the git identity set for it on this machine. Set it in a terminal with:"
+    "gitIdentityBody": "Commits and pushes in this workspace use the git identity set for it on this machine. Set it in a terminal with:",
+    "aiProvider": {
+      "title": "AI provider",
+      "body": "Which AI subscription this workspace's agent teams run on. New projects' agents are set up on it; system work (plans, titles, merge fixes) prefers it too.",
+      "automatic": "Automatic",
+      "descriptions": {
+        "automatic": "Claude when it is signed in on this machine, otherwise the first AI CLI that is.",
+        "claude": "Claude Code with your Claude plan or API key.",
+        "codex": "Codex with your ChatGPT plan or OpenAI key.",
+        "copilot": "GitHub Copilot: every agent uses Copilot Auto, billed as discounted premium requests on your Copilot plan.",
+        "gemini": "Gemini CLI. It can't be guarded, so it runs only when this machine allows unguarded providers.",
+        "grok": "Grok CLI. It can't be guarded, so it runs only when this machine allows unguarded providers."
+      },
+      "readiness": {
+        "ready": "Ready",
+        "notSignedIn": "Not signed in",
+        "notInstalled": "Not installed"
+      },
+      "fix": "To sign in on this machine, run",
+      "runnerUnknown": "Your runner hasn't reported yet, so readiness is unknown. Start it with ./orkka start.",
+      "effective": "New projects' agents use {provider}.",
+      "blocked": "{provider} can't run on this machine: {reason} New projects use {effective} until it can.",
+      "qaNote": "QA stays on Claude: automated browser testing needs it.",
+      "save": "Save provider",
+      "confirmTitle": "Use {provider} for this workspace?",
+      "confirmMessage": "New projects in this workspace get agents on {provider}.",
+      "applyExisting": "Also switch the agents in existing projects",
+      "confirm": "Save",
+      "saved": "Saved. New projects use {provider}.",
+      "savedApplied": "Saved. {count, plural, =0 {No agent needed a change} one {# agent moved to {provider}} other {# agents moved to {provider}}} across {projects, plural, one {# project} other {# projects}}.",
+      "savedQa": "{count, plural, one {# QA agent stayed on Claude for browser testing.} other {# QA agents stayed on Claude for browser testing.}}",
+      "error": "Couldn't save the AI provider"
+    }
   },
   "preferencesPage": {
     "title": "Preferences",

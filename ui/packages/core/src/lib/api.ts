@@ -37,6 +37,9 @@ import type {
   MemberPreferences,
   OrgMe,
   OrgProfile,
+  WorkspaceAiProvider,
+  WorkspaceAiProviderChoice,
+  UpdateWorkspaceAiProviderResponse,
   RunnerToken,
   MyRunnerStatus,
   NotificationList,
@@ -1030,6 +1033,20 @@ export const api = {
       fetchApi<MemberPreferences>("/api/org/me/preferences", token, {
         method: "PUT",
         body: JSON.stringify(preferences),
+      }),
+    /** The workspace's AI provider: which vendor new teams are seeded on. */
+    aiProvider: (token: string) =>
+      fetchApi<WorkspaceAiProvider>("/api/org/ai-provider", token),
+    /** Sets it; with `applyToExistingProjects` every project's agents move too (QA skipped
+     * for a model without browser tools). Returns the counts. */
+    setAiProvider: (
+      provider: WorkspaceAiProviderChoice,
+      applyToExistingProjects: boolean,
+      token: string
+    ) =>
+      fetchApi<UpdateWorkspaceAiProviderResponse>("/api/org/ai-provider", token, {
+        method: "PUT",
+        body: JSON.stringify({ provider, applyToExistingProjects }),
       }),
   },
 

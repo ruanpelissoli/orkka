@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-19T14:42:44.913Z",
+  "generatedAt": "2026-11-19T16:00:07.618Z",
   "counts": {
-    "total": 725,
+    "total": 729,
     "files": 37,
     "byArea": {
       "ONB": 4,
@@ -21,7 +21,7 @@
       "TING": 25,
       "TWB": 13,
       "AIR": 7,
-      "TEAM": 36,
+      "TEAM": 37,
       "DSN": 26,
       "MEM": 15,
       "SKL": 12,
@@ -34,7 +34,7 @@
       "KEY": 18,
       "AUD": 3,
       "RUN": 35,
-      "SET": 29,
+      "SET": 32,
       "NAV": 21,
       "NTF": 11,
       "LWF": 17,
@@ -43,21 +43,21 @@
       "GRD": 8
     },
     "byAutomation": {
-      "planned": 605,
+      "planned": 609,
       "automated": 86,
       "manual": 33,
       "blocked": 1
     },
     "byPriority": {
-      "P1": 352,
-      "P2": 221,
+      "P1": 354,
+      "P2": 223,
       "P0": 129,
       "P3": 23
     },
     "byMode": {
-      "all": 386,
-      "hybrid-repo": 226,
-      "hybrid-folder": 52,
+      "all": 389,
+      "hybrid-repo": 227,
+      "hybrid-folder": 53,
       "offline": 17,
       "tracker": 75
     },
@@ -95,6 +95,7 @@
       "GET /api/me/workspaces",
       "GET /api/models",
       "GET /api/notifications",
+      "GET /api/org/ai-provider",
       "GET /api/org/me",
       "GET /api/org/runners",
       "GET /api/org/settings",
@@ -283,6 +284,7 @@
       "POST /local/shutdown",
       "POST /mcp",
       "PUT /api/org",
+      "PUT /api/org/ai-provider",
       "PUT /api/org/me/preferences",
       "PUT /api/projects/{id}/run-config",
       "PUT /api/projects/{projectId}/agents/model",
@@ -433,6 +435,7 @@
       "taskMisc",
       "tasksPage",
       "teamModel",
+      "teamProvider",
       "teamStats",
       "ticketSource",
       "ticketSourceStatus",
@@ -9073,6 +9076,31 @@
       "tests": []
     },
     {
+      "id": "TEAM-039",
+      "area": "TEAM",
+      "title": "Say on the team page that browser QA needs Claude, and that the provider can be chosen",
+      "file": "catalog/30-team-agents.md",
+      "line": 744,
+      "priority": "P2",
+      "modes": [
+        "hybrid-repo",
+        "hybrid-folder"
+      ],
+      "surface": [
+        "ui"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/p/[projectId]/team",
+        "orkka-ui:apps/local/app/[locale]/(dashboard)/p/[projectId]/team/TeamProviderNotes.tsx",
+        "orkka-api:GET /api/org/ai-provider",
+        "orkka-api:GET /api/me/runner",
+        "i18n:teamProvider"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
       "id": "DSN-001",
       "area": "DSN",
       "title": "Render the Design page with its landmarks",
@@ -14583,6 +14611,75 @@
         "orkka-ui:/settings/preferences",
         "orkka-ui:packages/ui/src/components/ui/LocaleSwitcher.tsx"
       ],
+      "tests": []
+    },
+    {
+      "id": "SET-043",
+      "area": "SET",
+      "title": "Choose the workspace AI provider on Settings → Workspace",
+      "file": "catalog/46-settings.md",
+      "line": 567,
+      "priority": "P1",
+      "modes": [
+        "all"
+      ],
+      "surface": [
+        "ui"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/settings/workspace",
+        "orkka-ui:apps/local/components/settings/WorkspaceAiProviderCard.tsx",
+        "orkka-api:GET /api/org/ai-provider",
+        "orkka-api:PUT /api/org/ai-provider",
+        "orkka-api:GET /api/me/runner",
+        "i18n:workspaceSettings"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "SET-044",
+      "area": "SET",
+      "title": "New projects follow the workspace AI provider (seeding, fallback, isolation)",
+      "file": "catalog/46-settings.md",
+      "line": 594,
+      "priority": "P1",
+      "modes": [
+        "all"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:PUT /api/org/ai-provider",
+        "orkka-api:GET /api/org/ai-provider",
+        "orkka-api:POST /api/projects/from-folder",
+        "orkka-api:GET /api/projects/{projectId}/agents"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "SET-045",
+      "area": "SET",
+      "title": "Keep the workspace AI provider Owner-only",
+      "file": "catalog/46-settings.md",
+      "line": 619,
+      "priority": "P2",
+      "modes": [
+        "all"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:PUT /api/org/ai-provider",
+        "orkka-api:GET /api/org/ai-provider"
+      ],
+      "since": "2026-11-19",
       "tests": []
     },
     {

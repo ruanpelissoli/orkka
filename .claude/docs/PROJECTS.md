@@ -134,8 +134,10 @@ Every project is seeded with the full roster — PM (Luna), Designer (Muse), Ful
 Solution Architect (Archie), FrontendDev (Pixel), BackendDev (Atlas), DevOps (Forge), Code
 Reviewer (Sentinel), QA (Scout), plus the singleton specialists from `AgentSeeder.Specialists`
 (GameDev, GameDesigner, DBA, Legal, MobileDev). Seeding is not stack- or pipeline-dependent:
-`AgentSeeder.CreateDefaultPod` always seeds everyone, models come from the preferred connected
-provider (`IProviderReadiness`), and a republished `ProjectCreated` only tops up missing
+`AgentSeeder.CreateDefaultPod` always seeds everyone, models come from the workspace's AI provider
+(Settings → Workspace; Automatic = Claude when it can run, else the first signed-in provider —
+`IWorkspaceAiProviderResolver`, AGENTS.md → Default models per provider; QA always Claude), and a
+republished `ProjectCreated` only tops up missing
 specialists. Built-in skills are seeded and attached to their default roles in the same
 handler. One persona per role: `DefaultPrompts.ForRole(role)`.
 

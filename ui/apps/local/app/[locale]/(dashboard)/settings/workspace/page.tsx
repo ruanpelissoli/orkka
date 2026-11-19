@@ -1,9 +1,11 @@
 import { useTranslations } from "use-intl";
 import { CopyableCommand, GlassCard } from "@/components/ui";
+import { WorkspaceAiProviderCard } from "@/components/settings/WorkspaceAiProviderCard";
 import { WorkspaceNameCard } from "@/components/settings/WorkspaceNameCard";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 
-/** The current workspace (one per job): its name, and where its git identity is set. */
+/** The current workspace (one per job): its name, its AI provider, and where its git identity
+ * is set. */
 export default function WorkspaceSettingsPage() {
   const tMeta = useTranslations("dashboard");
   const t = useTranslations("dashboard.workspaceSettings");
@@ -12,6 +14,7 @@ export default function WorkspaceSettingsPage() {
   return (
     <div className="space-y-4">
       <WorkspaceNameCard />
+      <WorkspaceAiProviderCard />
       <GlassCard padding="md">
         <h3 className="font-display text-sm font-semibold text-white">{t("gitIdentityTitle")}</h3>
         <p className="mt-1 max-w-xl text-xs text-gray-400">{t("gitIdentityBody")}</p>

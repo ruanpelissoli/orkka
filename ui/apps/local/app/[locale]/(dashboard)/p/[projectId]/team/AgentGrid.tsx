@@ -3,6 +3,7 @@ import { useTranslations } from "use-intl";
 import { AgentCard } from "./AgentCard";
 import { AgentDetailPanel, type TabKey } from "./AgentDetailPanel";
 import { TeamModelControl } from "./TeamModelControl";
+import { TeamProviderNotes } from "./TeamProviderNotes";
 import { StatsWindowSelector } from "@/components/team";
 import { useAgentStats } from "@/hooks/use-agent-stats";
 import type { AgentStatsEnvelope, AgentStatsWindow, AiModel, ProjectAgent, ProjectRepo } from "@/lib/types";
@@ -61,6 +62,9 @@ function AgentGrid({
         <h1 className="font-display text-xl font-bold text-white">{t("meta.team")}</h1>
         <StatsWindowSelector value={statsWindow} onChange={setStatsWindow} />
       </div>
+
+      {/* Browser QA needs Claude; the workspace's AI provider can be chosen. */}
+      <TeamProviderNotes agents={agents} />
 
       {/* One step to move the whole team onto a model (e.g. Copilot Auto). */}
       <TeamModelControl agents={agents} models={models} projectId={projectId} />

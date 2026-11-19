@@ -127,6 +127,18 @@ public sealed class ProviderReadinessTests
         => TaskOrchestrator.SelectMergeResolver(new FakeReadiness(), Catalog)
             .Should().Be((AiProvider.Anthropic, ProviderModelDefaults.CapableModel(AiProvider.Anthropic)));
 
+    [Fact]
+    public void SelectMergeResolver_WorkspaceChoseCopilot_UsesCopilotEvenWithClaudeReady()
+        => TaskOrchestrator.SelectMergeResolver(
+                new FakeReadiness(AiProvider.Anthropic, AiProvider.GitHubCopilot), Catalog, AiProvider.GitHubCopilot)
+            .Should().Be((AiProvider.GitHubCopilot, "copilot/auto"));
+
+    [Fact]
+    public void SelectMergeResolver_WorkspaceChoiceNotReady_FallsBackToClaude()
+        => TaskOrchestrator.SelectMergeResolver(
+                new FakeReadiness(AiProvider.Anthropic), Catalog, AiProvider.GitHubCopilot)
+            .Should().Be((AiProvider.Anthropic, ProviderModelDefaults.CapableModel(AiProvider.Anthropic)));
+
     // ── Agent seeding ───────────────────────────────────────────────────────
 
     [Fact]

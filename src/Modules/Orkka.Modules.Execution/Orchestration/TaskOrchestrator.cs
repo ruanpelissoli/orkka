@@ -4202,14 +4202,15 @@ public sealed partial class TaskOrchestrator(
         }
     }
 
-    /// <summary>Merge-resolver provider/model: Claude when it can run (today's behavior;
-    /// hosted always), else the first connected provider's capable model. An empty
-    /// connected list falls through to Anthropic — the invoker's own pre-flight then
+    /// <summary>Merge-resolver provider/model: the workspace's chosen provider (Settings →
+    /// Workspace → AI provider) when the route's runner can run it; otherwise — and on
+    /// Automatic — Claude when it can run, else the first connected provider's capable model.
+    /// An empty connected list falls through to Anthropic — the invoker's own pre-flight then
     /// yields the blocker as an error, which the merge-failure path persists.</summary>
     internal static (AiProvider Provider, string Model) SelectMergeResolver(
-        IProviderReadiness readiness, ModelCatalogSnapshot catalog)
+        IProviderReadiness readiness, ModelCatalogSnapshot catalog, AiProvider? workspaceChoice = null)
     {
-        var provider = readiness.PreferredProvider();
+        var provider = readiness.PreferredProvider(workspaceChoice);
         return (provider, catalog.CapableModel(provider));
     }
 
@@ -6386,10 +6387,15 @@ public sealed partial class TaskOrchestrator(
         Ulid taskId, CancellationToken ct)
     {
         // Conflict resolution is bash/git in a worktree — no MCP — so any connected
-        // provider can run it. Claude when available (today's behavior; hosted always).
+        // provider can run it: the workspace's chosen provider when it can, else Claude when
+        // available, else the first connected one.
+        var workspaceChoice = scope.ServiceProvider.GetService<IWorkspaceAiProviderResolver>() is { } choices
+            ? await choices.GetChosenAsync(task.OrgId, ct)
+            : null;
         var (mergeProvider, mergeModel) = SelectMergeResolver(
             route.Readiness,
-            await scope.ServiceProvider.GetRequiredService<IModelCatalog>().GetAsync(ct));
+            await scope.ServiceProvider.GetRequiredService<IModelCatalog>().GetAsync(ct),
+            workspaceChoice);
 
         // The user's whole-side choice (when the deterministic path was unavailable) and
         // free-text guidance travel as prompt rules.

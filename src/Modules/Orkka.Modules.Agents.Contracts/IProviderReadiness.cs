@@ -1,10 +1,11 @@
 namespace Orkka.Modules.Agents.Contracts;
 
 /// <summary>
-/// Which AI providers can run right now. The hosted edition is always ready (Orkka's own
-/// Anthropic key); Orkka Local replaces this with a runner-backed implementation so every
-/// consumer (task submit pre-flight, merge resolver, agent seeding, utility fallback)
-/// adapts to what the user actually has connected — without local-mode flags in shared code.
+/// Which AI providers can run right now. The module default (<c>AlwaysReadyProviderReadiness</c>)
+/// never blocks; each task's route carries a runner-backed one (the developer's last Hello), and
+/// agent seeding reads the workspace's runner coverage (<see cref="IWorkspaceAiProviderResolver"/>),
+/// so every consumer (task submit pre-flight, merge resolver, agent seeding, utility fallback)
+/// adapts to what the developer actually has signed in.
 /// </summary>
 public interface IProviderReadiness
 {
@@ -23,13 +24,23 @@ public interface IProviderReadiness
 
 public static class ProviderReadinessExtensions
 {
-    /// <summary>The provider system-picked work should run on: Claude when it can run
-    /// (hosted always → byte-identical behavior), else the first connected provider,
-    /// else Anthropic as a passthrough — callers' own pre-flights surface the blocker.</summary>
+    /// <summary>The provider system-picked work should run on when the workspace is on
+    /// Automatic: Claude when it can run (a readiness that never blocks — the module default —
+    /// therefore always answers Claude), else the first connected provider, else Anthropic as a
+    /// passthrough — callers' own pre-flights surface the blocker.</summary>
     public static AiProvider PreferredProvider(this IProviderReadiness readiness)
         => readiness.GetBlocker(AiProvider.Anthropic) is null
             ? AiProvider.Anthropic
             : readiness.Connected is { Count: > 0 } connected
                 ? connected[0]
                 : AiProvider.Anthropic;
+
+    /// <summary>Workspace-aware: the workspace's <paramref name="chosen"/> provider (Settings →
+    /// Workspace → AI provider) when it can run; otherwise — and for Automatic (null) — exactly
+    /// <see cref="PreferredProvider(IProviderReadiness)"/>. A chosen provider that cannot run
+    /// never strands work: it falls back, and the caller surfaces the blocker.</summary>
+    public static AiProvider PreferredProvider(this IProviderReadiness readiness, AiProvider? chosen)
+        => chosen is { } provider && readiness.GetBlocker(provider) is null
+            ? provider
+            : readiness.PreferredProvider();
 }

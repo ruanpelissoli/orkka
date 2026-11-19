@@ -13,6 +13,11 @@
     "skippedQa": "{count, plural, one {# agente de QA conservó su modelo.} other {# agentes de QA conservaron su modelo.}}",
     "error": "No se pudo cambiar el modelo del equipo"
   },
+  "teamProvider": {
+    "qaNeedsClaude": "La QA automática en el navegador necesita Claude: {name} sigue en un modelo de Claude y la etapa de Pruebas no puede ejecutarse hasta que Claude Code tenga la sesión iniciada en esta máquina. Ejecuta",
+    "chooseProvider": "Copilot y Claude tienen la sesión iniciada, y los equipos de este espacio de trabajo usan Claude. Para usar tu plan de Copilot, elígelo en",
+    "chooseProviderLink": "Ajustes → Espacio de trabajo"
+  },
   "agentConfig": {
     "updateError": "No se pudo actualizar el agente",
     "deleteError": "No se pudo eliminar el agente",
@@ -1508,7 +1513,39 @@
     "saved": "Guardado.",
     "errorGeneric": "No se pudo cambiar el nombre del espacio de trabajo. Inténtalo de nuevo.",
     "gitIdentityTitle": "Identidad de git",
-    "gitIdentityBody": "Los commits y pushes de este espacio de trabajo usan la identidad de git configurada para él en esta máquina. Configúrala en una terminal con:"
+    "gitIdentityBody": "Los commits y pushes de este espacio de trabajo usan la identidad de git configurada para él en esta máquina. Configúrala en una terminal con:",
+    "aiProvider": {
+      "title": "Proveedor de IA",
+      "body": "En qué suscripción de IA trabajan los equipos de agentes de este espacio de trabajo. Los agentes de los proyectos nuevos se configuran en ella; el trabajo del sistema (planes, títulos, arreglos de merge) también la prefiere.",
+      "automatic": "Automático",
+      "descriptions": {
+        "automatic": "Claude cuando tiene la sesión iniciada en esta máquina; si no, la primera CLI de IA que la tenga.",
+        "claude": "Claude Code con tu plan de Claude o tu clave de API.",
+        "codex": "Codex con tu plan de ChatGPT o tu clave de OpenAI.",
+        "copilot": "GitHub Copilot: todos los agentes usan Copilot Auto, facturado como solicitudes premium con descuento en tu plan de Copilot.",
+        "gemini": "Gemini CLI. No se puede proteger, así que solo se ejecuta si esta máquina permite proveedores sin protección.",
+        "grok": "Grok CLI. No se puede proteger, así que solo se ejecuta si esta máquina permite proveedores sin protección."
+      },
+      "readiness": {
+        "ready": "Listo",
+        "notSignedIn": "Sin sesión",
+        "notInstalled": "No instalado"
+      },
+      "fix": "Para iniciar sesión en esta máquina, ejecuta",
+      "runnerUnknown": "Tu runner aún no ha informado, así que no se sabe qué está listo. Inícialo con ./orkka start.",
+      "effective": "Los agentes de los proyectos nuevos usan {provider}.",
+      "blocked": "{provider} no puede ejecutarse en esta máquina: {reason} Los proyectos nuevos usan {effective} hasta que pueda.",
+      "qaNote": "QA sigue en Claude: las pruebas automáticas en el navegador lo necesitan.",
+      "save": "Guardar proveedor",
+      "confirmTitle": "¿Usar {provider} en este espacio de trabajo?",
+      "confirmMessage": "Los proyectos nuevos de este espacio de trabajo tendrán agentes en {provider}.",
+      "applyExisting": "Cambiar también los agentes de los proyectos existentes",
+      "confirm": "Guardar",
+      "saved": "Guardado. Los proyectos nuevos usan {provider}.",
+      "savedApplied": "Guardado. {count, plural, =0 {Ningún agente necesitó cambios} one {# agente pasó a {provider}} other {# agentes pasaron a {provider}}} en {projects, plural, one {# proyecto} other {# proyectos}}.",
+      "savedQa": "{count, plural, one {# agente de QA siguió en Claude para las pruebas en el navegador.} other {# agentes de QA siguieron en Claude para las pruebas en el navegador.}}",
+      "error": "No se pudo guardar el proveedor de IA"
+    }
   },
   "preferencesPage": {
     "title": "Preferencias",

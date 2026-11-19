@@ -78,8 +78,9 @@ route table — every URL the app answers, in one file:
 │   │                              (TeamSkeleton), architect, activity, automation, memory, skills,
 │   │                              design, documents, settings
 │   ├── projects/:projectId/…      old URLs → ClientRedirect to /p/…
-│   └── settings/…                 settings layout: workspace, machine, trackers, usage, api-keys,
-│                                  preferences, notifications
+│   └── settings/…                 settings layout: workspace (name, AI provider —
+│                                  WorkspaceAiProviderCard, git identity), machine, trackers,
+│                                  usage, api-keys, preferences, notifications
 └── *                              app/[locale]/not-found.tsx (translated 404)
 ```
 

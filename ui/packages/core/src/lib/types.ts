@@ -1950,6 +1950,33 @@ export interface SetAgentsModelResponse {
   skippedQaCount: number;
 }
 
+/** The workspace's AI provider choice (Settings → Workspace): "automatic" or a runner CLI key. */
+export type WorkspaceAiProviderChoice = "automatic" | "claude" | "codex" | "copilot" | "gemini" | "grok";
+
+/** GET /api/org/ai-provider. */
+export interface WorkspaceAiProvider {
+  provider: WorkspaceAiProviderChoice;
+  /** Every accepted value, Automatic first. */
+  choices: WorkspaceAiProviderChoice[];
+  /** The runner CLI key new agents are seeded on right now. */
+  effectiveProvider: string;
+  /** Why the chosen provider isn't what new agents get (it can't run on this runner). */
+  blocker: string | null;
+}
+
+/** PUT /api/org/ai-provider. */
+export interface UpdateWorkspaceAiProviderResponse {
+  provider: WorkspaceAiProviderChoice;
+  effectiveProvider: string;
+  blocker: string | null;
+  /** Whether existing projects' agents were switched too. */
+  applied: boolean;
+  projectCount: number;
+  updatedCount: number;
+  unchangedCount: number;
+  skippedQaCount: number;
+}
+
 export interface UpdateAgentRequest {
   name?: string;
   model?: string;

@@ -55,9 +55,13 @@ public static class AgentsModuleExtensions
         // Singleton by design: writes in its own scope so callers (often singletons) can audit freely.
         services.AddSingleton<IAgentAuditLog, AgentAuditLog>();
 
-        // TryAdd: hosted default (always ready). Orkka Local's composition root Replaces
-        // this with a runner-backed readiness so provider checks reflect connected CLIs.
+        // TryAdd: the default where no developer machine is in view (never blocks). Task routes
+        // carry their runner's own readiness; seeding reads the workspace's runner coverage
+        // through the resolver below and only falls back to this when nothing is known.
         services.TryAddSingleton<IProviderReadiness, AlwaysReadyProviderReadiness>();
+        // The workspace's AI provider choice (Settings → Workspace) + runner coverage → the
+        // provider new agents are seeded on and system-picked work prefers.
+        services.AddScoped<IWorkspaceAiProviderResolver, WorkspaceAiProviderResolver>();
 
         // Rolling-summary fold cadence (both editions; Orkka Local relaxes it — each fold
         // is a CLI spawn on the user's subscription there).

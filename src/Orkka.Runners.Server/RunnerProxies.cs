@@ -460,13 +460,16 @@ public sealed class RunnerChatInvoker(
 }
 
 /// <summary>Utility AI (task decomposition, dependency analysis, titles, summaries) as
-/// one-shot headless CLI runs on the runner. Claude when connected (byte-identical to
-/// the original behavior); otherwise the first connected provider with a tier-mapped
-/// model — so a codex-only or gemini-only setup still gets titles, summaries, and task
-/// decomposition.</summary>
+/// one-shot headless CLI runs on the runner, on the provider
+/// <see cref="ProviderReadinessExtensions.PreferredProvider(IProviderReadiness, AiProvider?)"/> picks:
+/// the workspace's chosen AI provider when the runner can run it; otherwise Claude when
+/// connected (the requested model as is); otherwise the first connected provider with a
+/// tier-mapped model — so a codex-only or gemini-only setup still gets titles, summaries, and
+/// task decomposition.</summary>
 public sealed class RunnerAnthropicClient(
     IRunnerLink runner, IProviderReadiness readiness,
-    IModelCatalog? modelCatalog = null)
+    IModelCatalog? modelCatalog = null,
+    AiProvider? workspaceChoice = null)
 {
     public async Task<AnthropicResponse> CreateMessageAsync(
         AnthropicRequest request, CancellationToken ct = default)
@@ -479,13 +482,16 @@ public sealed class RunnerAnthropicClient(
 
         var provider = AiProvider.Anthropic;
         var model = request.Model;
-        if (readiness.GetBlocker(AiProvider.Anthropic) is not null)
+        var chosen = workspaceChoice is { } c && c != AiProvider.Anthropic && readiness.GetBlocker(c) is null
+            ? c
+            : (AiProvider?)null;
+        if (chosen is not null || readiness.GetBlocker(AiProvider.Anthropic) is not null)
         {
             var connectedProviders = readiness.Connected;
-            if (connectedProviders.Count == 0)
+            if (chosen is null && connectedProviders.Count == 0)
                 throw new InvalidOperationException(
                     readiness.GetAnyProviderBlocker() ?? "No AI provider is connected.");
-            provider = connectedProviders[0];
+            provider = chosen ?? connectedProviders[0];
             // Requested claude models map by tier: haiku-class work goes to the
             // provider's fast model, everything else to its standard utility model.
             // A null catalog (hosts that don't compose the Agents module) falls back to the

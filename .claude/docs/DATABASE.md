@@ -44,7 +44,7 @@ module; in SQL the table is just `notifications`.
 
 | Module | Owns (examples) |
 |---|---|
-| `organizations` | workspaces (orgs), the local user's membership per workspace (+ permissions, preferences), API keys, in-app notifications |
+| `organizations` | workspaces (orgs, with the workspace's AI provider choice — `AiProvider`, null = Automatic), the local user's membership per workspace (+ permissions, preferences), API keys, in-app notifications |
 | `usage` | usage records: tokens per bucket and list-price cost per run (0 for runs on the developer's subscription) |
 | `sourcecontrol` | Orkka's pull requests for every repo (`local_pull_requests` + reviews/comments, `ForgeUrl` once published), git operations ledger — no forge credentials |
 | `projects` | projects, project repos, run configs |
