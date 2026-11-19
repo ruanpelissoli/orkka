@@ -1,16 +1,18 @@
-# TRACKERS.md — Jira Cloud and Azure DevOps as the ticket source
+# TRACKERS.md — Jira Cloud, Azure DevOps and GitHub Projects as the ticket source
 
 Tickets assigned to the developer in their employer's tracker drive the board. **The tracker is
-only ever reached from the developer's machine, with their own token**; Orkka holds no tracker
-credential and installs nothing in the tracker. v1 supports Jira Cloud and Azure DevOps
-Services (not Data Center / ADO Server).
+only ever reached from the developer's machine, with their own token** (or, for GitHub, their own
+`gh` login); Orkka holds no tracker credential and installs nothing in the tracker. Supported:
+Jira Cloud, Azure DevOps Services and GitHub Projects (v2) on github.com or GHE.com (not Jira
+Data Center, ADO Server or GitHub Enterprise Server). GitHub specifics are in
+[GitHub Projects](#github-projects-v2) below.
 
 ## Pieces
 
 | Where | What |
 |---|---|
-| Runner `Orkka.LocalRunner/Trackers/` | `TrackerStore` (non-secret settings, `~/.orkka/workspaces/{ws}/trackers.json`), `WorkspaceSecretStore` (tokens), `TrackerConnectionManager` (test-and-store, shared by the CLI and the settings page), `JiraCloudClient`, `AzureDevOpsClient`, `TicketNormalizer`, `TrackerAttachmentCache`, `TrackerPoller`, `TrackerWriteBack` |
-| Runner CLI | `./orkka tracker add jira\|ado`, `list`, `test`, `remove` (`Cli/TrackerCommand.cs`) |
+| Runner `Orkka.LocalRunner/Trackers/` | `TrackerStore` (non-secret settings, `~/.orkka/workspaces/{ws}/trackers.json`), `WorkspaceSecretStore` (tokens), `TrackerConnectionManager` (test-and-store, shared by the CLI and the settings page), `TrackerCredentialResolver` (the stored token or the gh login), `JiraCloudClient`, `AzureDevOpsClient`, `GitHubProjectsClient`, `TicketNormalizer`, `TrackerAttachmentCache`, `TrackerPoller`, `TrackerWriteBack` |
+| Runner CLI | `./orkka tracker add jira\|ado\|github`, `list`, `test`, `remove` (`Cli/TrackerCommand.cs`) |
 | Host module `Orkka.Modules.Trackers` (schema `trackers`) | `connections` (metadata from the runner's Hello), `project_configs` + `epic_mappings` (a project's ticket source and its routing rules), `ticket_links` (ticket ↔ task, sync state), `RepoRouter` (the runner utility that picks a repository) |
 | Runner hub `HostedRunnerHub` | `SyncTrackers`, `ReportTickets`, `AckTransitions` — each authorised against the connection's bound (org, user); project ids are never taken from the payload |
 | UI | Settings → Trackers (add / re-test / remove connections), Project settings → Ticket source |
@@ -40,7 +42,9 @@ never deleted).
   `tracker add ado --org acme` asks for the token with no echo (or reads stdin).
 
 Tokens needed: a Jira API token (https://id.atlassian.com/manage-profile/security/api-tokens),
-or an ADO PAT with *Work Items (Read & write)* and *Project and Team (Read)*.
+or an ADO PAT with *Work Items (Read & write)* and *Project and Team (Read)*. GitHub needs no
+token by default — the connection can use the developer's `gh` login — see
+[GitHub Projects](#github-projects-v2) for both options, the scopes and SSO.
 
 ## A project's ticket source
 
@@ -319,10 +323,131 @@ to me that has not been started** is a Story (`TrackersApi.Stories`, `TasksApi.S
   shared branch into the folder again — it had never received the late work; a late sub-task in
   the forge repository leaves the squashed folder alone.
 
+## GitHub Projects (v2)
+
+A third tracker kind, `github` (`TrackerKinds.GitHub`), next to Jira and Azure DevOps and run by
+the same machinery (poll lease, intake, tracking, retirement, Stories, write-back). The runner
+side is `GitHubProjectsClient` (GraphQL only, plain `HttpClient` + System.Text.Json) and
+`GitHubProjects` (keys, status categories, the intake rule).
+
+### Hosts
+
+- **github.com** (the default) — API `https://api.github.com/graphql`. GitHub Enterprise Cloud
+  and **Enterprise Managed Users** on github.com work the same way.
+- **GHE.com data residency** (`acme.ghe.com`, the usual home of EMU enterprises) — API
+  `https://api.acme.ghe.com/graphql`. `TrackerSites.NormalizeGitHubHost` accepts `acme.ghe.com`,
+  `api.acme.ghe.com` or any URL on them; the connection id is `github` / `github-acme`.
+- **GitHub Enterprise Server (a self-hosted host) is not supported** and is refused when
+  connecting: its GraphQL schema lags github.com (sub-issues, issue types), and Orkka would have
+  to guess per version. `RepoUrl.DetectForge` reads `*.ghe.com` as GitHub too, so `gh pr create`
+  publishes there.
+
+### Authentication — chosen per connection
+
+1. **The developer's `gh` login** (default, recommended; `AddTrackerConnectionRequest.AuthMode`
+   `"gh"`, `TrackerConnectionEntry.Auth`). Nothing is stored: for every call
+   (`TrackerCredentialResolver`) the runner runs `gh auth token --hostname <host>`
+   (`GhCliCredentials.TokenAsync`, read-only, 15 s cap; gh's stderr is never shown) and keeps the
+   token in memory for that call. The login needs the **`project`** scope (and `repo` for private
+   issues — gh's default login has it): `gh auth refresh -h <host> -s project`. A test whose
+   `X-OAuth-Scopes` lacks a scope fails with exactly that command; gh missing or signed out says
+   to install it / run `gh auth login -h <host>`. `gh` is optional and never installed by Orkka.
+   `./orkka doctor` lists each gh-login connection and whether gh answers for its host.
+2. **A token**, stored in the OS secret store exactly like a Jira/ADO token: a classic PAT with
+   `project` + `repo`, or a fine-grained token with Projects (organization) and Issues read &
+   write. A fine-grained token has no `X-OAuth-Scopes`; missing permissions show as refusals.
+
+Either way the token is sent only as `Authorization: Bearer` to that host's API, scrubbed from
+every error (`TrackerCredential.Scrub`), never logged, and never reaches an agent (the
+environment drops `GH_*`/`GITHUB*`/`*TOKEN*`; the command guard refuses `gh`). Switching a
+connection from a token to the gh login deletes the stored token. Connect from Settings →
+Trackers ("Add GitHub Projects": host + the two options) or `./orkka tracker add github
+[--host acme.ghe.com] [--token]`. The relay refuses a GitHub connection or a `fields` / `repos`
+query (or a query with a status field / repository filter) for a runner without the capability
+`tracker-github` ("Your runner does not know GitHub Projects yet — update Orkka").
+
+**SSO.** An organization that enforces SAML SSO refuses an unauthorized token
+(`X-GitHub-SSO`, or a GraphQL FORBIDDEN mentioning SAML): a token connection is told to
+authorize the token for the organization (Personal access tokens → Configure SSO); a gh-login
+connection to run `gh auth login -h <host>` again and authorize the organization.
+
+**Rate limits.** A secondary limit with a `Retry-After` of at most 10 s is waited out once;
+anything longer (or a spent primary limit, `x-ratelimit-reset`) fails the call with the wait in
+the message — a poll records it as `LastPollError` and the next poll tries again.
+
+### The source: one project
+
+- **Scope = an owner**: the `scopes` query lists the viewer's login and their organizations.
+- **Board = one GitHub Project of that owner, required**: the `boards` query lists the owner's
+  open projects (`TrackerBoard` with `Number` and `Url`); `BoardId` is the project's node id
+  (`PVT_…`), `BoardName` its title. A project that is gone fails the poll like a missing board.
+- **Status field** (`ProjectTrackerConfig.StatusField`, null = "Status"): any single-select field
+  of the project (the `fields` query lists them). Its options are the status list (`statuses`
+  query with `boardId` + `statusField`).
+- **Repository filter** (`RepoFilterJson`, `owner/name`, empty = every repository): intake only
+  takes issues from these (the `repos` query lists the repositories with issues on the project).
+  Two Orkka projects can point at the same GitHub project with different filters.
+- **Statuses**: pickup statuses and the six-step map hold option NAMES, as for Jira/ADO; the
+  runner resolves a name to its option id when it moves an issue (case and spaces ignored, so
+  "To Do" matches "Todo"). Defaults (`TrackerStatusDefaults`, GitHub branch): intake = Todo /
+  Ready; Developing = In Progress; In review = In Review; Merged = Done; the rest unmapped.
+- Not applicable and refused or dropped on save: epics / Epics mode (no epics on GitHub —
+  sub-issues make Stories), component and area-path rules (label rules and the issue's own
+  repository route instead), the extra JQL/WIQL clause, include-descendants.
+
+### Intake, tracking and Stories
+
+- The runner reads the whole project (`items`, 50 a page, at most 100 pages = 5,000 items; more
+  fails the poll rather than report part of it). Only **ISSUE** items count: **draft issues** are
+  skipped (no repository to branch from, no assignee, no sub-issues) and so are **pull requests**
+  (already code), archived and redacted items.
+- **Intake** = an open issue assigned to the viewer (`viewer.login`), in a pickup status (none
+  set: a to-do-like one), in the repository filter. Key `owner/repo#n`, ticket id = the issue's
+  node id, `ExternalRef` `github:github.com:owner/repo#n`.
+- **Tracking** reads tracked keys and the intake issues' sub-issues by key, 25 per GraphQL
+  query (aliased `repository(owner, name) { issue(number) }`), whatever their status or project;
+  a key GitHub does not know (NOT_FOUND) is absent, so it retires as for the other trackers.
+  Status = the issue's value of the status field **on this project** (none when it is not on it).
+- **Status category** (`GitHubProjects.Category`): a closed issue is `done`; no status, an intake
+  status or a to-do-like name (Todo, Ready, Backlog, New, Triage) is `todo`; a done-like name
+  (Done, Closed, Complete, Shipped, Released) is `done`; anything else `inprogress`.
+- **Stories**: an issue with **sub-issues** reports them as `ChildKeys` in GitHub's own order;
+  the host's Story rules apply unchanged — members are sub-issues assigned to me and not started
+  (`IsMemberCandidate`), none qualifying = a plain task, and the cleanup / late sub-task rules
+  are the same.
+- **Text**: title, body (markdown, kept as written; HTML comments from issue templates dropped),
+  labels (a `bug` label stands in for the issue type when the organization has no issue types),
+  comments (markdown). Images in issue bodies are not cached as attachments: GitHub serves them
+  from `user-attachments` URLs that need a browser session (or short-lived signed URLs that
+  change every read), so the image links stay in the text.
+- **Repository routing**: after the rules and the project's only repository, an issue goes to the
+  project repository whose remote is the issue's repository (`TrackerTicketBody.Repository`,
+  `TrackersApi.MatchRepository`: same owner and name, same host or an ssh host alias), before the
+  default repository and the repo router.
+- Polling a GitHub source needs `TrackerSyncRequest.Features` "github"; an older runner is not
+  handed one and the source shows "…too old to know GitHub — update Orkka…".
+
+### Write-back and pull requests
+
+- A status move (`TrackerTransition` + `BoardId` + `StatusField`) sets the issue's single-select
+  value on the source's project (`updateProjectV2ItemFieldValue`). An issue not on the project
+  yet (a sub-issue nobody added) is added first (`addProjectV2ItemById`) — that is where its
+  status lives. Already there = success, nothing written. As for Jira/ADO, the status is the only
+  thing Orkka writes to the tracker: no comments.
+- The link to the pull request comes from GitHub itself: a task imported from an issue in the
+  same repository publishes its pull request with `Closes owner/repo#n` appended
+  (`GitHubIssueLinks`, in `OrkkaPullRequestService.PublishAsync`), and a Story's pull request
+  lists `Closes …` for the Story and each sub-issue in that repository
+  (`StoryLandingService.Body`), so GitHub links them and closes them on merge. An issue in
+  another repository is not referenced.
+- The branch template works as everywhere: `{key}` renders `owner/repo#12` as `owner/repo-12`
+  (`feature/acme/shop-12-fix-cart` by default).
+
 ## Security notes
 
 - Tokens never leave the machine: not in the Hello, not in errors (`TrackerClient` scrubs them),
-  not in agent environments; agents cannot read the secret store or `~/.orkka` (SECURITY.md).
+  not in agent environments; agents cannot read the secret store or `~/.orkka` (SECURITY.md). A
+  GitHub gh-login connection stores nothing; the token gh returns lives for one call.
   A token typed into Settings → Trackers crosses the local host once, in memory, write-only, to
   the developer's own runner — never logged (request logging is method/path/status), never in a
   400, never in audit metadata, never sent back.
@@ -333,5 +458,5 @@ to me that has not been started** is a Story (`TrackersApi.Stories`, `TasksApi.S
 ## Test opt-ins (runner)
 
 `ORKKA_TRACKER_ALLOW_INSECURE_SITE=1` lets e2e fixtures point a connection at an `http://`
-fake tracker; `ORKKA_SECRET_STORE=file` keeps a sandbox out of the real keychain (any
+fake tracker (a loopback GitHub site serves its GraphQL at `{site}/graphql`); `ORKKA_SECRET_STORE=file` keeps a sandbox out of the real keychain (any
 `ORKKA_HOME` other than the machine's own Orkka home gets the file store anyway).

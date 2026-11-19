@@ -5,7 +5,7 @@
 Orkka is a control plane (board, pipeline, approvals, history) plus a runner, both in one
 process (`./orkka start`, run from a git clone) on the developer's own machine. **Every agent run, every git operation and every tracker call
 happens on that machine**, with the developer's own git sign-in, their own AI CLI subscription
-(Claude Code, Codex, Copilot) and their own Jira/ADO token. There is no Orkka server: the
+(Claude Code, Codex, Copilot) and their own Jira/ADO/GitHub token (or `gh` login). There is no Orkka server: the
 control plane is the local host (`Orkka.Local`, 127.0.0.1), the runner — in the same process —
 dials it over loopback (SignalR, with its own `orkr_` tokens, exactly as a runner on another
 machine would), and nothing listens beyond 127.0.0.1. "The host" below means that web host — it
@@ -23,7 +23,7 @@ The two questions this document answers, for a security reviewer:
 
 | Data | Sent to Orkka? | Stored by Orkka? |
 |---|---|---|
-| Ticket title, description, acceptance criteria, comments (Jira/ADO) | Yes — it is the task | Yes, as the task's text (capped: 20k chars description, 4k per comment) |
+| Ticket title, description, acceptance criteria, comments (Jira/ADO/GitHub) | Yes — it is the task | Yes, as the task's text (capped: 20k chars description, 4k per comment) |
 | Ticket attachments | Name, size and type only | Metadata only. Files are cached under `~/.orkka/workspaces/{ws}/tickets/` and copied into the task's worktree |
 | Agent's own words and reasoning | Yes, streamed live | The final message is stored as the run's log |
 | Agent tool calls | Tool name + small arguments (path, command line, search pattern). **File bodies are stripped on the machine** (`RunnerChunkPrivacy`) | Not stored |
@@ -65,8 +65,8 @@ upload outside a task's worktree.
 | Clone, fetch, worktree, commit, push, open PR | Which repo/branch (by id) | Credentials (the developer's own), paths (always under `~/.orkka/repos/{org}/{repo}` or the linked folder), never force-push |
 | Agent run | The prompt, phase and model | Which guards apply (all, always — see below), the working directory (the task's worktree), whether the provider may run at all |
 | Repository commands — worktree setup, quality gate (`check`), merge build, run targets (start/install/stop) | Which command it would like | **Runs it only if the repository's `orkka.json` on its default branch declares it, or the developer approved that exact command for that repository on this machine** (`CommandTrust`). Otherwise refused and listed under `./orkka commands` with an id; the task shows "approve on MACHINE: `./orkka commands approve <id>`" |
-| Tracker query / status transition | Which connection, which scope and board (a Jira board id / ADO team id — non-secret settings), which epics, which target status | The token (never leaves), the tracker site (fixed at `tracker add`) |
-| Add / remove a tracker connection (Settings → Trackers) | Kind, site, email and — write-only — the token the developer typed | Tests the token against that tracker first and stores only a working one, in the OS secret store; answers with metadata only; the host can never read a token back |
+| Tracker query / status transition | Which connection, which scope and board (a Jira board id / ADO team id / GitHub project id — non-secret settings), which epics, which target status (GitHub: and which status field) | The token (never leaves), the tracker site (fixed at `tracker add`), whether a GitHub connection uses the `gh` login |
+| Add / remove a tracker connection (Settings → Trackers) | Kind, site, email and — write-only — the token the developer typed (none when a GitHub connection uses the `gh` login) | Tests the token against that tracker first and stores only a working one, in the OS secret store; answers with metadata only; the host can never read a token back |
 | Repo browsing (tree, file, history, diff) | Which repo/branch/path | Read-only, from the repo's own clone |
 | Open in editor | Which task | Only editors from a fixed allowlist, only that task's worktree, only for the runner's owner |
 | Provider sign-in | Which provider | Only the vendor CLI's own login command |
@@ -254,7 +254,8 @@ session has not landed (`git reset --hard`, `git clean`, history rewrites).
 | Secret | Where it lives | Leaves the machine? |
 |---|---|---|
 | Runner token (`orkr_…`) | OS secret store — Windows Credential Manager, macOS Keychain, libsecret (`~/.orkka/workspaces/{ws}/secrets/` 0600 file only when the machine has none, with a warning) | Only as the bearer of its own connection. Server keeps a SHA-256 hash; tokens expire (90 days) and the runner rotates them in use; revoking one drops the connection within a minute |
-| Tracker tokens (Jira API token, ADO PAT) | Same OS secret store, entered at `./orkka tracker add` (hidden prompt or stdin) or in Settings → Trackers | Never — not in the Hello, not in errors (scrubbed), not to agents. From the settings page the token crosses the local host once, in memory, on its way to the runner (see below) |
+| Tracker tokens (Jira API token, ADO PAT, GitHub token) | Same OS secret store, entered at `./orkka tracker add` (hidden prompt or stdin) or in Settings → Trackers | Never — not in the Hello, not in errors (scrubbed), not to agents. From the settings page the token crosses the local host once, in memory, on its way to the runner (see below) |
+| A GitHub connection's `gh` login (the default for GitHub) | The GitHub CLI's own store. The runner runs `gh auth token --hostname <host>` (read-only; no login, refresh or config change) for each tracker call and keeps the token in memory for that call only | Never — Orkka stores nothing for it. It is sent only to that GitHub host's API as a bearer header, scrubbed from every error, never logged, and never handed to an agent: agents' environments drop `GH_*`/`GITHUB*`/`*TOKEN*`, and the command guard refuses `gh` and `gh auth token` outright |
 | Git / forge credentials | The developer's own (credential manager, `gh` login, SSH agent) | Never seen by Orkka |
 | AI CLI credentials — interactive logins | The vendor CLI's own store | Never read by Orkka |
 | AI CLI credentials — environment-based (API key, Bedrock/Vertex/Foundry keys, gateway token, GitHub token) | Where the developer put them: the shell `./orkka start` runs from, `~/.orkka/runner.env`, or a workspace's override in the OS secret store (`orkka/{workspace}/ai/{NAME}`, `workspace set-env`) | **Never.** Not stored or transmitted by Orkka: handed only to that vendor's own CLI on this machine, for that provider's runs (above). The CLI sends it to the vendor, as it would in a terminal |

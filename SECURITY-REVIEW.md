@@ -106,6 +106,7 @@ check**.
 |---|---|---|
 | nuget.org; the npm registry | Build time only (`dotnet build`, `npm ci`) | The developer's own `dotnet` / `npm` |
 | The developer's Jira Cloud site / `dev.azure.com/<org>` | Polling assigned tickets, writing status, ticket attachments (same site only) | The runner, with the developer's own token |
+| `api.github.com` (github.com) or `api.<enterprise>.ghe.com` (GHE.com data residency) — GraphQL only | Polling a GitHub project's issues assigned to the developer, setting the project's status field | The runner, with the developer's own token or their `gh` login (`gh auth token --hostname <host>`, read at each call, never stored) |
 | The developer's git remotes and forge | Clone, fetch, push, open PRs | The developer's own `git` / `gh` / `az` / `glab` and their credentials |
 | The AI vendor of the CLI in use (Anthropic, Amazon Bedrock, Google Vertex, Microsoft Foundry, Azure OpenAI, a company LLM gateway, OpenAI, GitHub Copilot incl. GHE) | Every agent run | That CLI, under the developer's own sign-in; Orkka never proxies it |
 | The npm registry | QA lane with Claude: `npx @playwright/mcp@0.0.85` | The developer's own `npx` |
@@ -126,7 +127,7 @@ where none exists (or when `ORKKA_SECRET_STORE=file` / a sandbox `ORKKA_HOME` as
 | `orkka/local/install-secret` | The bearer the CLI (`open`, `status`, `stop`) presents to the running host |
 | `orkka/local/encryption-key` | AES key protecting secrets at rest in the database |
 | `orkka/<workspace>/runner-token` | The runner's token for its workspace (expires after 90 days, rotated while connected) |
-| `orkka/<workspace>/tracker/<connection>` | The Jira API token / Azure DevOps PAT the developer entered |
+| `orkka/<workspace>/tracker/<connection>` | The Jira API token / Azure DevOps PAT / GitHub token the developer entered (none for a GitHub connection that uses the `gh` login) |
 | `orkka/<workspace>/ai/<VARIABLE>` | Only if one job gets its own AI sign-in (`./orkka workspace set-env`) |
 
 **In memory, never in the environment.** The install secret and the encryption key are read from
