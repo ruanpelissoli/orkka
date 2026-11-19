@@ -1,6 +1,6 @@
 # Catalogue coverage
 
-Generated 2026-11-19T16:35:10.354Z. 743 cases in 37 files; 36 linked to a spec.
+Generated 2026-11-19T17:26:39.425Z. 757 cases in 38 files; 43 linked to a spec.
 
 | Area | Title | Cases | P0 | Linked | P0 linked | automated | planned | manual | blocked |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -26,6 +26,7 @@ Generated 2026-11-19T16:35:10.354Z. 743 cases in 37 files; 36 linked to a spec.
 | ONB | Onboarding — dashboard router and project-creation wizard | 4 | 0 | 0 | 0 | 0 | 4 | 0 | 0 |
 | PLN | Plans and questions — plan approval gate, agent questions | 16 | 4 | 0 | 0 | 2 | 14 | 0 | 0 |
 | PR | Pull requests — review page, approve/merge, conflicts | 20 | 3 | 0 | 0 | 2 | 18 | 0 | 0 |
+| PSU | Project setup — the guided onboarding of a new project, the dry run and the Start gate | 14 | 7 | 7 | 4 | 7 | 7 | 0 | 0 |
 | RDK | Run dock — run the project's apps on your machine | 21 | 3 | 0 | 0 | 0 | 19 | 2 | 0 |
 | RDM | Roadmap — milestones, AI planning, shipping | 21 | 3 | 0 | 0 | 0 | 21 | 0 | 0 |
 | REPO | Repositories — connect, browse, branches, commits, pull requests, settings | 19 | 1 | 0 | 0 | 1 | 18 | 0 | 0 |
@@ -47,7 +48,7 @@ Generated 2026-11-19T16:35:10.354Z. 743 cases in 37 files; 36 linked to a spec.
 | Mode | Cases |
 |---|---:|
 | all | 389 |
-| hybrid-folder | 53 |
+| hybrid-folder | 64 |
 | hybrid-repo | 227 |
 | offline | 19 |
-| tracker | 87 |
+| tracker | 90 |

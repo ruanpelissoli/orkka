@@ -85,6 +85,12 @@ They write only inside the clone and the Orkka home.
 8. **Browser** — a launch code → the `/launch?code=…` URL, always printed, opened unless
    `--no-browser`.
 
+From there the path is **New project** (a folder on this machine) → the project's guided setup
+(`/p/{slug}/setup`: folder & repos, machine check, ticket source with its dry run, team & model,
+Review & Start). The machine check reads exactly what this section sets up — the runner online,
+the AI CLIs and their sign-in, the workspace's commit identity, git access to each repository and
+the forge CLIs — and nothing is pulled from a tracker before Start (PROJECTS.md → Guided setup).
+
 **Stopping** (Ctrl+C, SIGTERM, or `./orkka stop` → `/local/shutdown` → `StopApplication`): the
 runner stops first (15 s window), then the host (10 s), then `instance.json` is deleted and the
 process exits. Each runner session cancels the agent runs it has in flight and waits up to 10 s

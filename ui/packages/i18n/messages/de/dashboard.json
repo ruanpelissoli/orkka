@@ -1157,7 +1157,7 @@
   },
   "newProjectPage": {
     "title": "Neues Projekt",
-    "subtitle": "Starte mit einem Ordner auf diesem Rechner: ein Repository oder ein Ordner mit Repositories."
+    "subtitle": "Beginne mit einem Ordner auf diesem Rechner: einem Repository oder einem Ordner mit Repositories. Danach folgt eine kurze Einrichtung — aus deinem Tracker wird nichts geholt, bevor du auf Starten klickst."
   },
   "fromFolder": {
     "folderTitle": "Projektordner",
@@ -1186,7 +1186,7 @@
     "creating": "Wird angelegt…",
     "createFailed": "Das Projekt konnte nicht angelegt werden: {detail}",
     "createdWithWarnings": "{name} ist bereit. Ein paar Dinge, die du wissen solltest:",
-    "openProject": "Board öffnen"
+    "openProject": "Weiter zur Einrichtung"
   },
   "baseFolder": {
     "title": "Projektordner",
@@ -2588,6 +2588,204 @@
     "trackers": "Tracker",
     "mcpKeys": "MCP-Schlüssel",
     "usage": "Nutzung",
-    "workspaceBoard": "Workspace-Board"
+    "workspaceBoard": "Workspace-Board",
+    "projectSetup": "Projekteinrichtung"
+  },
+  "projectSetup": {
+    "title": "{name} einrichten",
+    "subtitle": "Fünf kurze Schritte, dann Starten. Aus deinem Tracker wird nichts geholt, bevor du auf Starten klickst — du kannst jederzeit gehen und dort weitermachen, wo du aufgehört hast.",
+    "subtitleStarted": "Dieses Projekt läuft. Alle Einstellungen hier bleiben bearbeitbar, und die Prüfungen lassen sich jederzeit erneut ausführen.",
+    "stepsLabel": "Schritte der Einrichtung",
+    "back": "Zurück",
+    "continue": "Passt — weiter",
+    "continueAgain": "Weiter",
+    "stepFailed": "Dieser Schritt konnte nicht gespeichert werden. Versuche es erneut.",
+    "goToStep": "In {step} beheben",
+    "level": {
+      "ok": "Bereit",
+      "warn": "Einen Blick wert",
+      "error": "Blockiert die erste Aufgabe"
+    },
+    "steps": {
+      "folder": {
+        "title": "Ordner und Repositories",
+        "description": "Der Basisordner und seine Repositories: der Branch, von dem die Arbeit ausgeht, wie fertige Arbeit ankommt, und die Befehle, die die Kopie jeder Aufgabe benutzbar machen."
+      },
+      "machine": {
+        "title": "Rechnerprüfung",
+        "description": "Alles, was dein Runner auf diesem Rechner braucht: den Runner selbst, eine angemeldete KI-CLI, eine Commit-Identität, Zugriff auf jedes Repository und die CLI, die Pull Requests öffnet."
+      },
+      "source": {
+        "title": "Ticketquelle",
+        "description": "Woher die Tickets kommen — Jira, Azure DevOps, GitHub Projects oder keine — und ein genauer Probelauf dessen, was geholt würde."
+      },
+      "team": {
+        "title": "Team und Modell",
+        "description": "Auf welcher KI-CLI das Team läuft und welches Modell jeder Agent nutzt."
+      },
+      "review": {
+        "title": "Prüfen und starten",
+        "description": "Alles auf einmal. Starten lässt deinen Runner die Tickets dieses Projekts holen."
+      }
+    },
+    "checks": {
+      "noRepos": "Dieses Projekt hat noch kein Repository.",
+      "reposFound": "{count, plural, one {# Repository} other {# Repositories}} im Projekt.",
+      "repoMissing": "{repo} ist nicht mehr im Basisordner.",
+      "commandApproved": "{repo}: Der {kind}-Befehl ist auf diesem Rechner freigegeben.",
+      "commandDeclared": "{repo}: Der {kind}-Befehl ist in orkka.json deklariert.",
+      "commandNeedsApproval": "{repo}: Der {kind}-Befehl wartet auf deine Freigabe auf diesem Rechner — bis dahin läuft er nicht.",
+      "commandUnchecked": "{repo}: Der {kind}-Befehl konnte auf diesem Rechner nicht geprüft werden.",
+      "runnerOffline": "Dein Runner ist offline.",
+      "runnerOnline": "Dein Runner ist auf {machine} online.",
+      "noAiCli": "Auf diesem Rechner ist keine KI-CLI angemeldet.",
+      "aiReady": "Angemeldet: {providers}.",
+      "identityMissing": "Commits haben auf diesem Rechner keinen Autor — git wird sie ablehnen.",
+      "identityWorkspace": "Commits stammen von {name} ({email}) — die Identität dieses Workspaces.",
+      "identityGitConfig": "Commits stammen von {name} ({email}) — deine git-Konfiguration.",
+      "repoReachable": "{repo} ist mit deiner git-Anmeldung erreichbar.",
+      "repoUnreachable": "{repo} ist mit deiner git-Anmeldung nicht erreichbar.",
+      "forgeReady": "{cli} ist für {repos} angemeldet.",
+      "forgeNotSignedIn": "{cli} ist nicht angemeldet — Pull Requests für {repos} können nicht geöffnet werden.",
+      "forgeMissing": "{cli} ist nicht installiert — Pull Requests für {repos} können nicht geöffnet werden.",
+      "sourceNotChosen": "Wähle eine Ticketquelle oder keine.",
+      "sourceNone": "Keine Ticketquelle: Du schreibst die Aufgaben selbst.",
+      "connectionUnhealthy": "Die Tracker-Verbindung funktioniert nicht.",
+      "sourceSet": "Die Tickets kommen aus {scope}.",
+      "sourcePaused": "Die Ticketquelle ist ausgeschaltet — es wird nichts geholt.",
+      "lastPollError": "Das letzte Lesen des Trackers ist fehlgeschlagen.",
+      "previewed": "Du hast dir angesehen, was geholt würde.",
+      "notPreviewed": "Sieh dir vor dem Start an, was geholt würde.",
+      "providerBlocked": "Der KI-Anbieter des Workspaces kann auf diesem Rechner nicht laufen.",
+      "providerSet": "Das Team läuft auf {provider}.",
+      "qaNeedsClaude": "Browser-QA braucht Claude, das nicht angemeldet ist.",
+      "stepNotConfirmed": "{step} ist noch nicht bestätigt."
+    },
+    "folder": {
+      "noRepos": "Dieses Projekt hat noch kein Repository — füge eines auf der Seite Repositories hinzu.",
+      "addRepos": "Seite Repositories öffnen",
+      "commandsOffline": "Dein Runner ist offline, daher konnten die Befehle auf diesem Rechner nicht geprüft werden.",
+      "runContractTitle": "Ausführungsvertrag (orkka.json)",
+      "runContractManifest": "orkka.json deklariert {count, plural, one {# Ausführungsziel} other {# Ausführungsziele}}: Die Ausführen-Schaltfläche und die QA starten die App daraus.",
+      "runContractDetected": "{count, plural, one {# Ausführungsziel wurde} other {# Ausführungsziele wurden}} für die Ausführen-Schaltfläche erkannt. Entwickler-Agenten fügen einem Repository ohne orkka.json bei ihrer ersten Aufgabe eine hinzu.",
+      "runContractNone": "Noch keine orkka.json. Entwickler-Agenten fügen jedem Repository bei ihrer ersten Aufgabe eine hinzu; bis dahin startet die QA die App mit dem Ausführungsbefehl oben.",
+      "saved": "Gespeichert.",
+      "saveFailed": "Das Repository konnte nicht gespeichert werden.",
+      "saving": "Speichern…",
+      "save": "Speichern",
+      "modeRemote": "Pull Request",
+      "modeLocal": "Lokaler Ordner",
+      "modeRemoteHint": "Geprüfte Arbeit wird auf einen Branch gepusht und mit deiner eigenen Forge-CLI als Pull Request veröffentlicht.",
+      "modeLocalHint": "Kein Remote: Geprüfte Arbeit wird per Squash in diesen Ordner gemergt.",
+      "defaultBranch": "Standard-Branch",
+      "forge": "Forge",
+      "cliAccount": "CLI-Konto",
+      "cliAccountHint": "Das {cli}-Konto, das die Pull Requests dieses Repositorys öffnet. Leer = das aktive Konto.",
+      "noCliHint": "Orkka hat für diese Forge keine CLI: Der Branch wird gepusht, den Pull Request öffnest du selbst.",
+      "cliAccountPlaceholder": "Aktives Konto",
+      "commandsHint": "Jeder Befehl läuft auf deinem Rechner nur, wenn die orkka.json des Repositorys ihn deklariert oder du ihn dort freigibst. Leer = die orkka.json des Repositorys, falls vorhanden.",
+      "command": {
+        "setup": "Vorbereitung (einmal pro Aufgabenkopie)",
+        "check": "Prüfung (Lint, Typecheck und Tests nach jedem Entwicklungslauf)",
+        "build": "Build (beweist, dass ein Merge noch kompiliert)",
+        "qaRun": "Ausführen (wie die QA die App startet)"
+      },
+      "commandApproved": "Auf diesem Rechner freigegeben.",
+      "commandDeclared": "In orkka.json deklariert — läuft ohne Freigabe.",
+      "commandNeedsApproval": "Wartet auf deine Freigabe. In einem Terminal auf diesem Rechner: {command}",
+      "commandUnchecked": "Konnte auf diesem Rechner nicht geprüft werden.",
+      "secretsHint": "Trage hier niemals Geheimnisse ein: Ein Vorbereitungsbefehl läuft auf deinem Rechner und kann deine eigene .env kopieren."
+    },
+    "machine": {
+      "title": "Dieser Rechner",
+      "intro": "Gerade eben bei deinem Runner abgefragt. Behebe alles Rote vor der ersten Aufgabe und prüfe dann erneut.",
+      "recheck": "Erneut prüfen",
+      "rechecking": "Wird geprüft…",
+      "loading": "Dein Runner wird gefragt…",
+      "accessUnsupported": "Dein Runner konnte den Repository-Zugriff nicht prüfen — aktualisiere Orkka (git pull, dann ./orkka start).",
+      "aiTitle": "KI-Anmeldung",
+      "aiIntro": "Das Team läuft mit deinem eigenen KI-Abo. Jede CLI, die nicht bereit ist, zeigt den Befehl, der sie anmeldet.",
+      "doctorHint": "Dieselben Prüfungen im Terminal:",
+      "machinePage": "Rechner-Seite"
+    },
+    "source": {
+      "title": "Woher kommen die Tickets?",
+      "intro": "Orkka nimmt nur Tickets, die dir zugewiesen sind. Dein Runner liest den Tracker mit deiner eigenen Verbindung; das Token verlässt diesen Rechner nie.",
+      "kind": {
+        "jira": "Jira",
+        "ado": "Azure DevOps",
+        "github": "GitHub Projects",
+        "none": "Keine"
+      },
+      "gateNote": "Es wird nichts geholt, bevor du am Ende dieser Einrichtung auf Starten klickst — die Quelle hier zu speichern, bereitet sie nur vor.",
+      "noneBody": "Kein Tracker: Du schreibst die Aufgaben dieses Projekts selbst auf dem Board. Eine Ticketquelle kannst du später in den Projekteinstellungen hinzufügen.",
+      "noneHasSource": "Dieses Projekt hat noch eine Ticketquelle. Entferne sie, um nur mit manuellen Aufgaben zu arbeiten.",
+      "removing": "Wird entfernt…",
+      "removeSource": "Ticketquelle entfernen",
+      "removeFailed": "Die Ticketquelle konnte nicht entfernt werden.",
+      "connectTitle": "{tracker} verbinden",
+      "connectIntro": "Auf diesem Rechner gibt es noch keine Verbindung. Das Token wird getestet und im Geheimnisspeicher dieses Rechners abgelegt — Orkka speichert es nie.",
+      "connectWithCli": "Oder im Terminal",
+      "saveToPreview": "Speichere die Ticketquelle, um zu sehen, was sie holen würde."
+    },
+    "preview": {
+      "title": "Was geholt würde",
+      "intro": "Dein Runner liest den Tracker genau so, wie es der erste Abruf tun wird, und dessen eigene Regeln entscheiden, was zur Aufgabe wird. Es wird nichts angelegt.",
+      "run": "Probelauf",
+      "running": "Tracker wird gelesen…",
+      "again": "Erneut ansehen",
+      "offline": "Dein Runner ist offline — starte ihn mit ./orkka start für den Probelauf.",
+      "failed": "Der Tracker konnte nicht gelesen werden: {error}",
+      "failedGeneric": "Der Tracker konnte nicht gelesen werden.",
+      "count": "{count, plural, =0 {Es würde kein Ticket geholt.} one {# Aufgabe würde angelegt.} other {# Aufgaben würden angelegt.}}",
+      "tasksTitle": "{count, plural, one {# Ticket wird zur Aufgabe} other {# Tickets werden zu Aufgaben}}",
+      "storyTitle": "Story {key} — {count, plural, one {# Unteraufgabe} other {# Unteraufgaben}}, ein Branch, ein Pull Request",
+      "nothing": "Prüfe die Eingangsstatus, das Board und ob die Tickets dir zugewiesen sind.",
+      "tracked": "{count, plural, one {# Ticket ist} other {# Tickets sind}} schon auf dem Board.",
+      "skippedTitle": "{count, plural, one {# Ticket bleibt außen vor} other {# Tickets bleiben außen vor}}",
+      "skipReason": {
+        "notAssignedToMe": "nicht dir zugewiesen",
+        "notInIntake": "nicht in einem Eingangsstatus (schon in Arbeit oder erledigt)"
+      },
+      "colKey": "Schlüssel",
+      "colTitle": "Titel",
+      "colStatus": "Status",
+      "colAssignee": "Zugewiesen",
+      "colRepo": "Repository",
+      "you": "Du",
+      "repoAtImport": "Beim Import gewählt",
+      "repoAsks": "Fragt dich"
+    },
+    "team": {
+      "title": "Das Team",
+      "intro": "Jeder Agent und sein Modell. Stelle hier alle auf einmal ein oder einzeln auf der Team-Seite.",
+      "teamPage": "Team-Seite öffnen"
+    },
+    "review": {
+      "title": "Bereitschaft",
+      "intro": "Rot blockiert die erste Aufgabe; Gelb ist einen Blick wert. Jeder Punkt führt zum Schritt, der ihn behebt.",
+      "introStarted": "Dieses Projekt ist gestartet. Das sind dieselben Prüfungen, jetzt erneut ausgeführt.",
+      "started": "Gestartet — dein Runner holt die Tickets dieses Projekts.",
+      "blocked": "Etwas ist rot. Behebe es oder starte trotzdem.",
+      "ready": "Bereit. Starten lässt deinen Runner die Tickets dieses Projekts holen.",
+      "start": "Starten",
+      "starting": "Wird gestartet…",
+      "startAnyway": "Trotzdem starten…",
+      "anywayTitle": "{count, plural, one {# Punkt ist nicht bereit:} other {# Punkte sind nicht bereit:}}",
+      "anywayConfirm": "Trotzdem starten",
+      "anywayCancel": "Abbrechen",
+      "startFailed": "Das Projekt konnte nicht gestartet werden."
+    },
+    "banner": {
+      "text": "Die Einrichtung ist nicht abgeschlossen — für dieses Projekt werden keine Tickets geholt, bis du auf Starten klickst.",
+      "action": "Einrichtung abschließen"
+    },
+    "settingsCard": {
+      "title": "Projekteinrichtung",
+      "body": "Führe die Prüfungen der Einrichtung erneut aus: dieser Rechner, die Repositories, die Ticketquelle und das Team.",
+      "unfinished": "Die Einrichtung ist nicht abgeschlossen — die Ticketquelle wird nicht gelesen, bis du auf Starten klickst.",
+      "finish": "Einrichtung abschließen",
+      "rerun": "Prüfungen erneut ausführen"
+    }
   }
 }

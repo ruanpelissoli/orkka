@@ -68,6 +68,7 @@ const projectRoutes: RouteObject[] = [
     element: page(() => import("@/app/[locale]/(dashboard)/p/[projectId]/roadmap/[milestoneId]/page")),
   },
   { path: "settings", element: page(() => import("@/app/[locale]/(dashboard)/p/[projectId]/settings/page")) },
+  { path: "setup", element: page(() => import("@/app/[locale]/(dashboard)/p/[projectId]/setup/page")) },
   { path: "skills", element: page(() => import("@/app/[locale]/(dashboard)/p/[projectId]/skills/page")) },
   { path: "tasks", element: page(() => import("@/app/[locale]/(dashboard)/p/[projectId]/tasks/page")) },
   { path: "tasks/new", element: page(() => import("@/app/[locale]/(dashboard)/p/[projectId]/tasks/new/page")) },

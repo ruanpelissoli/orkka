@@ -139,6 +139,9 @@ public sealed class TrackerService(
             return new TrackerQueryResult(checkedEntry.Healthy, checkedEntry.HealthDetail, Connection: checkedEntry.ToMetadata());
         }
 
+        if (request.Kind == TrackerQueryKinds.DryRun)
+            return await DryRunAsync(request, ct);
+
         TrackerCredential credential;
         try
         {
@@ -184,6 +187,30 @@ public sealed class TrackerService(
             logger.LogDebug("Tracker query {Kind} on {ConnectionId} failed: {Error}", request.Kind, entry.Id, error);
             return new TrackerQueryResult(false, error);
         }
+    }
+
+    /// <summary>What the real poll uses — set by the runner once the poller exists (it reads
+    /// tickets through <see cref="SourceFor"/>). Null in a runner built without polling.</summary>
+    public TrackerTicketPoller? Poller { get; set; }
+
+    /// <summary>
+    /// The setup page's dry run: the assignment the host would hand this machine, polled by the
+    /// real poller with <c>dryRun</c> on — the same reads, the same normalization, nothing cached
+    /// or remembered — and the tickets returned instead of reported.
+    /// </summary>
+    private async Task<TrackerQueryResult> DryRunAsync(TrackerQueryRequest request, CancellationToken ct)
+    {
+        if (request.Assignment is not { } assignment)
+            return new TrackerQueryResult(false, "The dry run needs the ticket source to read — save it first.");
+        if (!string.Equals(assignment.ConnectionId, request.ConnectionId, StringComparison.Ordinal))
+            return new TrackerQueryResult(false, "The dry run's ticket source uses another connection.");
+        if (Poller is null)
+            return new TrackerQueryResult(false, "This runner cannot read tickets — update Orkka (`git pull`, then `./orkka start`).");
+
+        var outcome = await Poller.PollAsync(assignment, "dry-run", ct, dryRun: true);
+        return outcome.Report.Ok
+            ? new TrackerQueryResult(true, Tickets: outcome.Report.Tickets, MatchCount: outcome.Report.Tickets.Count(t => t.InIntake))
+            : new TrackerQueryResult(false, outcome.Report.Error);
     }
 
     /// <summary>Tests a credential without touching the store — what `tracker add` runs

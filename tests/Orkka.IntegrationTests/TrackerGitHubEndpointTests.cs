@@ -31,6 +31,7 @@ public sealed class TrackerGitHubEndpointTests(OrkkaApiFactory factory)
         var projectResp = await _client.PostAsJsonAsync("/api/projects",
             new CreateProjectRequest("GitHub Project", "desc"));
         var project = await projectResp.Content.ReadFromJsonAsync<ProjectResponse>(TestJsonOptions.Default);
+        await _client.StartSetupAsync(project!.Id);
 
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TrackersDbContext>();

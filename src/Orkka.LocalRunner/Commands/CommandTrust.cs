@@ -26,10 +26,15 @@ public sealed class CommandTrust(
     CommandApprovalStore store, Orkka.Git.GitProcess git, ILogger<CommandTrust> logger)
 {
     /// <summary>The verdict, and when refused, what the developer is told.</summary>
-    public sealed record Verdict(bool Allowed, CommandApproval? Pending)
+    /// <param name="Source">Allowed because the repository declares it (<see cref="Declared"/>) or
+    /// the developer approved it (<see cref="Approved"/>); null for an empty command or a refusal.</param>
+    public sealed record Verdict(bool Allowed, CommandApproval? Pending, string? Source = null)
     {
         public static readonly Verdict Allow = new(true, null);
     }
+
+    public const string Declared = "declared";
+    public const string Approved = "approved";
 
     /// <summary>
     /// Checks <paramref name="command"/> against the repository at <paramref name="repoDir"/>
@@ -45,10 +50,10 @@ public sealed class CommandTrust(
 
         var repoKey = await RepoKeyAsync(repoDir, ct);
         if ((await DeclaredCommandsAsync(repoDir, ct)).Contains(normalized))
-            return Verdict.Allow;
+            return new Verdict(true, null, Declared);
 
         if (store.IsApproved(repoKey, normalized))
-            return Verdict.Allow;
+            return new Verdict(true, null, Approved);
 
         var pending = store.RecordPending(repoKey, normalized, kind, workspace);
         logger.LogWarning(

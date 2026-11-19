@@ -65,6 +65,46 @@ export interface ProjectResponse {
   updatedAt: string;
   taskCount: number | null;
   memberCount: number | null;
+  /** When the guided setup's Start was pressed; null = setup not finished, nothing is pulled. */
+  setupCompletedAt?: string | null;
+  /** The setup steps confirmed so far: folder, machine, source, team. */
+  setupSteps?: string[] | null;
+}
+
+/** POST /api/projects/{id}/setup/commands — CommandTrust on the developer's machine. */
+export interface RepoCommandsCheckResponse {
+  supported: boolean;
+  repos: {
+    repoId: string;
+    name: string;
+    commands: { kind: string; command: string; allowed: boolean; source: string | null; approvalId: string | null; machine: string | null; error: string | null }[];
+  }[];
+  error?: string | null;
+}
+
+export interface IntakePreviewTicketResponse {
+  key: string;
+  title: string;
+  status: string | null;
+  assignee: string | null;
+  repoId: string | null;
+  repoName: string | null;
+  spansRepos: string[];
+  route: string;
+}
+
+/** POST /api/projects/{id}/tracker/preview — the dry run of the next poll; nothing created. */
+export interface IntakePreviewResponse {
+  supported: boolean;
+  ok: boolean;
+  error?: string | null;
+  preview?: {
+    newTaskCount: number;
+    tasks: IntakePreviewTicketResponse[];
+    stories: { story: IntakePreviewTicketResponse; branch: string; members: IntakePreviewTicketResponse[] }[];
+    alreadyTracked: IntakePreviewTicketResponse[];
+    skipped: { key: string; title: string; status: string | null; reason: string }[];
+  } | null;
 }
 
 export interface CreateProjectRequest {

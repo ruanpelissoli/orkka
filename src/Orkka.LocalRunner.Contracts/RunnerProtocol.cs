@@ -65,6 +65,9 @@ public static class RunnerProtocol
     public const string AttachRemote = nameof(AttachRemote);
     public const string EnsureChatWorkspace = nameof(EnsureChatWorkspace);
     public const string CheckRepoAccess = nameof(CheckRepoAccess);
+    // Whether each repository command would run on this machine (CommandTrust), and the pending
+    // approvals for the ones that would not. Capability "command-vet".
+    public const string VetRepoCommands = nameof(VetRepoCommands);
     public const string OpenPullRequest = nameof(OpenPullRequest);
     public const string GetPullRequestState = nameof(GetPullRequestState);
     /// <summary>A Story's pull request: draft → ready, or back to draft (capability <c>stories</c>).</summary>
@@ -253,7 +256,20 @@ public sealed record RunnerHello(
     // Repository commands this machine refused (not in orkka.json, not approved here), most
     // recent first, at most 20 — what the Machine page lists with the `./orkka commands
     // approve <id>` to run. Approval itself stays on the machine's terminal.
-    CommandApproval[]? PendingCommandApprovals = null);
+    CommandApproval[]? PendingCommandApprovals = null,
+    // Who this workspace's commits are authored as — the workspace identity
+    // (`./orkka workspace set-identity`), else the developer's git config. Null from older runners.
+    RunnerCommitIdentity? CommitIdentity = null);
+
+/// <summary>Who commits on this machine are authored as, for one workspace.</summary>
+/// <param name="Source">"workspace" (<c>./orkka workspace set-identity</c>, in its profile.env),
+/// "git-config" (the developer's global git config) or "none" — then git refuses to commit.</param>
+public sealed record RunnerCommitIdentity(string? Name, string? Email, string Source)
+{
+    public const string Workspace = "workspace";
+    public const string GitConfig = "git-config";
+    public const string None = "none";
+}
 
 /// <summary>
 /// One forge CLI on the developer's machine. Orkka opens pull requests with it, under the
@@ -428,7 +444,37 @@ public static class RunnerCapabilities
     /// <c>GetDiffRequest.BaseSha</c>. Without it a Story's draft pull request is refused with
     /// "update Orkka" rather than opened as a ready one.</summary>
     public const string Stories = "stories";
+
+    /// <summary>The runner answers the <c>dry-run</c> tracker query: a source's poll read exactly
+    /// as the real one, returning the tickets instead of reporting them (the setup page's "these N
+    /// tickets would be pulled"). Without it the setup page says to update Orkka.</summary>
+    public const string TrackerDryRun = "tracker-dry-run";
+
+    /// <summary>The runner answers <c>VetRepoCommands</c>: whether each repository command would
+    /// run here (declared in orkka.json, or approved on this machine) — and records the ones that
+    /// would not as pending, so the developer can approve them with <c>./orkka commands approve</c>
+    /// before the first task needs them. Nothing is run and nothing is approved.</summary>
+    public const string CommandVet = "command-vet";
 }
+
+/// <summary>One repository command to vet (<see cref="RunnerProtocol.VetRepoCommands"/>).</summary>
+/// <param name="RepoId">The project repository; its mirror (or the developer's linked folder) is
+/// what <c>orkka.json</c> is read from, as for a real run.</param>
+public sealed record RepoCommandToVet(string RepoId, CommandKind Kind, string Command);
+
+public sealed record VetRepoCommandsRequest(string OrgId, RepoCommandToVet[] Commands);
+
+/// <param name="Allowed">It would run on this machine now.</param>
+/// <param name="Source">Why: "declared" (orkka.json on the default branch) or "approved" (on this
+/// machine); null when refused.</param>
+/// <param name="Approval">Refused: the pending approval, with the id for <c>./orkka commands approve</c>.</param>
+/// <param name="Error">The repository could not be checked here (its cache is not prepared yet, the
+/// linked folder is gone) — unknown, not refused.</param>
+public sealed record VettedRepoCommand(
+    string RepoId, CommandKind Kind, string Command, bool Allowed, string? Source,
+    CommandApproval? Approval, string? Error = null);
+
+public sealed record VetRepoCommandsResponse(VettedRepoCommand[] Results);
 
 /// <summary>One remote to probe. RepoId is opaque to the runner — it comes back on the
 /// matching result so the host can line answers up with its own repos. The probe uses the

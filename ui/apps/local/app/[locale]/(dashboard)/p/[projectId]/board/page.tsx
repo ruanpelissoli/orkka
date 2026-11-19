@@ -7,6 +7,7 @@ import { Button } from "@/components/ui";
 import { RequirePermission } from "@/components/permissions/RequirePermission";
 import { StartSessionButton } from "@/components/task/StartSessionButton";
 import { ProviderMismatchBanner } from "@/components/runner/ProviderMismatchBanner";
+import { FinishSetupBanner } from "@/components/project-setup/FinishSetupBanner";
 import { BoardSkeleton } from "@/components/page";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { useDocumentTitle } from "@/hooks/use-document-title";
@@ -161,6 +162,11 @@ export default function BoardPage() {
           </RequirePermission>
         </div>
       </div>
+
+      {/* A project whose guided setup was left before Start pulls no tickets yet. */}
+      {projectResult.status === "fulfilled" && (
+        <FinishSetupBanner project={projectResult.value} className="-mt-2 mb-3 mx-4 lg:mx-8" />
+      )}
 
       {/* Where the board's tickets come from, when a tracker feeds it. */}
       {ticketSource && (

@@ -88,6 +88,37 @@ public sealed class CommandTrustTests : IDisposable
     }
 
     [Fact]
+    public async Task TheVerdict_SaysWhy_ACommandMayRun()
+    {
+        (await _trust.CheckAsync(_clone, "npm ci", CommandKind.Setup, "default")).Source.Should().Be(CommandTrust.Declared);
+
+        var first = await _trust.CheckAsync(_clone, "make bootstrap", CommandKind.Setup, "default");
+        first.Source.Should().BeNull();
+        _store.Approve(first.Pending!.Id);
+        (await _trust.CheckAsync(_clone, "make bootstrap", CommandKind.Setup, "default")).Source.Should().Be(CommandTrust.Approved);
+    }
+
+    [Fact]
+    public async Task ACommandVettedOnTheMirror_DuringSetup_IsTheSameApproval_TheTaskCloneUses()
+    {
+        // The setup page vets against the bare mirror (VetRepoCommands); the task clone that later
+        // runs the command must see the same repository key, or approving up front would not help.
+        Git(_root, $"clone -q --mirror \"{_origin}\" mirror.git");
+        var mirror = Path.Combine(_root, "mirror.git");
+
+        (await _trust.CheckAsync(mirror, "npm ci", CommandKind.Setup, "default")).Source
+            .Should().Be(CommandTrust.Declared, "the mirror's HEAD is the default branch");
+
+        var vetted = await _trust.CheckAsync(mirror, "make bootstrap", CommandKind.Setup, "default");
+        vetted.Allowed.Should().BeFalse();
+        _store.Pending().Should().ContainSingle(e => e.Id == vetted.Pending!.Id);
+
+        CommandsCommand.Run(["approve", vetted.Pending!.Id, "--yes"], Path.Combine(_root, "orkka-home")).Should().Be(0);
+
+        (await _trust.CheckAsync(_clone, "make bootstrap", CommandKind.Setup, "default")).Allowed.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task OrkkaJsonOnATaskBranch_DoesNotVouch()
     {
         // The agent's own branch adds a command to orkka.json — the clone has it checked out.

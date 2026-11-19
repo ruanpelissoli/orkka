@@ -43,6 +43,18 @@ internal sealed class ProjectsApi(
             .Select(p => p.Id)
             .ToListAsync(ct);
 
+    public async Task<IReadOnlySet<Ulid>> GetSetupPendingProjectIdsAsync(
+        IReadOnlyCollection<Ulid> projectIds, CancellationToken ct = default)
+    {
+        if (projectIds.Count == 0)
+            return new HashSet<Ulid>();
+        var pending = await db.Projects.IgnoreQueryFilters().AsNoTracking()
+            .Where(p => projectIds.Contains(p.Id) && p.SetupCompletedAt == null)
+            .Select(p => p.Id)
+            .ToListAsync(ct);
+        return pending.ToHashSet();
+    }
+
     public async Task<ProjectSummary?> GetProjectSummaryAsync(Ulid projectId, CancellationToken ct = default)
     {
         var project = await db.Projects.AsNoTracking()

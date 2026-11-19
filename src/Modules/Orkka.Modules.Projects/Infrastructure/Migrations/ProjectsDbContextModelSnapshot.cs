@@ -59,6 +59,16 @@ namespace Orkka.Modules.Projects.Infrastructure.Migrations
                     b.Property<string>("Settings")
                         .HasColumnType("TEXT");
 
+                    b.Property<long?>("SetupCompletedAt")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SetupStepsJson")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("[]");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(100)

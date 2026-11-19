@@ -83,17 +83,18 @@ internal sealed partial class TrackersApi
             || ((ticket.Status ?? ticket.Body?.Status) is { } status
                 && intakeStatuses.Contains(status.Trim(), StringComparer.OrdinalIgnoreCase));
 
-    private async Task<int> IngestStoriesAsync(ImportContext router, StoryReport stories, string tracker, CancellationToken ct)
+    /// <param name="planned">The Stories <see cref="PlanIntake"/> found in this report — the same
+    /// list the setup page's dry run shows.</param>
+    private async Task<int> IngestStoriesAsync(
+        ImportContext router, StoryReport stories, IReadOnlyList<PlannedStory> planned, string tracker, CancellationToken ct)
     {
         var count = 0;
-        foreach (var ticket in stories.ByKey.Values)
+        foreach (var (ticket, open) in planned)
         {
-            if (stories.Links.ContainsKey(ticket.Key) || !ticket.InIntake || !ticket.AssignedToMe
-                || ticket.ChildKeys is not { Length: > 0 })
+            // A Story's member imported just above may itself have sub-tasks; once linked it is
+            // the earlier Story's (PlanIntake already left it out — this keeps the two in step).
+            if (stories.Links.ContainsKey(ticket.Key))
                 continue;
-            var open = stories.MemberChildren(ticket);
-            if (open.Count == 0)
-                continue; // nothing under it for the developer to do: the main pass imports it as a task of its own
 
             try
             {

@@ -50,6 +50,8 @@ export const WEB_ROUTES: RouteCheck[] = [
   { path: "/en/p/{slug}/design", expectText: /design/i, caseIds: ["DSN-001"], needsProject: true },
   { path: "/en/p/{slug}/architect", expectText: /diagrams|architect/i, caseIds: ["ARC-001"], needsProject: true },
   { path: "/en/p/{slug}/settings", expectText: /settings|general/i, caseIds: ["SET-010"], needsProject: true },
+  { path: "/en/p/{slug}/setup", expectText: /set up|folder & repos/i, caseIds: ["PSU-004"], needsProject: true },
+  { path: "/en/p/{slug}/setup?step=review", expectText: /readiness/i, caseIds: ["PSU-012"], needsProject: true },
 ];
 
 export const LOCALES = ["es", "pt", "fr", "de"] as const;

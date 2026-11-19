@@ -351,6 +351,8 @@ public sealed class RunnerSession(
                 RunnerCapabilities.TrackerBoards,
                 RunnerCapabilities.TrackerGitHub,
                 RunnerCapabilities.Stories,
+                RunnerCapabilities.TrackerDryRun,
+                RunnerCapabilities.CommandVet,
             ],
             DaemonVersion: Cli.OrkkaVersion.Current(),
             InstanceId: InstanceId,
@@ -361,7 +363,9 @@ public sealed class RunnerSession(
             // Metadata only — the tokens stay in this machine's secret store. Health is
             // re-checked at most every 15 minutes, not on every 60s re-Hello.
             Trackers: await trackers.ListConnectionsAsync(ct),
-            PendingCommandApprovals: PendingApprovals());
+            PendingCommandApprovals: PendingApprovals(),
+            // Shown by the project setup's machine check: a commit with no author fails.
+            CommitIdentity: await ops.CommitIdentityAsync(profile.GitAuthorName, profile.GitAuthorEmail));
     }
 
     private CommandApproval[]? PendingApprovals()
@@ -434,6 +438,10 @@ public sealed class RunnerSession(
         c.On<DiscoverReposRequest, DiscoverReposResult>(RunnerProtocol.DiscoverRepos, ops.DiscoverReposAsync);
         c.On<CheckRepoAccessRequest, CheckRepoAccessResponse>(
             RunnerProtocol.CheckRepoAccess, ops.CheckRepoAccessAsync);
+        // Read-only: whether each repository command would run here; a refused one is recorded
+        // as pending for `./orkka commands approve`, which only this machine's terminal can do.
+        c.On<VetRepoCommandsRequest, VetRepoCommandsResponse>(
+            RunnerProtocol.VetRepoCommands, ops.VetRepoCommandsAsync);
         // The project's "Ticket source" settings are built from these answers; the query
         // runs here because the token never leaves this machine.
         c.On<TrackerQueryRequest, TrackerQueryResult>(

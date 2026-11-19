@@ -61,6 +61,9 @@ Then choose:
 - which statuses to **pick up** from (for example *To Do*);
 - what each step **moves the ticket to** (*In Progress*, *Code Review*, …, or *don't change*).
 
+A new project walks you through this in a short **guided setup**: folder and repositories (branches, pull request or local folder, the commands agents run — with the exact `./orkka commands approve` for any your machine would refuse), a machine check (runner, AI CLI, git identity, repository access, `gh`/`az`), the ticket source with a **dry run** listing exactly which tickets would be pulled (and which become Stories), and the team's models.
+**Nothing is pulled from your tracker until you press Start.** Leave mid-way and the board offers "Finish setup".
+
 ### 3. Tickets become tasks
 
 Every ticket assigned to you in a pickup status lands on the board.
@@ -151,6 +154,7 @@ cd orkka
 
 The first start installs the UI's npm packages, builds everything, and opens <http://127.0.0.1:6750> with a one-time sign-in link.
 Later starts rebuild only what changed. Orkka runs in the foreground, and **Ctrl+C stops it.**
+Then click **New project**, pick a folder, and follow the setup to Start.
 
 | Command | What it does |
 |---|---|

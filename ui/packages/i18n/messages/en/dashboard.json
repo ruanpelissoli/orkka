@@ -1157,7 +1157,7 @@
   },
   "newProjectPage": {
     "title": "New project",
-    "subtitle": "Start from a folder on this machine: one repository, or a folder of repositories."
+    "subtitle": "Start from a folder on this machine: one repository, or a folder of repositories. A short setup follows — nothing is pulled from your tracker before you press Start."
   },
   "fromFolder": {
     "folderTitle": "Project folder",
@@ -1186,7 +1186,7 @@
     "creating": "Creating…",
     "createFailed": "Could not create the project: {detail}",
     "createdWithWarnings": "{name} is ready. A few things to know:",
-    "openProject": "Open the board"
+    "openProject": "Continue to setup"
   },
   "baseFolder": {
     "title": "Project folder",
@@ -2588,6 +2588,204 @@
     "trackers": "Trackers",
     "mcpKeys": "MCP keys",
     "usage": "Usage",
-    "workspaceBoard": "Workspace board"
+    "workspaceBoard": "Workspace board",
+    "projectSetup": "Project setup"
+  },
+  "projectSetup": {
+    "title": "Set up {name}",
+    "subtitle": "Five short steps, then Start. Nothing is pulled from your tracker before you press Start — leave any time and come back where you left off.",
+    "subtitleStarted": "This project is running. Every setting here stays editable, and the checks can be run again at any time.",
+    "stepsLabel": "Setup steps",
+    "back": "Back",
+    "continue": "Looks good — continue",
+    "continueAgain": "Continue",
+    "stepFailed": "Could not save this step. Try again.",
+    "goToStep": "Fix in {step}",
+    "level": {
+      "ok": "Ready",
+      "warn": "Worth a look",
+      "error": "Blocks the first task"
+    },
+    "steps": {
+      "folder": {
+        "title": "Folder & repos",
+        "description": "The base folder and its repositories: the branch work starts from, how finished work lands, and the commands that make a task’s copy usable."
+      },
+      "machine": {
+        "title": "Machine check",
+        "description": "Everything your runner needs on this machine: the runner itself, a signed-in AI CLI, a commit identity, access to every repository and the CLI that opens pull requests."
+      },
+      "source": {
+        "title": "Ticket source",
+        "description": "Where the tickets come from — Jira, Azure DevOps, GitHub Projects, or none — and a dry run of exactly what would be pulled."
+      },
+      "team": {
+        "title": "Team & model",
+        "description": "Which AI CLI the team runs on, and the model each agent uses."
+      },
+      "review": {
+        "title": "Review & Start",
+        "description": "Everything at once. Start lets your runner pull tickets for this project."
+      }
+    },
+    "checks": {
+      "noRepos": "This project has no repository yet.",
+      "reposFound": "{count, plural, one {# repository} other {# repositories}} in the project.",
+      "repoMissing": "{repo} is no longer in the base folder.",
+      "commandApproved": "{repo}: the {kind} command is approved on this machine.",
+      "commandDeclared": "{repo}: the {kind} command is declared in orkka.json.",
+      "commandNeedsApproval": "{repo}: the {kind} command waits for your approval on this machine — until then it does not run.",
+      "commandUnchecked": "{repo}: the {kind} command could not be checked on this machine.",
+      "runnerOffline": "Your runner is offline.",
+      "runnerOnline": "Your runner is online on {machine}.",
+      "noAiCli": "No AI CLI is signed in on this machine.",
+      "aiReady": "Signed in: {providers}.",
+      "identityMissing": "Commits have no author on this machine — git will refuse them.",
+      "identityWorkspace": "Commits are authored as {name} ({email}) — this workspace’s identity.",
+      "identityGitConfig": "Commits are authored as {name} ({email}) — your git config.",
+      "repoReachable": "{repo} is reachable with your git sign-in.",
+      "repoUnreachable": "{repo} cannot be reached with your git sign-in.",
+      "forgeReady": "{cli} is signed in for {repos}.",
+      "forgeNotSignedIn": "{cli} is not signed in — pull requests for {repos} cannot be opened.",
+      "forgeMissing": "{cli} is not installed — pull requests for {repos} cannot be opened.",
+      "sourceNotChosen": "Pick a ticket source, or none.",
+      "sourceNone": "No ticket source: you write the tasks yourself.",
+      "connectionUnhealthy": "The tracker connection is not working.",
+      "sourceSet": "Tickets come from {scope}.",
+      "sourcePaused": "The ticket source is switched off — nothing will be pulled.",
+      "lastPollError": "The last read of the tracker failed.",
+      "previewed": "You previewed what would be pulled.",
+      "notPreviewed": "Preview what would be pulled before you start.",
+      "providerBlocked": "The workspace’s AI provider cannot run on this machine.",
+      "providerSet": "The team runs on {provider}.",
+      "qaNeedsClaude": "Browser QA needs Claude, which is not signed in.",
+      "stepNotConfirmed": "{step} is not confirmed yet."
+    },
+    "folder": {
+      "noRepos": "This project has no repository yet — add one on the Repos page.",
+      "addRepos": "Open the Repos page",
+      "commandsOffline": "Your runner is offline, so the commands could not be checked on this machine.",
+      "runContractTitle": "Run contract (orkka.json)",
+      "runContractManifest": "orkka.json declares {count, plural, one {# run target} other {# run targets}}: the Run button and QA start the app from it.",
+      "runContractDetected": "{count, plural, one {# run target was} other {# run targets were}} detected for the Run button. Dev agents add an orkka.json to a repository that has none on their first task.",
+      "runContractNone": "No orkka.json yet. Dev agents add one to each repository on their first task; until then QA starts the app from the run command above.",
+      "saved": "Saved.",
+      "saveFailed": "Could not save the repository.",
+      "saving": "Saving…",
+      "save": "Save",
+      "modeRemote": "Pull request",
+      "modeLocal": "Local folder",
+      "modeRemoteHint": "Reviewed work is pushed to a branch and published as a pull request with your own forge CLI.",
+      "modeLocalHint": "No remote: reviewed work is squash-merged into this folder.",
+      "defaultBranch": "Default branch",
+      "forge": "Forge",
+      "cliAccount": "CLI account",
+      "cliAccountHint": "The {cli} account that opens this repository’s pull requests. Empty = the active one.",
+      "noCliHint": "Orkka has no CLI for this forge: the branch is pushed, the pull request is yours to open.",
+      "cliAccountPlaceholder": "Active account",
+      "commandsHint": "Each command runs on your machine only when the repository’s orkka.json declares it or you approve it there. Empty = the repository’s orkka.json, if any.",
+      "command": {
+        "setup": "Setup (once per task copy)",
+        "check": "Check (lint, typecheck, tests after every dev run)",
+        "build": "Build (proves a merge still compiles)",
+        "qaRun": "Run (how QA starts the app)"
+      },
+      "commandApproved": "Approved on this machine.",
+      "commandDeclared": "Declared in orkka.json — runs without approval.",
+      "commandNeedsApproval": "Waits for your approval. In a terminal on this machine: {command}",
+      "commandUnchecked": "Could not be checked on this machine.",
+      "secretsHint": "Never put secrets here: a setup command runs on your machine and can copy your own .env."
+    },
+    "machine": {
+      "title": "This machine",
+      "intro": "Asked of your runner just now. Fix anything red here before the first task, then re-check.",
+      "recheck": "Re-check",
+      "rechecking": "Checking…",
+      "loading": "Asking your runner…",
+      "accessUnsupported": "Your runner could not check repository access — update Orkka (git pull, then ./orkka start).",
+      "aiTitle": "AI sign-in",
+      "aiIntro": "The team runs on your own AI subscription. Each CLI that is not ready shows the command that signs it in.",
+      "doctorHint": "The same checks from a terminal:",
+      "machinePage": "Machine page"
+    },
+    "source": {
+      "title": "Where do the tickets come from?",
+      "intro": "Orkka only picks up tickets assigned to you. Your runner reads the tracker with your own connection; the token never leaves this machine.",
+      "kind": {
+        "jira": "Jira",
+        "ado": "Azure DevOps",
+        "github": "GitHub Projects",
+        "none": "None"
+      },
+      "gateNote": "Nothing is pulled before you press Start at the end of this setup — saving the source here only prepares it.",
+      "noneBody": "No tracker: you write this project’s tasks yourself on the board. You can add a ticket source later in the project settings.",
+      "noneHasSource": "This project still has a ticket source. Remove it to work with manual tasks only.",
+      "removing": "Removing…",
+      "removeSource": "Remove the ticket source",
+      "removeFailed": "Could not remove the ticket source.",
+      "connectTitle": "Connect {tracker}",
+      "connectIntro": "No connection on this machine yet. The token is tested and kept in this machine’s secret store — Orkka never stores it.",
+      "connectWithCli": "Or from a terminal",
+      "saveToPreview": "Save the ticket source to preview what it would pull."
+    },
+    "preview": {
+      "title": "What would be pulled",
+      "intro": "Your runner reads the tracker exactly as the first poll will, and the poll’s own rules decide what becomes a task. Nothing is created.",
+      "run": "Preview",
+      "running": "Reading the tracker…",
+      "again": "Preview again",
+      "offline": "Your runner is offline — start it with ./orkka start to preview.",
+      "failed": "The tracker could not be read: {error}",
+      "failedGeneric": "The tracker could not be read.",
+      "count": "{count, plural, =0 {No ticket would be pulled.} one {# task would be created.} other {# tasks would be created.}}",
+      "tasksTitle": "{count, plural, one {# ticket becomes a task} other {# tickets become tasks}}",
+      "storyTitle": "Story {key} — {count, plural, one {# sub-task} other {# sub-tasks}}, one branch, one pull request",
+      "nothing": "Check the intake statuses, the board and that tickets are assigned to you.",
+      "tracked": "{count, plural, one {# ticket is} other {# tickets are}} already on the board.",
+      "skippedTitle": "{count, plural, one {# ticket is} other {# tickets are}} left out",
+      "skipReason": {
+        "notAssignedToMe": "not assigned to you",
+        "notInIntake": "not in an intake status (already under way or done)"
+      },
+      "colKey": "Key",
+      "colTitle": "Title",
+      "colStatus": "Status",
+      "colAssignee": "Assignee",
+      "colRepo": "Repository",
+      "you": "You",
+      "repoAtImport": "Picked at import",
+      "repoAsks": "Asks you"
+    },
+    "team": {
+      "title": "The team",
+      "intro": "Every agent and its model. Set them all at once here, or one by one on the Team page.",
+      "teamPage": "Open the Team page"
+    },
+    "review": {
+      "title": "Readiness",
+      "intro": "Red blocks the first task; amber is worth a look. Each item links to the step that fixes it.",
+      "introStarted": "This project has started. These are the same checks, run again now.",
+      "started": "Started — your runner pulls this project’s tickets.",
+      "blocked": "Something is red. Fix it, or start anyway.",
+      "ready": "Ready. Start lets your runner pull this project’s tickets.",
+      "start": "Start",
+      "starting": "Starting…",
+      "startAnyway": "Start anyway…",
+      "anywayTitle": "{count, plural, one {# item is} other {# items are}} not ready:",
+      "anywayConfirm": "Start anyway",
+      "anywayCancel": "Cancel",
+      "startFailed": "Could not start the project."
+    },
+    "banner": {
+      "text": "Setup is not finished — no tickets are pulled for this project until you press Start.",
+      "action": "Finish setup"
+    },
+    "settingsCard": {
+      "title": "Project setup",
+      "body": "Run the setup checks again: this machine, the repositories, the ticket source and the team.",
+      "unfinished": "Setup is not finished — the ticket source is not polled until you press Start.",
+      "finish": "Finish setup",
+      "rerun": "Re-run setup checks"
+    }
   }
 }

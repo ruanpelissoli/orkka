@@ -76,7 +76,11 @@ public sealed class TrackerTicketPoller(
 
     internal TimeSpan Timeout { get; init; } = AssignmentTimeout;
 
-    public async Task<TrackerPollOutcome> PollAsync(TrackerPollAssignment assignment, string instanceId, CancellationToken ct)
+    /// <param name="dryRun">The setup page's preview: the same reads and the same normalization,
+    /// but attachments are only listed (never downloaded), no comments are fetched and nothing is
+    /// remembered as delivered — <see cref="TrackerPollOutcome.Commit"/> does nothing.</param>
+    public async Task<TrackerPollOutcome> PollAsync(
+        TrackerPollAssignment assignment, string instanceId, CancellationToken ct, bool dryRun = false)
     {
         var polledAt = _time.GetUtcNow();
         TrackerCredential? credential = null;
@@ -102,13 +106,16 @@ public sealed class TrackerTicketPoller(
             {
                 known.TryGetValue(r.Key, out var k);
                 var names = TrackerAttachmentCache.PlanNames(r.Attachments);
-                var attachments = await cache.EnsureAsync(credential, assignment.ConnectionId, r.Key, r.Attachments, names, token);
+                TrackerAttachmentMeta[] attachments = dryRun
+                    ? [.. names.Select((n, i) => new TrackerAttachmentMeta(
+                        n.FileName, r.Attachments[i].Size, r.Attachments[i].MimeType, Cached: false))]
+                    : await cache.EnsureAsync(credential, assignment.ConnectionId, r.Key, r.Attachments, names, token);
 
                 var stateKey = $"{assignment.ConfigId}|{r.Key}";
                 var moved = k is null
                     || !_deliveredUpdatedAt.TryGetValue(stateKey, out var lastDelivered)
                     || lastDelivered != r.UpdatedAt;
-                var comments = moved
+                var comments = moved && !dryRun
                     ? await source.FetchCommentsAsync(credential, r, k?.LastCommentAt, MaxComments, token)
                     : [];
 
@@ -123,6 +130,8 @@ public sealed class TrackerTicketPoller(
 
             var report = new TrackerTicketReport(assignment.ConfigId, instanceId, true, null, polledAt, [.. tickets]);
             var summary = $"{assignment.Scope}: {tickets.Count} ticket{(tickets.Count == 1 ? "" : "s")}, {added} new, {changed} changed";
+            if (dryRun)
+                return new TrackerPollOutcome(report, summary, () => { });
             return new TrackerPollOutcome(report, summary, () =>
             {
                 foreach (var (key, updatedAt) in delivered)

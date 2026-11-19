@@ -1,5 +1,8 @@
 import type {
   Project,
+  ProjectSetupStep,
+  RepoCommandsCheck,
+  IntakePreviewResponse,
   MergePrResult,
   SyncPrResult,
   Task,
@@ -398,6 +401,22 @@ export const api = {
         token,
         { method: "POST" }
       ),
+    // The guided setup (/p/{slug}/setup). Confirming a step only records where to resume.
+    setSetupStep: (id: string, step: ProjectSetupStep, done: boolean, token: string) =>
+      fetchApi<Project>(`/api/projects/${id}/setup/steps`, token, {
+        method: "PUT",
+        body: JSON.stringify({ step, done }),
+      }),
+    // Start: from now on the ticket source is polled. `warnings` = what "Start anyway" overrode.
+    startSetup: (id: string, warnings: string[], token: string) =>
+      fetchApi<Project>(`/api/projects/${id}/setup/start`, token, {
+        method: "POST",
+        body: JSON.stringify({ warnings }),
+      }),
+    // Would the repos' setup/check/build commands run on this machine? Never cached: the answer
+    // changes the moment the developer approves one at their terminal.
+    setupCommands: (id: string, token: string) =>
+      fetchApi<RepoCommandsCheck>(`/api/projects/${id}/setup/commands`, token, { method: "POST" }),
   },
 
   board: {
@@ -1631,6 +1650,10 @@ export const api = {
       }),
     deleteProjectConfig: (projectId: string, token: string) =>
       fetchApi<void>(`/api/projects/${projectId}/tracker`, token, { method: "DELETE" }),
+    /** The saved source's dry run: what the next poll would pull, by the poll's own rules.
+     * Creates nothing; 404 when the project has no ticket source. */
+    previewIntake: (projectId: string, token: string) =>
+      fetchApi<IntakePreviewResponse>(`/api/projects/${projectId}/tracker/preview`, token, { method: "POST" }),
   },
 
   repoPulls: {

@@ -1,6 +1,7 @@
 import { useParams } from "@/lib/navigation";
 import { useTranslations } from "use-intl";
 import { GlassCard } from "@/components/ui";
+import { Link } from "@/i18n/navigation";
 import { ProjectAutomationCard } from "@/components/project/ProjectAutomationCard";
 import { ProjectLanguageSetting } from "@/components/project/ProjectLanguageSetting";
 import { TicketSourceCard } from "@/components/project/TicketSourceCard";
@@ -43,6 +44,28 @@ export default function ProjectSettingsPage() {
         <ProjectSettingsActions project={project} />
         <div className="mt-6 border-t border-white/10 pt-5">
           <ProjectLanguageSetting project={project} />
+        </div>
+      </GlassCard>
+
+      {/* The guided setup's checks, any time — and the way back in while it is unfinished. */}
+      <GlassCard padding="md" data-testid="settings-setup-checks">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="font-display text-base font-semibold text-white">{t("projectSetup.settingsCard.title")}</h2>
+            <p className="mt-1 text-xs text-gray-400">
+              {project.setupCompletedAt === null
+                ? t("projectSetup.settingsCard.unfinished")
+                : t("projectSetup.settingsCard.body")}
+            </p>
+          </div>
+          <Link
+            href={`/p/${project.slug}/setup${project.setupCompletedAt === null ? "" : "?step=review"}`}
+            className="text-sm text-cyan-400 hover:text-cyan-300"
+          >
+            {project.setupCompletedAt === null
+              ? t("projectSetup.settingsCard.finish")
+              : t("projectSetup.settingsCard.rerun")}
+          </Link>
         </div>
       </GlassCard>
 

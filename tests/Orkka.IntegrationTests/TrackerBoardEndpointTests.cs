@@ -30,6 +30,7 @@ public sealed class TrackerBoardEndpointTests(OrkkaApiFactory factory)
         var projectResp = await _client.PostAsJsonAsync("/api/projects",
             new CreateProjectRequest("Board Project", "desc"));
         var project = await projectResp.Content.ReadFromJsonAsync<ProjectResponse>(TestJsonOptions.Default);
+        await _client.StartSetupAsync(project!.Id);
 
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TrackersDbContext>();

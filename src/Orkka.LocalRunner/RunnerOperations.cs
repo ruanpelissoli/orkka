@@ -848,6 +848,43 @@ public sealed class RunnerOperations(
     }
 
     /// <summary>
+    /// The setup page's question: would these repository commands run on this machine? Each is
+    /// checked by <see cref="Commands.CommandTrust"/> against the repository's mirror — its
+    /// default branch's <c>orkka.json</c>, and the approvals on this machine — exactly as a task
+    /// run would be. One that would not is recorded as pending (what <c>./orkka commands</c>
+    /// lists), so the developer approves it at this machine's terminal before the first task
+    /// needs it. Nothing is run, and nothing here can approve anything.
+    /// </summary>
+    public async Task<VetRepoCommandsResponse> VetRepoCommandsAsync(VetRepoCommandsRequest req)
+    {
+        var results = new List<VettedRepoCommand>(req.Commands.Length);
+        foreach (var item in req.Commands.Take(100))
+        {
+            if (string.IsNullOrWhiteSpace(item.Command)
+                || !Ulid.TryParse(req.OrgId, out var orgId) || !Ulid.TryParse(item.RepoId, out var repoId))
+                continue;
+            var normalized = Commands.CommandTrust.Normalize(item.Command);
+            var bare = git.GetBareRepoPath(orgId, repoId);
+            if (!Directory.Exists(bare))
+            {
+                results.Add(new VettedRepoCommand(item.RepoId, item.Kind, normalized, false, null, null,
+                    "This repository is not prepared on this machine yet — open the Repos page to sync it."));
+                continue;
+            }
+            if (commandTrust is null)
+            {
+                results.Add(new VettedRepoCommand(item.RepoId, item.Kind, normalized, false, null, null,
+                    "This runner cannot check repository commands — update Orkka (`git pull`, then `./orkka start`)."));
+                continue;
+            }
+
+            var verdict = await commandTrust.CheckAsync(bare, normalized, item.Kind, workspaceName);
+            results.Add(new VettedRepoCommand(item.RepoId, item.Kind, normalized, verdict.Allowed, verdict.Source, verdict.Pending));
+        }
+        return new VetRepoCommandsResponse([.. results]);
+    }
+
+    /// <summary>
     /// Null when <paramref name="command"/> may run in <paramref name="repoDir"/>; otherwise the
     /// approval the developer has to give on this machine. See <see cref="Commands.CommandTrust"/>.
     /// </summary>
@@ -2235,6 +2272,37 @@ public sealed class RunnerOperations(
         yield return new RunnerChunk("Error", message);
         yield return new RunnerChunk("Done", "");
         await Task.CompletedTask;
+    }
+
+    private RunnerCommitIdentity? _gitConfigIdentity;
+    private DateTimeOffset _gitConfigIdentityAt;
+
+    /// <summary>
+    /// Who this workspace's commits are authored as: the workspace's own identity
+    /// (<c>./orkka workspace set-identity</c>) when it has one, else the developer's global git
+    /// config (read at most every five minutes), else none — then a commit fails. Names and
+    /// emails only.
+    /// </summary>
+    public async Task<RunnerCommitIdentity> CommitIdentityAsync(string? workspaceName, string? workspaceEmail)
+    {
+        if (!string.IsNullOrWhiteSpace(workspaceName) && !string.IsNullOrWhiteSpace(workspaceEmail))
+            return new RunnerCommitIdentity(workspaceName.Trim(), workspaceEmail.Trim(), RunnerCommitIdentity.Workspace);
+
+        if (_gitConfigIdentity is null || DateTimeOffset.UtcNow - _gitConfigIdentityAt > TimeSpan.FromMinutes(5))
+        {
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            var name = await RunGitAsync(home, "config --global --get user.name", TimeSpan.FromSeconds(10));
+            var email = await RunGitAsync(home, "config --global --get user.email", TimeSpan.FromSeconds(10));
+            var n = name.Success ? name.Value?.Trim() : null;
+            var e = email.Success ? email.Value?.Trim() : null;
+            _gitConfigIdentity = string.IsNullOrEmpty(n) || string.IsNullOrEmpty(e)
+                ? new RunnerCommitIdentity(NullIfBlank(n), NullIfBlank(e), RunnerCommitIdentity.None)
+                : new RunnerCommitIdentity(n, e, RunnerCommitIdentity.GitConfig);
+            _gitConfigIdentityAt = DateTimeOffset.UtcNow;
+        }
+        return _gitConfigIdentity;
+
+        static string? NullIfBlank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
     }
 
     /// <summary>Every git command in this class: the engine, with the runner's two-minute

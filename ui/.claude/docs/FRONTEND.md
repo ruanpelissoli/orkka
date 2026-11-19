@@ -25,9 +25,10 @@ apps/local/
 │           ├── layout.tsx              # Client: loads workspaces + org.me → permissions, preferences, SignalR
 │           ├── board/page.tsx          # The workspace board: every project's tasks, ?project= narrows
 │           ├── dashboard/page.tsx      # Last project, or the first-run "Create a project" state
-│           ├── projects/new/page.tsx   # Create a project from a base folder (discovery preview)
+│           ├── projects/new/page.tsx   # Create a project from a base folder (discovery preview) → its setup
 │           ├── p/[projectId]/          # Overview, board, tasks, repos, team, memory, skills,
-│           │                           # automation, roadmap, documents, design, architect, settings
+│           │                           # automation, roadmap, documents, design, architect, settings,
+│           │                           # setup (the guided setup, components/project-setup/, lib/project-setup.ts)
 │           ├── inbox/ notifications/
 │           └── settings/               # workspace, machine, trackers, usage (tokens + list-price estimate), api-keys ("MCP keys"),
 │                                       # preferences, notifications

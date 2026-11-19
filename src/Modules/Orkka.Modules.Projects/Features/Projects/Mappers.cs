@@ -67,8 +67,28 @@ internal static class Mappers
             entity.UpdatedAt,
             taskCount,
             entity.BaseFolder,
-            ShapeName(entity.BaseFolderShape));
+            ShapeName(entity.BaseFolderShape),
+            entity.SetupCompletedAt,
+            ParseSetupSteps(entity.SetupStepsJson));
     }
+
+    /// <summary>The confirmed setup steps, in setup order; unknown or unreadable entries dropped.</summary>
+    public static string[] ParseSetupSteps(string? json)
+    {
+        try
+        {
+            var parsed = string.IsNullOrWhiteSpace(json) ? null : JsonSerializer.Deserialize<string[]>(json, JsonOptions);
+            var set = (parsed ?? []).ToHashSet(StringComparer.Ordinal);
+            return [.. ProjectSetupSteps.Confirmable.Where(set.Contains)];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
+
+    public static string SerializeSetupSteps(IEnumerable<string> steps)
+        => JsonSerializer.Serialize(ProjectSetupSteps.Confirmable.Where(steps.Contains).ToArray(), JsonOptions);
 
     public static string? ShapeName(BaseFolderShape? shape) => shape switch
     {
