@@ -10,7 +10,7 @@ Fixture: project `e2e-plans-<stamp>` with fixture-web linked, runner online with
 ```yaml
 priority: P0
 surface: [ui, api, hub]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/projects/{projectId}/tasks
   - orkka-api:POST /api/tasks/{id}/submit
@@ -54,7 +54,7 @@ refs:
 ```yaml
 priority: P0
 surface: [ui, api, hub]
-automation: automated
+automation: planned
 refs:
   - orkka-ui:/p/[projectId]/tasks/[taskId]
   - orkka-api:POST /api/tasks/{taskId}/plans/{planId}/review

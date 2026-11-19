@@ -8,7 +8,7 @@ modes-default: [hybrid-repo]
 ```yaml
 priority: P0
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/projects/{projectId}/repos
   - orkka-api:GET /api/projects/{projectId}/repos
@@ -21,12 +21,13 @@ since: 2026-10-26
 **Expected**:
 - Each → 201; `provider` = `github`, `azuredevops`, `gitlab`, `bitbucket`, `other` respectively.
 - No credential is requested or stored.
+**Notes**: forge detection is covered at unit level by `tests/Orkka.Tests/Utilities/RepoUrlTests.cs` (DetectForge_ReadsTheHost).
 
 ## RURL-002 Add ssh and scp-style remotes, including an ssh host alias
 ```yaml
 priority: P0
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/projects/{projectId}/repos
 since: 2026-10-26
@@ -37,12 +38,13 @@ since: 2026-10-26
 **Expected**:
 - All three → 201 as remotes (never classified as folders).
 - `github` for the first two; the alias `github-work` → `other` unless `provider:"github"` is passed (RURL-004).
+**Notes**: covered at unit level by `tests/Orkka.Tests/Utilities/RepoUrlTests.cs` (Remotes_ClassifyAsRemote, ParseRef_HonoursAForgeOverrideForAnSshAlias) and `tests/Orkka.Tests/Features/ProjectRepos/ProjectRepoValidatorsTests.cs` (TheDevelopersOwnRemotes_Pass).
 
 ## RURL-003 Refuse a folder path in the URL field
 ```yaml
 priority: P1
 surface: [api, ui]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/projects/{projectId}/repos
   - i18n:addRepoByUrl
@@ -55,12 +57,13 @@ since: 2026-10-26
 **Expected**:
 - Both API calls → 400 "Enter the repository's clone URL — https (https://github.com/acme/api.git) or ssh (git@github.com:acme/api.git)."
 - The form shows "That is a folder path, not a remote. Use “Add local repository” to link a folder on your machine." and "Add repository" stays disabled.
+**Notes**: the API refusal is covered at unit level by `tests/Orkka.Tests/Features/ProjectRepos/ProjectRepoValidatorsTests.cs` (FoldersAndCredentials_Fail) and `tests/Orkka.Tests/Utilities/RepoUrlTests.cs` (Folders_ClassifyAsLocal).
 
 ## RURL-004 Override the forge and name a CLI account
 ```yaml
 priority: P1
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/projects/{projectId}/repos
   - orkka-api:PATCH /api/projects/{projectId}/repos/{repoId}
@@ -78,7 +81,7 @@ since: 2026-10-26
 ```yaml
 priority: P0
 surface: [api, ui]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/projects/{projectId}/repos
   - i18n:addRepoByUrl
@@ -92,6 +95,7 @@ since: 2026-10-26
 **Expected**:
 - Steps 1–2: 400 "Remove the credentials from the URL — your runner uses your own git sign-in."; nothing stored; the UI shows "This URL contains a password or token. Remove it — your runner uses your own git credentials."
 - Step 3: 201 — a user name alone is not a secret.
+**Notes**: covered at unit level by `tests/Orkka.Tests/Features/ProjectRepos/ProjectRepoValidatorsTests.cs` (FoldersAndCredentials_Fail) and `tests/Orkka.Tests/Utilities/RepoUrlTests.cs` (HasEmbeddedCredential_FindsSecretsNotUserNames).
 
 ## RURL-006 Validate name, URL length and default branch
 ```yaml
@@ -132,7 +136,7 @@ since: 2026-10-26
 ```yaml
 priority: P0
 surface: [api, ui]
-automation: automated
+automation: planned
 refs:
   - orkka-api:GET /api/projects/{projectId}/repos/access-check
   - i18n:repoAccessCheck
@@ -148,7 +152,7 @@ since: 2026-10-26
 ```yaml
 priority: P0
 surface: [api, ui]
-automation: automated
+automation: planned
 refs:
   - orkka-api:GET /api/projects/{projectId}/repos/access-check
   - i18n:repoAccessCheck

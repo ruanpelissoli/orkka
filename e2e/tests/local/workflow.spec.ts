@@ -124,7 +124,7 @@ test.describe("the developer's workflow on the local stack @workflow", () => {
     expect(started.setupCompletedAt).toBeTruthy();
   });
 
-  test("4. a standalone ticket: Discuss, plan, build, review, publish; Jira follows", caseIds("LWF-005"), async ({ api }) => {
+  test("4. a standalone ticket: Discuss, plan, build, review, publish; Jira follows", caseIds("LWF-005", "FRG-001", "TING-006", "TWB-001", "TWB-002"), async ({ api }) => {
     test.skip(!AGENTS, "real agent runs — set E2E_WORKFLOW_AGENTS=1");
     fake.jira.addIssue({ key: "SHOP-11", summary: "Add an add(a, b) function to the api service math module", descriptionHtml: "<p>In the <b>api</b> service add <code>export function add(a, b)</code> to <code>src/math.js</code> next to <code>sub</code>, with a unit test. Nothing else.</p>" });
     let task = await waitForTicketTask(api, pid(), "SHOP-11");
@@ -146,7 +146,16 @@ test.describe("the developer's workflow on the local stack @workflow", () => {
     const pr = gh.state().prs.find((p) => p.head === task.branchName);
     expect(pr, "PR created through the stub gh").toBeTruthy();
     expect(task.publishedPrUrl).toBe(pr!.url);
+    // FRG-001: one `gh pr create` for the task branch against the repo's default branch.
+    const creates = gh.callsOf("pr", "create").filter((c) => c.argv.includes(task.branchName!));
+    expect(creates, "exactly one gh pr create for the task branch").toHaveLength(1);
+    expect(creates[0].argv[creates[0].argv.indexOf("--base") + 1]).toBe("main");
+    // TWB-001/002: Planning → In Progress, PR opened → Code Review, each acknowledged on the thread.
     await expect.poll(() => fake.jira.transitions.filter((t) => t.key === "SHOP-11").map((t) => t.to), { timeout: 6 * 60_000, intervals: [10_000] }).toEqual(["In Progress", "Code Review"]);
+    await expect
+      .poll(async () => (await messagesText(api, task.id)).filter((m) => /^Moved SHOP-11 to “.+” in Jira\.$/.test(m.content)).map((m) => m.content), { timeout: 2 * 60_000, intervals: [5_000] })
+      .toEqual(["Moved SHOP-11 to “In Progress” in Jira.", "Moved SHOP-11 to “Code Review” in Jira."]);
+    // TING-006: the Jira comment joins the thread as an ExternalComment.
     const thread = await messagesText(api, task.id);
     expect(thread.some((m) => m.messageType === "ExternalComment" && m.content.includes("keep the function pure"))).toBe(true);
     expect(thread.filter((m) => /was updated in Jira/.test(m.content)), "a status move is not an edit").toEqual([]);

@@ -57,7 +57,10 @@ Every run of the harness appends one row. Reports live next to this file.
 | 2026-11-18 13:23 | run-from-source (R5) | http://127.0.0.1:6792 | all suites green on the final build; 5 product + 4 harness fixes | Story ×2 + 1 stopped retry (Haiku, ≈$1.85) | [20261118-1323-run-from-source](20261118-1323-run-from-source/report.md) | one-process orkka.dll sandbox; loose ends a–f |
 | 2026-11-18 16:23 | offline | offline | 22/27 passed, 5 skipped | — | [20261118-1623-offline](20261118-1623-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |
 | 2026-11-18 16:24 | offline | offline | 27/27 passed | — | [20261118-1624-offline](20261118-1624-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |
-| 2026-11-18 17:10 | offline | offline | 22/27 passed, 5 skipped | — | [20261118-1710-offline](20261118-1710-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. || 2026-11-19 14:52 | smoke | http://127.0.0.1:6760 | 13/14 passed, 1 failed | — | [20261119-1452-smoke](20261119-1452-smoke/report.md) |  |
+| 2026-11-18 17:10 | offline | offline | 22/27 passed, 5 skipped | — | [20261118-1710-offline](20261118-1710-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |
+| 2026-11-19 14:52 | smoke | http://127.0.0.1:6760 | 13/14 passed, 1 failed | — | [20261119-1452-smoke](20261119-1452-smoke/report.md) |  |
 | 2026-11-19 14:52 | api | http://127.0.0.1:6760 | 19/20 passed, 1 skipped | — | [20261119-1452-api](20261119-1452-api/report.md) |  |
 | 2026-11-19 14:52 | workflow | http://127.0.0.1:6760 | 4/7 passed, 3 skipped | — | [20261119-1452-workflow](20261119-1452-workflow/report.md) |  |
 | 2026-11-19 14:54 | ui-inventory | http://127.0.0.1:6760 | 40/40 passed | — | [20261119-1454-ui-inventory](20261119-1454-ui-inventory/report.md) |  |
+| 2026-11-19 14:55 | offline | offline | 28/36 passed, 8 skipped | — | [20261119-1455-offline](20261119-1455-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |
+| 2026-11-19 14:56 | offline | offline | 28/36 passed, 8 skipped | — | [20261119-1456-offline](20261119-1456-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |

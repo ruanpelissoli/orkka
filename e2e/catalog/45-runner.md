@@ -8,7 +8,7 @@ modes-default: [hybrid-repo]
 ```yaml
 priority: P1
 surface: [ui, api]
-automation: automated
+automation: planned
 refs:
   - orkka-ui:/settings/machine
   - orkka-api:GET /api/me/runner
@@ -412,7 +412,7 @@ since: 2026-09-15
 ```yaml
 priority: P0
 surface: [api, cli]
-automation: automated
+automation: planned
 refs:
   - orkka-api:PATCH /api/projects/{projectId}/repos/{repoId}
   - orkka-api:GET /api/tasks/{taskId}/messages
@@ -429,13 +429,13 @@ since: 2026-11-17
 - The task still reaches Done — the phase carries on as if the check could not run.
 - The thread has a system note "<machine> did not run this check command because it is not in the repository's orkka.json on its default branch and has not been approved on that machine: `npm run lint`. To allow it, run `./orkka commands approve <id>` there — or commit it to orkka.json. The checks did not run for this pass."
 - `./orkka commands` lists `<id>` under "Waiting for your approval:" with `$ npm run lint`, the repository and the workspace.
-**Notes**: same for setup (HYB-041), build (merge build) and run-target start/install/stop commands; a refused run target also keeps dependent targets from starting.
+**Notes**: same for setup (HYB-041), build (merge build) and run-target start/install/stop commands; a refused run target also keeps dependent targets from starting. Covered at unit level by `tests/Orkka.Tests/Services/CommandTrustTests.cs` (AnUndeclaredCommand_IsRefused_AndWaitsForTheDeveloper, OrkkaJsonOnATaskBranch_DoesNotVouch); the `./orkka commands` listing by RUN-034.
 
 ## RUN-031 Approve a refused command on the machine; the next run of that repo runs it
 ```yaml
 priority: P0
 surface: [api, cli]
-automation: automated
+automation: planned
 refs:
   - orkka-api:GET /api/tasks/{taskId}/messages
   - cli:commands
@@ -450,13 +450,13 @@ since: 2026-11-17
 - Step 1: exit 0, "Approved <id>. Orkka will run it the next time it is needed."
 - Step 2: `<id>` is under "Approved on this machine:" and no longer pending.
 - Step 3: the check runs; the task's thread has no command-approval note.
-**Notes**: an approval covers exactly one (repository, command) pair on this machine — changing the command by one character asks again. Approval happens only at the machine's terminal; no API can approve. Cleanup revokes the approval.
+**Notes**: an approval covers exactly one (repository, command) pair on this machine — changing the command by one character asks again. Approval happens only at the machine's terminal; no API can approve. Cleanup revokes the approval. Covered at unit level by `tests/Orkka.Tests/Services/CommandTrustTests.cs` (ACommandApprovedAtTheTerminal_RunsFromThenOn, AnApprovalIsForOneRepository, Revoking_RequiresApprovalAgain).
 
 ## RUN-032 A command declared in orkka.json on the default branch runs without approval
 ```yaml
 priority: P0
 surface: [api, cli]
-automation: automated
+automation: planned
 refs:
   - orkka-api:GET /api/tasks/{taskId}/messages
   - orkka-api:src/Orkka.LocalRunner/Commands/CommandTrust.cs
@@ -469,7 +469,7 @@ since: 2026-11-17
 2. `GET /api/tasks/{id}/messages`.
 **Expected**:
 - The setup and check ran (the worktree has `node_modules`; check output appears only on failure); the thread has no "./orkka commands approve" note; nothing new is pending in `./orkka commands`.
-**Notes**: comparison is per line with outer whitespace trimmed and CRLF folded, so the same command typed in the repo settings also matches.
+**Notes**: comparison is per line with outer whitespace trimmed and CRLF folded, so the same command typed in the repo settings also matches. Covered at unit level by `tests/Orkka.Tests/Services/CommandTrustTests.cs` (ACommandDeclaredOnTheDefaultBranch_Runs).
 
 ## RUN-033 orkka.json on a task branch never vouches for a command
 ```yaml
@@ -516,7 +516,7 @@ since: 2026-11-17
 ```yaml
 priority: P1
 surface: [api, hub]
-automation: automated
+automation: planned
 refs:
   - orkka-api:GET /api/me/runner
   - orkka-api:src/Orkka.LocalRunner.Contracts/RunnerProtocol.cs
@@ -535,7 +535,7 @@ since: 2026-11-17
 ```yaml
 priority: P1
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/me/runner-tokens
   - orkka-api:GET /api/me/runner-tokens
@@ -550,6 +550,7 @@ since: 2026-11-17
 **Expected**:
 - Step 1: 200 `{id, name, token:"orkr_…", expiresAt}` with `expiresAt` ≈ now + 90 days.
 - Step 2: the row has the same `expiresAt`, `revoked:false` and never the raw token.
+**Notes**: expiry and renewal are covered at unit level by `tests/Orkka.Tests/Features/Runners/RunnerTokenLifetimeTests.cs`; the API shape has no spec yet.
 
 ## RUN-037 Show each token's expiry and an Expired badge on the Machine page
 ```yaml
@@ -615,7 +616,7 @@ since: 2026-11-17
 ```yaml
 priority: P0
 surface: [cli]
-automation: automated
+automation: planned
 refs:
   - cli:connect
   - orkka-api:src/Orkka.LocalRunner/Cli/WorkspaceProfiles.cs
@@ -630,7 +631,7 @@ since: 2026-11-17
 - Step 1: host and identity only — no `orkr_` value.
 - Step 2: the token is there.
 - Step 3: the legacy plaintext token is moved to the secret store and removed from profile.env; no backup copy is left.
-**Notes**: the harness's sandbox (a non-default `ORKKA_HOME`, plus `ORKKA_SECRET_STORE=file`) always uses the file store `<ORKKA_HOME>/workspaces/<ws>/secrets/runner-token` — the automated check reads that and profile.env; steps 2–3 on a real home are manual.
+**Notes**: the harness's sandbox (a non-default `ORKKA_HOME`, plus `ORKKA_SECRET_STORE=file`) always uses the file store `<ORKKA_HOME>/workspaces/<ws>/secrets/runner-token` — a spec can read that and profile.env (none does yet); steps 2–3 on a real home are manual. Covered at unit level by `tests/Orkka.Tests/Services/RunnerWorkspaceTests.cs` (Migration_MovesTheSingleConnection_IntoTheDefaultWorkspace_Once: the token is not in profile.env and no plaintext backup is left; Profiles_RoundTrip_ListDefaultFirst_AndNeverPrintTheirToken).
 
 ## RUN-043 doctor reports what the old installer left behind, and changes nothing
 ```yaml

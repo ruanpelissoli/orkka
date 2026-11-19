@@ -8,7 +8,7 @@ modes-default: [tracker]
 ```yaml
 priority: P0
 surface: [api, hub]
-automation: automated
+automation: planned
 refs:
   - orkka-api:GET /api/projects/{projectId}/tasks
   - orkka-api:GET /api/tasks/{taskId}

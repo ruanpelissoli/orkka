@@ -4,7 +4,7 @@ title: Tracker status write-back — Started, PR opened, Merged
 modes-default: [tracker]
 ---
 
-## TWB-001 Started is written when the task starts developing
+## TWB-001 Planning (formerly Started) is written when the task starts planning
 ```yaml
 priority: P0
 surface: [api]
@@ -13,7 +13,7 @@ refs:
   - orkka-api:GET /api/tasks/{taskId}/messages
 since: 2026-10-26
 ```
-**Preconditions**: TING-001 task; status map Started → "In Progress"; fake Jira workflow To Do → In Progress (transition id 21).
+**Preconditions**: TING-001 task (the workflow spec uses LWF-005's SHOP-11); status map Planning → "In Progress" (an old `started` key reads as Planning); fake Jira workflow To Do → In Progress (transition id 21).
 **Steps**:
 1. Let the task reach Planning/Developing; wait ≤ 2 sync intervals.
 **Expected**:
@@ -35,12 +35,13 @@ since: 2026-10-26
 1. Wait ≤ 2 sync intervals after publishing.
 **Expected**:
 - SHOP-101 is In Review in the fake tracker; "Moved SHOP-101 to “In Review” in Jira."
+**Notes**: automated by the workflow spec's step 4 (LWF-005), which maps PR opened → "Code Review".
 
 ## TWB-003 Merged is written when the forge PR is merged per the developer's CLI
 ```yaml
 priority: P0
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:GET /api/tasks/{taskId}/messages
 since: 2026-10-26
