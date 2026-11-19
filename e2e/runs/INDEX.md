@@ -58,3 +58,5 @@ Every run of the harness appends one row. Reports live next to this file.
 | 2026-11-18 16:23 | offline | offline | 22/27 passed, 5 skipped | — | [20261118-1623-offline](20261118-1623-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |
 | 2026-11-18 16:24 | offline | offline | 27/27 passed | — | [20261118-1624-offline](20261118-1624-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |
 | 2026-11-18 17:10 | offline | offline | 22/27 passed, 5 skipped | — | [20261118-1710-offline](20261118-1710-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |
+| 2026-11-19 14:55 | offline | offline | 28/36 passed, 8 skipped | — | [20261119-1455-offline](20261119-1455-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |
+| 2026-11-19 14:56 | offline | offline | 28/36 passed, 8 skipped | — | [20261119-1456-offline](20261119-1456-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |

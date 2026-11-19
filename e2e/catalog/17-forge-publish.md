@@ -30,7 +30,7 @@ since: 2026-10-26
 ```yaml
 priority: P0
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/tasks/{taskId}/pull-request/merge
 since: 2026-10-26
@@ -45,7 +45,7 @@ since: 2026-10-26
 ```yaml
 priority: P1
 surface: [api, ui]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/tasks/{taskId}/pull-request/merge
   - orkka-api:GET /api/tasks/{taskId}/messages
@@ -207,7 +207,7 @@ since: 2026-10-26
 priority: P1
 modes: [hybrid-folder]
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/tasks/{taskId}/pull-request/merge
 since: 2026-10-26

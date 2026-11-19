@@ -10,7 +10,7 @@ Staging note used by every case below: "stage a task in lane L" means `POST /api
 ```yaml
 priority: P0
 surface: [ui, api]
-automation: automated
+automation: planned
 refs:
   - orkka-ui:/p/[projectId]/board
   - orkka-api:GET /api/projects/{projectId}/board

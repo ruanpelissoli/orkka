@@ -149,7 +149,7 @@ since: 2026-10-26
 ```yaml
 priority: P0
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/trackers/connections/{connectionId}/query
 since: 2026-10-26

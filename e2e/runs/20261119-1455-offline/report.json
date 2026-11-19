@@ -1,0 +1,488 @@
+{
+  "runId": "20261119-1455-offline",
+  "suite": "offline",
+  "target": "offline",
+  "startedAt": "2026-11-19T17:55:56.619Z",
+  "finishedAt": "2026-11-19T17:56:09.358Z",
+  "durationMs": 12739,
+  "operator": "claude",
+  "gitSha": "uncommitted",
+  "env": {
+    "node": "v24.18.0",
+    "playwright": "1.63.0"
+  },
+  "totals": {
+    "passed": 28,
+    "failed": 0,
+    "skipped": 8,
+    "timedOut": 0,
+    "interrupted": 0
+  },
+  "cases": [
+    {
+      "caseIds": [],
+      "testTitle": "seeded from the web fixture; the alias URL clones, a branch pushes, a merge lands on main",
+      "file": "tests/offline/bare-remote.spec.ts",
+      "status": "passed",
+      "durationMs": 3314,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:55:59.139Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "custom files and default branch; a teammate's commit moves the head",
+      "file": "tests/offline/bare-remote.spec.ts",
+      "status": "passed",
+      "durationMs": 1702,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:02.494Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "auth and scopes: viewer for the Bearer token with X-OAuth-Scopes; anything else 401",
+      "file": "tests/offline/fake-github.spec.ts",
+      "status": "passed",
+      "durationMs": 58,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.225Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "owners, an owner's open and closed projects, a project's single-select fields",
+      "file": "tests/offline/fake-github.spec.ts",
+      "status": "passed",
+      "durationMs": 52,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.291Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "items: paged, every type with its status; drafts and pull requests have no Issue content",
+      "file": "tests/offline/fake-github.spec.ts",
+      "status": "passed",
+      "durationMs": 14,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.357Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "issues by key: aliased batch; unknown repository or number → null + NOT_FOUND; status on the project",
+      "file": "tests/offline/fake-github.spec.ts",
+      "status": "passed",
+      "durationMs": 21,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.381Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "comments newest last; write-back looks the item up, adds a missing one, sets the Status option",
+      "file": "tests/offline/fake-github.spec.ts",
+      "status": "passed",
+      "durationMs": 60,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.414Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "error knobs: SAML SSO FORBIDDEN, a secondary rate limit with Retry-After, an outage",
+      "file": "tests/offline/fake-github.spec.ts",
+      "status": "passed",
+      "durationMs": 23,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.485Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "auth: /myself answers for email+token and 401s anything else",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 9,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.542Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "scopes, statuses and the Acceptance Criteria field lookup",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 29,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.559Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "epic search: by title prefix, by key, by bare number, unknown key → 400",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 22,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.598Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "polling query: assigned to me, under the epics, not done, extra clause; rendered fields; paging",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 37,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.630Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "intake v2: key in (…) tracking, a missing key fails the query like Jira; subtasks, assignee, components",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 24,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.676Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "comments newest-first with rendered bodies; attachments via a 303 to the media host",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 35,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.710Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "write-back: status read, transitions list, POST transition 204, invalid id 400",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 55,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.754Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "boards: a project's boards, a board's filter, its JQL (ORDER BY stripped) AND-ed onto intake; a gone board 404s",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 102,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.819Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "failure injection and an outage",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 21,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.930Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "auth: connectionData for the PAT; a wrong PAT gets 203 + HTML like the real service",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 6,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.962Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "projects, work item types with state categories, type categories",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 22,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:04.977Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "two-step polling WIQL: hierarchy (MustContain / Recursive), then the flat filter; batch with relations",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 106,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:05.007Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "comments (desc, deleted skipped by the runner), attachments, System.State write-back",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 70,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:05.121Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "boards: the project's teams; a team's area paths become the intake WIQL condition; a gone team 404s",
+      "file": "tests/offline/fake-tracker.spec.ts",
+      "status": "passed",
+      "durationMs": 83,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:05.201Z"
+    },
+    {
+      "caseIds": [
+        "RUN-034"
+      ],
+      "testTitle": "list, approve (asked, then --yes) and revoke a refused repository command",
+      "file": "tests/offline/runner-commands-cli.spec.ts",
+      "status": "skipped",
+      "durationMs": 1,
+      "projects": [],
+      "skipReason": "no ./orkka with the commands verb (no build at C:\\Projects\\orkka\\orkka\\.claude\\worktrees\\agent-afec80a2d5b872fc0\\src\\Orkka\\bin\\Release\\net10.0\\orkka.dll)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:05.320Z"
+    },
+    {
+      "caseIds": [
+        "TCLI-007",
+        "TCLI-008",
+        "TCLI-011"
+      ],
+      "testTitle": "tracker test/list: the runner signs in to the fake Jira and ADO with the seeded tokens; tokens never printed",
+      "file": "tests/offline/runner-tracker-cli.spec.ts",
+      "status": "skipped",
+      "durationMs": 2,
+      "projects": [],
+      "skipReason": "no ./orkka with tracker support (no build at C:\\Projects\\orkka\\orkka\\.claude\\worktrees\\agent-afec80a2d5b872fc0\\src\\Orkka\\bin\\Release\\net10.0\\orkka.dll)",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:05.383Z"
+    },
+    {
+      "caseIds": [
+        "TCLI-008"
+      ],
+      "testTitle": "a revoked token: tracker test reports failing with Jira's advice and exits 1",
+      "file": "tests/offline/runner-tracker-cli.spec.ts",
+      "status": "skipped",
+      "durationMs": 1,
+      "projects": [],
+      "skipReason": "no ./orkka with tracker support",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:05.401Z"
+    },
+    {
+      "caseIds": [
+        "TCLI-001"
+      ],
+      "testTitle": "tracker add reaches a loopback site only with the runner's test opt-ins",
+      "file": "tests/offline/runner-tracker-cli.spec.ts",
+      "status": "skipped",
+      "durationMs": 1,
+      "projects": [],
+      "skipReason": "no ./orkka with tracker support",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:05.409Z"
+    },
+    {
+      "caseIds": [
+        "TCLI-014"
+      ],
+      "testTitle": "tracker add github --token: the token is tested against the fake GitHub and stored; never printed",
+      "file": "tests/offline/runner-tracker-cli.spec.ts",
+      "status": "skipped",
+      "durationMs": 1,
+      "projects": [],
+      "skipReason": "no ./orkka with tracker support",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:05.417Z"
+    },
+    {
+      "caseIds": [
+        "TCLI-015"
+      ],
+      "testTitle": "tracker add github without --token uses the gh login: nothing stored; a missing project scope says what to run",
+      "file": "tests/offline/runner-tracker-cli.spec.ts",
+      "status": "skipped",
+      "durationMs": 306,
+      "projects": [],
+      "skipReason": "no ./orkka with tracker support",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:05.426Z"
+    },
+    {
+      "caseIds": [
+        "TCLI-014"
+      ],
+      "testTitle": "tracker add github refuses a GitHub Enterprise Server host",
+      "file": "tests/offline/runner-tracker-cli.spec.ts",
+      "status": "skipped",
+      "durationMs": 1,
+      "projects": [],
+      "skipReason": "no ./orkka with tracker support",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:05.739Z"
+    },
+    {
+      "caseIds": [
+        "TCLI-009"
+      ],
+      "testTitle": "tracker remove deletes the entry and its token",
+      "file": "tests/offline/runner-tracker-cli.spec.ts",
+      "status": "skipped",
+      "durationMs": 2,
+      "projects": [],
+      "skipReason": "no ./orkka with tracker support",
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:05.751Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "auth status reports the signed-in accounts the way ForgeCli.SignedInAccounts parses them",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 562,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:05.794Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "publish: pr list finds nothing → pr create prints the URL → a retry finds the open PR (idempotent)",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 632,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:06.363Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "state: pr view --json state --jq .state follows OPEN → MERGED (ForgeCli.NormalizeState → merged)",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 683,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:07.002Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "a Story's pull request: create --draft, edit the checklist, ready, ready --undo (ForgeCli draft/ready/edit)",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 900,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:07.693Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "account scoping: auth token --user prints that account's token; GH_TOKEN reaches the call record",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 388,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:08.600Z"
+    },
+    {
+      "caseIds": [],
+      "testTitle": "a configured failure and a signed-out CLI fail like gh does",
+      "file": "tests/offline/stub-gh.spec.ts",
+      "status": "passed",
+      "durationMs": 249,
+      "projects": [],
+      "artifacts": {
+        "screenshots": []
+      },
+      "startedAt": "2026-11-19T17:56:08.995Z"
+    }
+  ],
+  "cleanup": {
+    "createdProjects": [],
+    "leftovers": []
+  },
+  "notes": [
+    "Offline run: only offline specs ran; environment-bound specs were skipped."
+  ]
+}

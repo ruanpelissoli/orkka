@@ -8,7 +8,7 @@ modes-default: [hybrid-repo]
 ```yaml
 priority: P0
 surface: [api, ui]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/projects
   - orkka-api:POST /api/projects/{projectId}/repos
@@ -31,7 +31,7 @@ since: 2026-09-15
 ```yaml
 priority: P1
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:GET /api/projects/{projectId}/repos/access-check
 since: 2026-09-15
@@ -46,7 +46,7 @@ since: 2026-09-15
 ```yaml
 priority: P2
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:GET /api/projects/{projectId}/repos/access-check
 since: 2026-09-15
@@ -157,7 +157,7 @@ since: 2026-09-15
 ```yaml
 priority: P0
 surface: [ui, hub, api]
-automation: automated
+automation: planned
 costUsd: 0
 refs:
   - orkka-ui:/p/[projectId]/board
@@ -178,7 +178,7 @@ since: 2026-09-15
 ```yaml
 priority: P1
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:GET /api/tasks/{taskId}/pull-request
   - orkka-api:GET /api/repos/{repoId}/pulls
@@ -219,7 +219,7 @@ since: 2026-09-15
 ```yaml
 priority: P1
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:GET /api/tasks/{taskId}/pull-request
   - orkka-api:GET /api/projects/{projectId}/repos/{repoId}/files/content
@@ -256,7 +256,7 @@ since: 2026-09-15
 ```yaml
 priority: P0
 surface: [ui, api]
-automation: automated
+automation: planned
 refs:
   - orkka-ui:/p/[projectId]/tasks/[taskId]/review
   - orkka-api:POST /api/tasks/{taskId}/pull-request/reviews
@@ -309,7 +309,7 @@ since: 2026-09-15
 ```yaml
 priority: P0
 surface: [ui, api]
-automation: automated
+automation: planned
 refs:
   - orkka-ui:/p/[projectId]/tasks/[taskId]
   - orkka-api:GET /api/tasks/{taskId}/plans/latest
@@ -364,7 +364,7 @@ since: 2026-09-15
 ```yaml
 priority: P1
 surface: [ui, api]
-automation: automated
+automation: planned
 refs:
   - orkka-ui:/p/[projectId]/tasks/[taskId]/review
   - orkka-api:POST /api/tasks/{taskId}/pull-request/reviews
@@ -524,7 +524,7 @@ since: 2026-09-15
 ```yaml
 priority: P1
 surface: [ui, api]
-automation: automated
+automation: planned
 refs:
   - orkka-ui:/p/[projectId]/tasks/[taskId]
   - orkka-api:GET /api/tasks/{taskId}/code-changes
@@ -583,7 +583,7 @@ since: 2026-09-15
 ```yaml
 priority: P1
 surface: [api, ui, cli]
-automation: automated
+automation: planned
 refs:
   - orkka-api:GET /api/tasks/{taskId}/code-changes
   - orkka-api:GET /api/tasks/{taskId}/code-changes/{snapshotId}
@@ -603,13 +603,13 @@ since: 2026-11-17
 - Step 2: within a few minutes 200 with `diff:""` and `unavailable` = "The diff is read from the developer's machine and Orkka keeps no copy of it. It could not be read right now…"; `GET …/code-changes` still lists the snapshot with the same `fileCount`/`additions`/`deletions`.
 - Step 3: the modal shows "This diff is read from the developer's machine — Orkka keeps no copy of your code — and it can't be read right now (the runner is offline, or the branch is gone). The files and line counts above are still accurate."; the Code View toolbar reads "diff not readable right now — the runner is offline or the branch is gone".
 - Step 4: the diff reads again.
-**Notes**: automated in `tests/hybrid-repo/runner-security.spec.ts` (API steps); the UI step is still manual. A deleted task branch gives the same `unavailable` answer.
+**Notes**: no spec yet (the cloud-era `tests/hybrid-repo/runner-security.spec.ts` was never carried into this harness); the workflow spec's Story step reads a live diff with the runner online only. A deleted task branch gives the same `unavailable` answer.
 
 ## HYB-046 Publish to the forge without a human when autoApproveCodeReview is on
 ```yaml
 priority: P1
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:GET /api/tasks/{taskId}
   - orkka-api:PATCH /api/projects/{id}

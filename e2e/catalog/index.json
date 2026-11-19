@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-19T16:35:10.354Z",
+  "generatedAt": "2026-11-19T17:57:08.399Z",
   "counts": {
     "total": 743,
     "files": 37,
@@ -43,8 +43,8 @@
       "GRD": 8
     },
     "byAutomation": {
-      "planned": 621,
-      "automated": 88,
+      "planned": 669,
+      "automated": 40,
       "manual": 33,
       "blocked": 1
     },
@@ -61,7 +61,7 @@
       "offline": 19,
       "tracker": 87
     },
-    "linkedToSpecs": 36
+    "linkedToSpecs": 40
   },
   "refs": {
     "apiRoutes": [
@@ -891,7 +891,7 @@
         "api",
         "ui"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/projects",
         "orkka-api:POST /api/projects/{projectId}/repos",
@@ -914,7 +914,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:GET /api/projects/{projectId}/repos/access-check"
       ],
@@ -934,7 +934,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:GET /api/projects/{projectId}/repos/access-check"
       ],
@@ -1073,7 +1073,7 @@
         "hub",
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-ui:/p/[projectId]/board",
         "hub:TaskHub.LaneChanged",
@@ -1098,7 +1098,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:GET /api/tasks/{taskId}/pull-request",
         "orkka-api:GET /api/repos/{repoId}/pulls"
@@ -1144,7 +1144,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:GET /api/tasks/{taskId}/pull-request",
         "orkka-api:GET /api/projects/{projectId}/repos/{repoId}/files/content"
@@ -1189,7 +1189,7 @@
         "ui",
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-ui:/p/[projectId]/tasks/[taskId]/review",
         "orkka-api:POST /api/tasks/{taskId}/pull-request/reviews",
@@ -1254,7 +1254,7 @@
         "ui",
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-ui:/p/[projectId]/tasks/[taskId]",
         "orkka-api:GET /api/tasks/{taskId}/plans/latest",
@@ -1325,7 +1325,7 @@
         "ui",
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-ui:/p/[projectId]/tasks/[taskId]/review",
         "orkka-api:POST /api/tasks/{taskId}/pull-request/reviews",
@@ -1519,7 +1519,7 @@
         "ui",
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-ui:/p/[projectId]/tasks/[taskId]",
         "orkka-api:GET /api/tasks/{taskId}/code-changes",
@@ -1590,7 +1590,7 @@
         "ui",
         "cli"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:GET /api/tasks/{taskId}/code-changes",
         "orkka-api:GET /api/tasks/{taskId}/code-changes/{snapshotId}",
@@ -1614,7 +1614,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:GET /api/tasks/{taskId}",
         "orkka-api:PATCH /api/projects/{id}"
@@ -1636,7 +1636,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/runners/fs/browse"
       ],
@@ -1701,7 +1701,7 @@
         "api",
         "ui"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/projects/{projectId}/repos/local",
         "orkka-api:GET /api/projects/{projectId}/repos",
@@ -1725,7 +1725,7 @@
         "api",
         "cli"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/projects/{projectId}/repos/local"
       ],
@@ -1745,7 +1745,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/projects/{projectId}/repos/local"
       ],
@@ -1811,7 +1811,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:GET /api/projects/{projectId}/repos/{repoId}/sync-status"
       ],
@@ -1833,7 +1833,7 @@
         "api",
         "cli"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-ui:/p/[projectId]/repos",
         "orkka-api:GET /api/projects/{projectId}/repos/{repoId}/sync-status",
@@ -1877,7 +1877,7 @@
         "ui",
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/projects/{projectId}/repos/{repoId}/attach-remote",
         "orkka-ui:/p/[projectId]/repos"
@@ -1899,7 +1899,7 @@
         "api",
         "ui"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/projects/{projectId}/repos/{repoId}/attach-remote",
         "i18n:localRepos"
@@ -1942,7 +1942,7 @@
         "cli",
         "ui"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/tasks/{taskId}/pull-request/reviews",
         "orkka-api:GET /api/tasks/{id}",
@@ -2060,7 +2060,7 @@
         "api",
         "cli"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-ui:/p/[projectId]/board",
         "orkka-api:POST /api/projects/{projectId}/tasks",
@@ -2085,7 +2085,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/projects/{projectId}/repos",
         "orkka-api:GET /api/projects/{projectId}/repos"
@@ -2098,7 +2098,7 @@
       "area": "RURL",
       "title": "Add ssh and scp-style remotes, including an ssh host alias",
       "file": "catalog/16-repo-by-url.md",
-      "line": 25,
+      "line": 26,
       "priority": "P0",
       "modes": [
         "hybrid-repo"
@@ -2106,7 +2106,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/projects/{projectId}/repos"
       ],
@@ -2118,7 +2118,7 @@
       "area": "RURL",
       "title": "Refuse a folder path in the URL field",
       "file": "catalog/16-repo-by-url.md",
-      "line": 41,
+      "line": 43,
       "priority": "P1",
       "modes": [
         "hybrid-repo"
@@ -2127,7 +2127,7 @@
         "api",
         "ui"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/projects/{projectId}/repos",
         "i18n:addRepoByUrl"
@@ -2140,7 +2140,7 @@
       "area": "RURL",
       "title": "Override the forge and name a CLI account",
       "file": "catalog/16-repo-by-url.md",
-      "line": 59,
+      "line": 62,
       "priority": "P1",
       "modes": [
         "hybrid-repo"
@@ -2148,7 +2148,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/projects/{projectId}/repos",
         "orkka-api:PATCH /api/projects/{projectId}/repos/{repoId}"
@@ -2161,7 +2161,7 @@
       "area": "RURL",
       "title": "Refuse credentials embedded in an https URL",
       "file": "catalog/16-repo-by-url.md",
-      "line": 77,
+      "line": 80,
       "priority": "P0",
       "modes": [
         "hybrid-repo"
@@ -2170,7 +2170,7 @@
         "api",
         "ui"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/projects/{projectId}/repos",
         "i18n:addRepoByUrl"
@@ -2183,7 +2183,7 @@
       "area": "RURL",
       "title": "Validate name, URL length and default branch",
       "file": "catalog/16-repo-by-url.md",
-      "line": 96,
+      "line": 100,
       "priority": "P2",
       "modes": [
         "hybrid-repo"
@@ -2203,7 +2203,7 @@
       "area": "RURL",
       "title": "Classify the URL live in the Add repository by URL form",
       "file": "catalog/16-repo-by-url.md",
-      "line": 111,
+      "line": 115,
       "priority": "P1",
       "modes": [
         "hybrid-repo"
@@ -2226,7 +2226,7 @@
       "area": "RURL",
       "title": "Check repo access from my runner: readable",
       "file": "catalog/16-repo-by-url.md",
-      "line": 131,
+      "line": 135,
       "priority": "P0",
       "modes": [
         "hybrid-repo"
@@ -2235,7 +2235,7 @@
         "api",
         "ui"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:GET /api/projects/{projectId}/repos/access-check",
         "i18n:repoAccessCheck"
@@ -2248,7 +2248,7 @@
       "area": "RURL",
       "title": "Check repo access from my runner: not signed in / not found",
       "file": "catalog/16-repo-by-url.md",
-      "line": 147,
+      "line": 151,
       "priority": "P0",
       "modes": [
         "hybrid-repo"
@@ -2257,7 +2257,7 @@
         "api",
         "ui"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:GET /api/projects/{projectId}/repos/access-check",
         "i18n:repoAccessCheck"
@@ -2270,7 +2270,7 @@
       "area": "RURL",
       "title": "Check repo access while the runner is offline → supported:false",
       "file": "catalog/16-repo-by-url.md",
-      "line": 163,
+      "line": 167,
       "priority": "P1",
       "modes": [
         "hybrid-repo"
@@ -2292,7 +2292,7 @@
       "area": "RURL",
       "title": "The first task clones the remote on the runner with the developer's git",
       "file": "catalog/16-repo-by-url.md",
-      "line": 179,
+      "line": 183,
       "priority": "P0",
       "modes": [
         "hybrid-repo"
@@ -2313,7 +2313,7 @@
       "area": "RURL",
       "title": "A clone that fails tells the developer to sign git in on that machine",
       "file": "catalog/16-repo-by-url.md",
-      "line": 195,
+      "line": 199,
       "priority": "P1",
       "modes": [
         "hybrid-repo"
@@ -2352,7 +2352,9 @@
       ],
       "costUsd": 0,
       "since": "2026-10-26",
-      "tests": []
+      "tests": [
+        "tests/local/workflow.spec.ts"
+      ]
     },
     {
       "id": "FRG-002",
@@ -2367,7 +2369,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/tasks/{taskId}/pull-request/merge"
       ],
@@ -2388,7 +2390,7 @@
         "api",
         "ui"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/tasks/{taskId}/pull-request/merge",
         "orkka-api:GET /api/tasks/{taskId}/messages"
@@ -2596,7 +2598,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/tasks/{taskId}/pull-request/merge"
       ],
@@ -2818,7 +2820,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/trackers/connections/{connectionId}/query"
       ],
@@ -3576,7 +3578,7 @@
         "ui",
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-ui:/p/[projectId]/board",
         "orkka-api:GET /api/projects/{projectId}/board",
@@ -5789,7 +5791,7 @@
         "api",
         "hub"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/projects/{projectId}/tasks",
         "orkka-api:POST /api/tasks/{id}/submit",
@@ -5835,7 +5837,7 @@
         "api",
         "hub"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-ui:/p/[projectId]/tasks/[taskId]",
         "orkka-api:POST /api/tasks/{taskId}/plans/{planId}/review",
@@ -6262,7 +6264,7 @@
         "ui",
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-ui:/p/[projectId]/tasks/[taskId]/review",
         "orkka-api:POST /api/tasks/{taskId}/pull-request/reviews",
@@ -6287,7 +6289,7 @@
         "api",
         "hub"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-ui:/p/[projectId]/tasks/[taskId]/review",
         "orkka-api:POST /api/tasks/{taskId}/pull-request/reviews",
@@ -7488,7 +7490,7 @@
         "api",
         "hub"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:GET /api/projects/{projectId}/tasks",
         "orkka-api:GET /api/tasks/{taskId}",
@@ -7600,7 +7602,9 @@
         "i18n:externalTicket"
       ],
       "since": "2026-10-26",
-      "tests": []
+      "tests": [
+        "tests/local/workflow.spec.ts"
+      ]
     },
     {
       "id": "TING-007",
@@ -8110,7 +8114,7 @@
     {
       "id": "TWB-001",
       "area": "TWB",
-      "title": "Started is written when the task starts developing",
+      "title": "Planning (formerly Started) is written when the task starts planning",
       "file": "catalog/28-tracker-writeback.md",
       "line": 7,
       "priority": "P0",
@@ -8125,7 +8129,9 @@
         "orkka-api:GET /api/tasks/{taskId}/messages"
       ],
       "since": "2026-10-26",
-      "tests": []
+      "tests": [
+        "tests/local/workflow.spec.ts"
+      ]
     },
     {
       "id": "TWB-002",
@@ -8146,14 +8152,16 @@
         "orkka-api:POST /api/tasks/{taskId}/pull-request/merge"
       ],
       "since": "2026-10-26",
-      "tests": []
+      "tests": [
+        "tests/local/workflow.spec.ts"
+      ]
     },
     {
       "id": "TWB-003",
       "area": "TWB",
       "title": "Merged is written when the forge PR is merged per the developer's CLI",
       "file": "catalog/28-tracker-writeback.md",
-      "line": 39,
+      "line": 40,
       "priority": "P0",
       "modes": [
         "tracker"
@@ -8161,7 +8169,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:GET /api/tasks/{taskId}/messages"
       ],
@@ -8173,7 +8181,7 @@
       "area": "TWB",
       "title": "An unmapped step is skipped, not a reason to stop",
       "file": "catalog/28-tracker-writeback.md",
-      "line": 54,
+      "line": 55,
       "priority": "P1",
       "modes": [
         "tracker"
@@ -8193,7 +8201,7 @@
       "area": "TWB",
       "title": "Moves never go backwards",
       "file": "catalog/28-tracker-writeback.md",
-      "line": 69,
+      "line": 70,
       "priority": "P1",
       "modes": [
         "tracker"
@@ -8213,7 +8221,7 @@
       "area": "TWB",
       "title": "A ticket already in the target status counts as success",
       "file": "catalog/28-tracker-writeback.md",
-      "line": 84,
+      "line": 85,
       "priority": "P2",
       "modes": [
         "tracker"
@@ -8233,7 +8241,7 @@
       "area": "TWB",
       "title": "No transition into the mapped status: failure with the available ones",
       "file": "catalog/28-tracker-writeback.md",
-      "line": 99,
+      "line": 100,
       "priority": "P1",
       "modes": [
         "tracker"
@@ -8253,7 +8261,7 @@
       "area": "TWB",
       "title": "Five failures give up with a card warning and a thread note",
       "file": "catalog/28-tracker-writeback.md",
-      "line": 114,
+      "line": 115,
       "priority": "P0",
       "modes": [
         "tracker"
@@ -8276,7 +8284,7 @@
       "area": "TWB",
       "title": "A move is handed out once per two-minute window",
       "file": "catalog/28-tracker-writeback.md",
-      "line": 132,
+      "line": 133,
       "priority": "P2",
       "modes": [
         "tracker"
@@ -8296,7 +8304,7 @@
       "area": "TWB",
       "title": "Azure DevOps: the state is set with a JSON Patch",
       "file": "catalog/28-tracker-writeback.md",
-      "line": 147,
+      "line": 148,
       "priority": "P1",
       "modes": [
         "tracker"
@@ -8316,7 +8324,7 @@
       "area": "TWB",
       "title": "Merged on a local folder needs no forge check",
       "file": "catalog/28-tracker-writeback.md",
-      "line": 162,
+      "line": 163,
       "priority": "P2",
       "modes": [
         "tracker",
@@ -8337,7 +8345,7 @@
       "area": "TWB",
       "title": "PR state checks only when Merged is mapped, at most every 10 minutes",
       "file": "catalog/28-tracker-writeback.md",
-      "line": 178,
+      "line": 179,
       "priority": "P2",
       "modes": [
         "tracker"
@@ -8357,7 +8365,7 @@
       "area": "TWB",
       "title": "A write-back failure caused by the token is scrubbed",
       "file": "catalog/28-tracker-writeback.md",
-      "line": 193,
+      "line": 194,
       "priority": "P2",
       "modes": [
         "tracker"
@@ -8377,7 +8385,7 @@
       "area": "TWB",
       "title": "GitHub: a move sets the Status option; an issue off the project is added first",
       "file": "catalog/28-tracker-writeback.md",
-      "line": 208,
+      "line": 209,
       "priority": "P0",
       "modes": [
         "tracker"
@@ -8398,7 +8406,7 @@
       "area": "TWB",
       "title": "A GitHub issue's pull request says \"Closes owner/repo#n\"",
       "file": "catalog/28-tracker-writeback.md",
-      "line": 228,
+      "line": 229,
       "priority": "P1",
       "modes": [
         "tracker"
@@ -12721,7 +12729,7 @@
         "ui",
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:GET /api/projects/{projectId}/repos/{repoId}/files/content",
         "i18n:fileViewer"
@@ -13517,7 +13525,7 @@
         "ui",
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-ui:/settings/machine",
         "orkka-api:GET /api/me/runner",
@@ -14018,7 +14026,7 @@
         "api",
         "cli"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:PATCH /api/projects/{projectId}/repos/{repoId}",
         "orkka-api:GET /api/tasks/{taskId}/messages",
@@ -14042,7 +14050,7 @@
         "api",
         "cli"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:GET /api/tasks/{taskId}/messages",
         "cli:commands"
@@ -14064,7 +14072,7 @@
         "api",
         "cli"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:GET /api/tasks/{taskId}/messages",
         "orkka-api:src/Orkka.LocalRunner/Commands/CommandTrust.cs",
@@ -14131,7 +14139,7 @@
         "api",
         "hub"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:GET /api/me/runner",
         "orkka-api:src/Orkka.LocalRunner.Contracts/RunnerProtocol.cs"
@@ -14152,7 +14160,7 @@
       "surface": [
         "api"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "orkka-api:POST /api/me/runner-tokens",
         "orkka-api:GET /api/me/runner-tokens",
@@ -14166,7 +14174,7 @@
       "area": "RUN",
       "title": "Show each token's expiry and an Expired badge on the Machine page",
       "file": "catalog/45-runner.md",
-      "line": 554,
+      "line": 555,
       "priority": "P2",
       "modes": [
         "hybrid-repo"
@@ -14189,7 +14197,7 @@
       "area": "RUN",
       "title": "The hub refuses an expired token at connect and on Hello",
       "file": "catalog/45-runner.md",
-      "line": 572,
+      "line": 573,
       "priority": "P1",
       "modes": [
         "hybrid-repo"
@@ -14213,7 +14221,7 @@
       "area": "RUN",
       "title": "A connected runner renews its own token before it expires",
       "file": "catalog/45-runner.md",
-      "line": 592,
+      "line": 593,
       "priority": "P1",
       "modes": [
         "hybrid-repo"
@@ -14237,7 +14245,7 @@
       "area": "RUN",
       "title": "The runner token lives in the OS secret store, never in profile.env",
       "file": "catalog/45-runner.md",
-      "line": 614,
+      "line": 615,
       "priority": "P0",
       "modes": [
         "hybrid-repo"
@@ -14245,7 +14253,7 @@
       "surface": [
         "cli"
       ],
-      "automation": "automated",
+      "automation": "planned",
       "refs": [
         "cli:connect",
         "orkka-api:src/Orkka.LocalRunner/Cli/WorkspaceProfiles.cs"
@@ -14258,7 +14266,7 @@
       "area": "RUN",
       "title": "doctor reports what the old installer left behind, and changes nothing",
       "file": "catalog/45-runner.md",
-      "line": 635,
+      "line": 636,
       "priority": "P2",
       "modes": [
         "offline"

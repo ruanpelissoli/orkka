@@ -8,7 +8,7 @@ modes-default: [hybrid-folder]
 ```yaml
 priority: P0
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/runners/fs/browse
 since: 2026-09-15
@@ -62,7 +62,7 @@ since: 2026-09-15
 ```yaml
 priority: P0
 surface: [api, ui]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/projects/{projectId}/repos/local
   - orkka-api:GET /api/projects/{projectId}/repos
@@ -83,7 +83,7 @@ since: 2026-09-15
 ```yaml
 priority: P1
 surface: [api, cli]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/projects/{projectId}/repos/local
 since: 2026-09-15
@@ -98,7 +98,7 @@ since: 2026-09-15
 ```yaml
 priority: P2
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/projects/{projectId}/repos/local
 since: 2026-09-15
@@ -156,7 +156,7 @@ since: 2026-09-15
 ```yaml
 priority: P1
 surface: [api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:GET /api/projects/{projectId}/repos/{repoId}/sync-status
 since: 2026-09-15
@@ -173,7 +173,7 @@ since: 2026-09-15
 ```yaml
 priority: P0
 surface: [ui, api, cli]
-automation: automated
+automation: planned
 refs:
   - orkka-ui:/p/[projectId]/repos
   - orkka-api:GET /api/projects/{projectId}/repos/{repoId}/sync-status
@@ -208,7 +208,7 @@ since: 2026-09-15
 ```yaml
 priority: P1
 surface: [ui, api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/projects/{projectId}/repos/{repoId}/attach-remote
   - orkka-ui:/p/[projectId]/repos
@@ -226,15 +226,15 @@ since: 2026-09-15
 ```yaml
 priority: P1
 surface: [api, ui]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/projects/{projectId}/repos/{repoId}/attach-remote
   - i18n:localRepos
 since: 2026-09-15
 ```
-**Preconditions**: `gh repo create acme-dev/e2e-nonempty-<stamp> --private --add-readme`; App has access.
+**Preconditions**: a remote that already has a commit and that the developer's own git can read (locally: a bare remote seeded with a README behind an `https://github.com/e2e-local/*` alias); HYF-004 repo without a remote.
 **Steps**:
-1. `POST …/attach-remote {remoteUrl:"https://github.com/acme-dev/e2e-nonempty-<stamp>"}`.
+1. `POST …/attach-remote {remoteUrl:"https://github.com/e2e-local/e2e-nonempty-<stamp>.git"}`.
 **Expected**:
 - 422 whose message says "already has commits in it. Create the repository on GitHub WITHOUT a README, .gitignore or licence — Orkka pushes your folder's own history, which cannot merge into a repo that already has its own."
 - UI shows the message in the panel error (falls back to "Could not connect the repository to GitHub." only when the body has none); the folder's `origin` is not left pointing at the rejected remote.
@@ -260,7 +260,7 @@ since: 2026-09-15
 ```yaml
 priority: P0
 surface: [api, cli, ui]
-automation: automated
+automation: planned
 refs:
   - orkka-api:POST /api/tasks/{taskId}/pull-request/reviews
   - orkka-api:GET /api/tasks/{id}
@@ -350,7 +350,7 @@ since: 2026-09-15
 ```yaml
 priority: P0
 surface: [ui, api, cli]
-automation: automated
+automation: planned
 costUsd: 0
 refs:
   - orkka-ui:/p/[projectId]/board

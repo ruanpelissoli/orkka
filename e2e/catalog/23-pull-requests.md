@@ -108,7 +108,7 @@ refs:
 ```yaml
 priority: P0
 surface: [ui, api]
-automation: automated
+automation: planned
 refs:
   - orkka-ui:/p/[projectId]/tasks/[taskId]/review
   - orkka-api:POST /api/tasks/{taskId}/pull-request/reviews
@@ -128,7 +128,7 @@ since: 2026-09-15
 ```yaml
 priority: P0
 surface: [ui, api, hub]
-automation: automated
+automation: planned
 refs:
   - orkka-ui:/p/[projectId]/tasks/[taskId]/review
   - orkka-api:POST /api/tasks/{taskId}/pull-request/reviews

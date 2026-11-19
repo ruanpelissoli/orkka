@@ -67,7 +67,7 @@ since: 2026-09-15
 ```yaml
 priority: P1
 surface: [ui, api]
-automation: automated
+automation: planned
 refs:
   - orkka-api:GET /api/projects/{projectId}/repos/{repoId}/files/content
   - i18n:fileViewer
