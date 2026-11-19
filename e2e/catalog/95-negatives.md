@@ -409,7 +409,7 @@ since: 2026-09-15
 3. In the browser open `/p/{slug}/board` and `/p/{slug}/settings`.
 **Expected**:
 - Both GETs answer 200 for the project just created; the board shows its lanes and the settings page renders.
-**Notes**: **Known bug (prod, 2026-09-15)**: `ProjectResolver.ResolveAsync` runs `Ulid.TryParse(idOrSlug)` before the slug lookup and the Ulid library accepts any 26-character string, so a 26-char slug is treated as a (non-existent) id → 404 on every slug-addressed endpoint: empty board, settings page error boundary ("Something went wrong"), task pages "Task not found". 25- and 27-character slugs work. The spec is marked `test.fail` until the resolver validates the parse (e.g. require the canonical ULID alphabet or fall back to the slug lookup when the id is not found).
+**Notes**: Fixed 2026-11-19. Before that, `ProjectResolver.ResolveAsync` ran `Ulid.TryParse` first and the Ulid library accepts any 26-character string, so a 26-character slug was read as a missing id and every slug-addressed endpoint answered 404. The resolver now takes a value as an id only in Orkka's own uppercase Crockford spelling; anything else is looked up as a slug first, then read as an id (a lowercased id, or digits only). The integration test `ProjectEndpointTests.GetProject_BySlugOfIdLength_Resolves` covers 25/26/27 characters.
 
 ## NEG-031 Removed cloud-execution routes answer 404; org settings have no hybrid switch
 ```yaml

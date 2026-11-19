@@ -47,6 +47,29 @@ public sealed class ProjectEndpointTests(OrkkaApiFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    [Theory]
+    // 26 characters: the length of an id. Ulid.TryParse accepts any 26-character string, so
+    // these used to be read as ids and 404 (NEG-030). 25 and 27 are the neighbours.
+    [InlineData("Twenty Six Char Slug Proj1")]
+    [InlineData("Twenty Six Char Slug Proj")]
+    [InlineData("Twenty Six Char Slug Proj12")]
+    public async Task GetProject_BySlugOfIdLength_Resolves(string name)
+    {
+        var createResp = await _client.PostAsJsonAsync("/api/projects", new CreateProjectRequest(name, "slug length"));
+        createResp.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = (await createResp.Content.ReadFromJsonAsync<ProjectResponse>(TestJsonOptions.Default))!;
+
+        var bySlug = await _client.GetAsync($"/api/projects/{created.Slug}");
+        bySlug.StatusCode.Should().Be(HttpStatusCode.OK);
+        var board = await _client.GetAsync($"/api/projects/{created.Slug}/board");
+        board.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // The id still resolves, in Orkka's spelling and lowercased.
+        (await _client.GetAsync($"/api/projects/{created.Id}")).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await _client.GetAsync($"/api/projects/{created.Id.ToString().ToLowerInvariant()}")).StatusCode
+            .Should().Be(HttpStatusCode.OK);
+    }
+
     [Fact]
     public async Task FullLifecycle_CreateGetUpdateListDelete()
     {

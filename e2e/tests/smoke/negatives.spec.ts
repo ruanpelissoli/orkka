@@ -7,9 +7,8 @@ import { stamp, rand } from "../../src/util/fs.js";
 test.describe("cross-cutting negatives @smoke", () => {
   test.skip(Boolean(needsEnvironment()), needsEnvironment() ?? "");
   test("NEG-030 a project whose slug is exactly 26 characters must still resolve by slug (ULID-length regression)", caseIds("NEG-030"), async ({ api, projects }) => {
-    // Known bug (found in prod 2026-09-15): expected to FAIL until ProjectResolver validates the ULID parse.
-    // When this test starts passing, Playwright reports it as "expected to fail but passed" — remove the marker then.
-    test.fail(true, "KNOWN BUG: 26-char slugs are swallowed by Ulid.TryParse in ProjectResolver.ResolveAsync → 404 (see finding annotation)");
+    // Fixed 2026-11-19: ProjectResolver reads a 26-character value as an id only in Orkka's own
+    // uppercase spelling; anything else is looked up as a slug first.
     // Build a name whose slug is exactly 26 chars: "e2e-neg-" (8) + 18 chars.
     const tail = `${stamp()}${rand(5)}`.slice(0, 18); // yyyymmdd-HHmm = 13 + 5 = 18
     const name = `${cfg.projectPrefix}neg-${tail}`;

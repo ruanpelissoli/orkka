@@ -23,11 +23,39 @@ public sealed class ProjectResolver(
     /// answer 404).</summary>
     public async Task<Ulid?> ResolveAsync(string idOrSlug, CancellationToken ct = default)
     {
-        if (Ulid.TryParse(idOrSlug, out var ulid))
+        // Ulid.TryParse accepts ANY 26-character string, so a 26-character slug used to be read as
+        // an id and 404 (NEG-030). Orkka writes ids in canonical uppercase Crockford base32 and
+        // slugs are lowercase letters, digits and dashes, so an uppercase id with a letter in it
+        // can't be a slug. Everything else is looked up as a slug first, then read as an id
+        // (a lowercased id, or a digits-only value) if no project has that slug.
+        if (IsCanonicalId(idOrSlug) && Ulid.TryParse(idOrSlug, out var ulid))
             return ulid;
 
         if (requestCache.TryGetValue(idOrSlug, out var memoized))
             return memoized;
+
+        var resolved = await ResolveSlugAsync(idOrSlug, ct);
+        if (resolved is null && LooksLikeId(idOrSlug) && Ulid.TryParse(idOrSlug, out var id))
+            resolved = id;
+
+        requestCache[idOrSlug] = resolved;
+        return resolved;
+    }
+
+    /// <summary>A 26-character id in Orkka's own spelling: uppercase Crockford base32 with at
+    /// least one letter (an all-digit value could also be a slug).</summary>
+    private static bool IsCanonicalId(string value)
+        => value.Length == 26 && value.Any(char.IsAsciiLetterUpper) && value.All(IsCrockford);
+
+    /// <summary>A 26-character value in the Crockford alphabet, in either case.</summary>
+    private static bool LooksLikeId(string value)
+        => value.Length == 26 && value.All(c => IsCrockford(char.ToUpperInvariant(c)));
+
+    private static bool IsCrockford(char c)
+        => c is >= '0' and <= '9' || (c is >= 'A' and <= 'Z' && c is not ('I' or 'L' or 'O' or 'U'));
+
+    private async Task<Ulid?> ResolveSlugAsync(string idOrSlug, CancellationToken ct)
+    {
 
         var orgId = currentUser.OrgId;
 
@@ -45,7 +73,6 @@ public sealed class ProjectResolver(
                 ct)
             : await LookupAsync(orgId, idOrSlug, ct);
 
-        requestCache[idOrSlug] = id;
         return id;
     }
 
