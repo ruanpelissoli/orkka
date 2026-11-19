@@ -13,6 +13,8 @@ describe("external ticket helpers", () => {
     ["https://acme.atlassian.net/browse/SHOP-12", "jira"],
     ["https://dev.azure.com/acme/Shop/_workitems/edit/4567", "ado"],
     ["https://acme.visualstudio.com/Shop/_workitems/edit/4567", "ado"],
+    ["https://github.com/acme/shop/issues/12", "github"],
+    ["https://acme.ghe.com/acme/shop/issues/12", "github"],
     ["https://tracker.example.com/SHOP-12", null],
     ["not a url", null],
     [null, null],
@@ -32,6 +34,9 @@ describe("external ticket helpers", () => {
   it("reads the tracker from an imported comment's header", () => {
     expect(trackerKindFromComment("**Ana** commented on SHOP-12 in Jira (2026-10-26 10:00 UTC):\n\nhi")).toBe("jira");
     expect(trackerKindFromComment("**Ana** commented on 4567 in Azure DevOps (2026-10-26 10:00 UTC):\n\nhi")).toBe("ado");
+    expect(
+      trackerKindFromComment("**ana** commented on acme/shop#12 in GitHub (2026-11-19 10:00 UTC):\n\nhi")
+    ).toBe("github");
     expect(trackerKindFromComment("plain text")).toBeNull();
   });
 

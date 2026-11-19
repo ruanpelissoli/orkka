@@ -43,7 +43,8 @@ public sealed class RunnerSessionFactory(
     AzureDevOpsClient ado,
     HttpClient attachmentHttp,
     Func<string, string, IWorkspaceSecretStore> secretStores,
-    Commands.CommandTrust commandTrust)
+    Commands.CommandTrust commandTrust,
+    GitHubProjectsClient? github = null)
 {
     public RunnerWorkspace Create(WorkspaceProfile profile)
     {
@@ -66,7 +67,10 @@ public sealed class RunnerSessionFactory(
         var git = new GitWorkspaceManager(configuration, loggers.CreateLogger<GitWorkspaceManager>(), gitProcess, ledger);
         var trackerStore = new TrackerStore(orkkaRoot, profile.Name);
         var secrets = secretStores(orkkaRoot, profile.Name);
-        var trackers = new TrackerService(trackerStore, secrets, jira, ado, loggers.CreateLogger<TrackerService>());
+        // One resolver per workspace: its tokens, or the developer's gh login for a GitHub connection.
+        var credentials = new TrackerCredentialResolver(secrets);
+        var trackers = new TrackerService(trackerStore, secrets, jira, ado, loggers.CreateLogger<TrackerService>(),
+            github: github, credentials: credentials);
         var cache = new TrackerAttachmentCache(TrackerPaths.TicketsDir(orkkaRoot, profile.Name), attachmentHttp,
             loggers.CreateLogger<TrackerAttachmentCache>());
 
@@ -90,9 +94,9 @@ public sealed class RunnerSessionFactory(
             pendingApprovals: () => PendingApprovals(orkkaRoot, profile.Name));
 
         var poller = new TrackerTicketPoller(trackerStore, secrets, trackers.SourceFor, cache,
-            loggers.CreateLogger<TrackerTicketPoller>());
+            loggers.CreateLogger<TrackerTicketPoller>(), credentials: credentials);
         var writeBack = new TrackerWriteBack(trackerStore, secrets, trackers.WriterFor, TrackerWriteBack.ViaForgeCli(forgeCli),
-            loggers.CreateLogger<TrackerWriteBack>());
+            loggers.CreateLogger<TrackerWriteBack>(), credentials);
         var pollerService = new TrackerPollerService(new RunnerTrackerHub(hostLink, instanceId), trackerStore, poller,
             writeBack, cache, loggers.CreateLogger<TrackerPollerService>());
 

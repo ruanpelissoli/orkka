@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <b>Your Jira and Azure DevOps tickets, worked by an AI dev team on your own machine.</b><br>
+  <b>Your Jira, Azure DevOps and GitHub Projects tickets, worked by an AI dev team on your own machine.</b><br>
   You keep your git credentials, your AI subscription and your code. Orkka provides the board, the pipeline and the guardrails.
 </p>
 
@@ -55,7 +55,8 @@ Orkka finds the repositories and reads where each one pushes:
 
 ### 2. Connect your tracker
 
-Add a Jira Cloud or Azure DevOps connection. The token goes straight into your OS secret store and never into Orkka's database.
+Add a Jira Cloud, Azure DevOps or GitHub Projects connection. The token goes straight into your OS secret store and never into Orkka's database.
+For GitHub you can skip the token entirely and use your own `gh` login (github.com, or your GHE.com host for Enterprise Managed Users): Orkka asks `gh` for it at each call and stores nothing.
 Then choose:
 - which statuses to **pick up** from (for example *To Do*);
 - what each step **moves the ticket to** (*In Progress*, *Code Review*, …, or *don't change*).
@@ -64,7 +65,7 @@ Then choose:
 
 Every ticket assigned to you in a pickup status lands on the board.
 Orkka opens on the **workspace board**: every task of the workspace (one per job) across all its projects, with a filter to narrow it to one project.
-A **Story** with sub-tasks becomes one shared branch with one pull request, and its sub-tasks are worked in tracker order.
+A **Story** with sub-tasks (on GitHub: an issue with sub-issues) becomes one shared branch with one pull request, and its sub-tasks are worked in tracker order.
 
 <p align="center"><img src="docs/images/board.png" alt="The board: a two-sub-task Story finished, with time, token and failure-rate stats per lane" width="860"></p>
 
@@ -107,7 +108,7 @@ flowchart LR
         cli["Your AI CLI<br/>claude / codex / copilot"]
         repos[("Your repos<br/>task clones in ~/.orkka/repos")]
     end
-    tracker["Jira / Azure DevOps"]
+    tracker["Jira / Azure DevOps / GitHub Projects"]
     forge["GitHub / Azure Repos / GitLab"]
 
     browser <--> host
@@ -140,7 +141,7 @@ You need:
 | [Node.js 20+](https://nodejs.org/) | builds the web UI. Only at build time; nothing runs on Node |
 | [git](https://git-scm.com/downloads) | your repositories, with your own sign-in |
 | An AI CLI, signed in | Claude Code (`claude` → `/login`), Codex (`codex login`) or Copilot CLI (`copilot` → `/login`) |
-| *Optional:* `gh` / `az` / `glab` | to open pull requests on your forge |
+| *Optional:* `gh` / `az` / `glab` | to open pull requests on your forge; `gh` (with the `project` scope) also lets a GitHub Projects connection use your login instead of a token |
 
 ```sh
 git clone https://github.com/ruanpelissoli/orkka.git
@@ -156,7 +157,7 @@ Later starts rebuild only what changed. Orkka runs in the foreground, and **Ctrl
 | `./orkka start [--port N] [--no-browser]` | Build and run Orkka (default port 6750) |
 | `./orkka open [--print]` | Sign a browser in again with a fresh one-time link; `--print` only prints it |
 | `./orkka status` / `./orkka stop` | Is it healthy? / stop it from another terminal |
-| `./orkka tracker add jira …` / `ado …` | Connect a tracker from the terminal (you can also use Settings → Trackers) |
+| `./orkka tracker add jira …` / `ado …` / `github …` | Connect a tracker from the terminal (you can also use Settings → Trackers) |
 | `./orkka workspace …` | Jobs on this machine, plus per-job git identity and AI sign-in |
 | `./orkka commands …` | Approve the repository commands (setup, check) that agents may run |
 | `./orkka doctor` | Diagnose an AI CLI that shows as "not ready" |
@@ -204,7 +205,7 @@ Everything Orkka keeps is in `~/.orkka` (`%USERPROFILE%\.orkka` on Windows), or 
 Secrets live in your OS secret store (Windows Credential Manager, macOS Keychain, Linux Secret Service) under names starting with `orkka/`:
 - Orkka's own install secret and encryption key;
 - runner tokens;
-- tracker tokens.
+- tracker tokens (a GitHub connection that uses your `gh` login has none: `gh` keeps its own).
 
 </details>
 
@@ -253,7 +254,7 @@ Upgrading from the old `orkka-local` installer? `./orkka doctor` lists what it l
 | `src/` | The .NET backend. `src/Orkka` is the entry point; `src/Orkka.Local` is the host; `src/Orkka.LocalRunner` is the runner |
 | `tests/` | Unit and integration tests (SQLite, no Docker) |
 | `ui/` | The web UI: a Vite + React single-page app built to static files |
-| `e2e/` | End-to-end tests: a sandboxed Orkka, a fake Jira/ADO, a stub `gh`, local git remotes |
+| `e2e/` | End-to-end tests: a sandboxed Orkka, a fake Jira/ADO/GitHub, a stub `gh`, local git remotes |
 | `.claude/` | Project documentation; start with [`.claude/CLAUDE.md`](.claude/CLAUDE.md) |
 
 </details>

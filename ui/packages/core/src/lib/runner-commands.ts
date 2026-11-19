@@ -10,8 +10,8 @@ export function workspaceArg(slug: string): string {
   return /^[A-Za-z0-9._-]+$/.test(slug) ? slug : `"${slug.replace(/"/g, "")}"`;
 }
 
-/** `./orkka tracker add jira|ado …`, scoped to a workspace when one is given. */
-export function trackerAddCommand(kind: "jira" | "ado", workspace?: string | null): string {
+/** `./orkka tracker add jira|ado|github …`, scoped to a workspace when one is given. */
+export function trackerAddCommand(kind: "jira" | "ado" | "github", workspace?: string | null): string {
   const base = TRACKER_ADD_COMMANDS[kind];
   return workspace ? `${base} --workspace ${workspaceArg(workspace)}` : base;
 }

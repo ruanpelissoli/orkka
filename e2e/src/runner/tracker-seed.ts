@@ -17,7 +17,7 @@ import { ensureDir } from "../util/fs.js";
 
 export interface SeededConnection {
   id: string;
-  kind: "jira" | "ado";
+  kind: "jira" | "ado" | "github";
   siteUrl: string;
   email?: string;
   workspace: string;
@@ -38,6 +38,8 @@ interface TrackerEntry {
   kind: string;
   siteUrl: string;
   email?: string;
+  /** GitHub: "gh" = the developer's gh login (no secret file); absent = a stored token. */
+  auth?: string;
   accountId?: string;
   displayName?: string;
   healthy: boolean;
@@ -81,7 +83,7 @@ function deleteSecret(workspace: string, home: string, id: string) {
  * running runner picks it up on its next Hello (≤ 60 s). `healthy` starts false with no
  * `checkedAt`, so the runner tests the token against the fake on that Hello.
  */
-export async function seedTrackerConnection(c: { id: string; kind: "jira" | "ado"; siteUrl: string; email?: string; secret: string; workspace?: string; home?: string }): Promise<SeededConnection> {
+export async function seedTrackerConnection(c: { id: string; kind: "jira" | "ado" | "github"; siteUrl: string; email?: string; secret: string; workspace?: string; home?: string }): Promise<SeededConnection> {
   if (!/^[a-z0-9][a-z0-9-]{0,60}$/.test(c.id)) throw new Error(`tracker id ${c.id} must be a slug`);
   const workspace = c.workspace ?? env.E2E_RUNNER_WORKSPACE;
   const home = c.home ?? env.E2E_RUNNER_HOME;

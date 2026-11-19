@@ -249,20 +249,38 @@
       "runnerUnsupported": "Dein Runner hat nicht geantwortet — er ist offline oder zu alt dafür. Starte ihn mit `./orkka start` (oder aktualisiere ihn mit `git pull` + `./orkka start`) und versuche es erneut.",
       "failed": "Der Tracker hat die Verbindung abgelehnt: {error}",
       "failedGeneric": "Der Tracker hat die Verbindung abgelehnt.",
-      "requestFailed": "Die Verbindung konnte nicht hinzugefügt werden."
+      "requestFailed": "Die Verbindung konnte nicht hinzugefügt werden.",
+      "githubTitle": "GitHub Projects hinzufügen",
+      "hostLabel": "GitHub-Host",
+      "hostPlaceholder": "github.com",
+      "hostHint": "github.com oder dein GHE.com-Host (acme.ghe.com). GitHub Enterprise Server wird nicht unterstützt.",
+      "hostInvalid": "Verwende github.com oder einen GHE.com-Host wie acme.ghe.com.",
+      "authLabel": "Anmelden mit",
+      "authGh": "Meine GitHub-CLI-Anmeldung (empfohlen)",
+      "authGhHint": "Dein Runner fragt bei Bedarf `gh auth token` ab und speichert nichts. Die Anmeldung braucht den Scope project: `gh auth refresh -h {host} -s project`.",
+      "authToken": "Ein Token",
+      "authTokenHint": "Ein klassisches oder ein feingranulares Token, im Secret Store dieses Rechners gespeichert.",
+      "githubTokenLabel": "GitHub-Token",
+      "githubScopes": "Klassisches Token: die Scopes project und repo. Feingranular: Projects (Lesen & Schreiben) und Issues (Lesen & Schreiben) für die Organisation. Bei SAML-Single-Sign-on autorisiere das Token für die Organisation.",
+      "githubTokenLink": "Token auf GitHub erstellen",
+      "ghStays": "Dein Runner prüft jetzt die gh-Anmeldung auf diesem Rechner und liest sie bei jedem Aufruf neu. Orkka speichert für diese Verbindung kein Token."
     },
     "sectionTitle": "Ticket-Tracker",
-    "sectionIntro": "Deine Jira- und Azure-DevOps-Verbindungen. Jede lebt auf dem Rechner, der sie hinzugefügt hat — das Token verlässt diesen Rechner nie, und nur dein Runner spricht mit dem Tracker.",
+    "sectionIntro": "Deine Jira-, Azure-DevOps- und GitHub-Verbindungen. Jede lebt auf dem Rechner, der sie hinzugefügt hat — das Token verlässt diesen Rechner nie, und nur dein Runner spricht mit dem Tracker.",
     "kind": {
       "jira": "Jira",
-      "ado": "Azure DevOps"
+      "ado": "Azure DevOps",
+      "github": "GitHub"
     },
-    "tokenNote": "Der Befehl fragt nach deinem API-Token (Jira) oder Personal Access Token (Azure DevOps) und legt es im Geheimnisspeicher dieses Rechners ab. Das Token bleibt auf deinem Rechner; Orkka sieht es nie.",
+    "tokenNote": "Der Befehl fragt nach deinem API-Token (Jira) oder Personal Access Token (Azure DevOps) und legt es im Geheimnisspeicher dieses Rechners ab; GitHub nutzt deine gh-Anmeldung, außer du übergibst --token. Das Token bleibt auf deinem Rechner; Orkka sieht es nie.",
     "healthy": "Verbunden",
     "unhealthy": "Funktioniert nicht",
     "account": "als {account}",
     "machine": "auf {machine}",
-    "lastSeen": "zuletzt gesehen {when}"
+    "lastSeen": "zuletzt gesehen {when}",
+    "githubCliNote": "Nutzt deine GitHub-CLI-Anmeldung (gh). Mit --host acme.ghe.com für GHE.com, oder --token, um stattdessen ein Token einzufügen.",
+    "authModeGh": "nutzt deine gh-Anmeldung",
+    "authModeToken": "Token"
   },
   "workspaces": {
     "label": "Workspace",
@@ -282,7 +300,7 @@
     "runnerOffline": "Runner offline"
   },
   "ticketSource": {
-    "intro": "Übernimm die Tickets, die dir in Jira oder Azure DevOps zugewiesen sind. Dein Runner fragt den Tracker mit deiner eigenen Verbindung ab.",
+    "intro": "Übernimm die Tickets, die dir in Jira, Azure DevOps oder GitHub Projects zugewiesen sind. Dein Runner fragt den Tracker mit deiner eigenen Verbindung ab.",
     "noConnections": "Du hast noch keine Tracker-Verbindungen. Füge eine unter Einstellungen → Tracker hinzu und komm dann hierher zurück.",
     "addConnectionLink": "Tracker-Verbindung hinzufügen",
     "runnerOffline": "Dein Runner hat nicht geantwortet, daher kann der Tracker nicht durchsucht werden. Starte ihn mit `./orkka start` oder aktualisiere ihn mit `git pull` + `./orkka start`, falls er zu alt ist.",
@@ -349,7 +367,8 @@
       "rule": "Gib jeder Routing-Regel einen Wert und ein Repository.",
       "subpath": "Ein Unterordner ist ein relativer Pfad im Repository, etwa packages/api — kein „..“, keine Laufwerksbuchstaben, kein führender Schrägstrich.",
       "poll": "Zwischen {min} und {max} Sekunden.",
-      "branch": "Muss {key} enthalten — so verknüpft der Tracker den Branch mit seinem Ticket."
+      "branch": "Muss {key} enthalten — so verknüpft der Tracker den Branch mit seinem Ticket.",
+      "project": "Wähle das GitHub-Projekt, in dem die Issues liegen."
     },
     "title": "Ticket-Quelle",
     "readOnly": "Du brauchst die Berechtigung „Projekte verwalten“, um die Ticket-Quelle zu ändern.",
@@ -367,7 +386,8 @@
     "queryFailedGeneric": "Der Tracker hat nicht geantwortet.",
     "scopeLabel": {
       "jira": "Jira-Projekt",
-      "ado": "Azure-DevOps-Projekt"
+      "ado": "Azure-DevOps-Projekt",
+      "github": "Eigentümer (Organisation oder Benutzer)"
     },
     "scopePlaceholder": "Projekt wählen",
     "boardLabel": "Board",
@@ -410,7 +430,19 @@
     "removeConfirm": "Diese Ticket-Quelle entfernen? Bereits übernommene Tickets bleiben auf dem Board.",
     "removed": "Ticket-Quelle entfernt.",
     "removeFailed": "Die Ticket-Quelle konnte nicht entfernt werden.",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "projectLabel": "GitHub-Projekt",
+    "projectHint": "Issues aus diesem Projekt werden übernommen. Entwurfs-Issues und Pull Requests darin werden übersprungen.",
+    "projectPlaceholder": "Projekt auswählen",
+    "projectOption": "#{number} {title}",
+    "statusFieldLabel": "Statusfeld",
+    "statusFieldHint": "Das Einfachauswahlfeld, in dem dein Projekt den Status führt — meist Status.",
+    "statusFieldOption": "{name} ({count, plural, one {# Option} other {# Optionen}})",
+    "repoFilterLabel": "Repositories",
+    "repoFilterAll": "Issues aus allen Repositories des Projekts werden übernommen. Wähle welche aus, um das einzuschränken.",
+    "repoFilterSome": "Nur Issues aus {count, plural, one {diesem Repository} other {diesen # Repositories}} werden übernommen.",
+    "githubIntakeHint": "Jedes dir zugewiesene Issue im Projekt in einem der Status unten. Ein Issue mit dir zugewiesenen Sub-Issues wird als Story bearbeitet.",
+    "routingHintGithub": "Ein Issue geht an das Projekt-Repository mit demselben Remote wie sein eigenes Repository. Sonst werden diese Regeln von oben nach unten geprüft, die erste passende gewinnt; ein Issue ohne Treffer leitet die KI weiter, oder du wirst gefragt."
   },
   "ticketSourceStatus": {
     "checked": "Tickets aus {tracker} · zuletzt geprüft {when} auf {machine}",

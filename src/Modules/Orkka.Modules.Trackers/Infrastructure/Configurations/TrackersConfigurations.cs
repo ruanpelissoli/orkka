@@ -12,6 +12,7 @@ public sealed class TrackerConnectionConfiguration : IEntityTypeConfiguration<Tr
         builder.Property(c => c.UserId).HasMaxLength(128);
         builder.Property(c => c.ConnectionKey).HasMaxLength(100);
         builder.Property(c => c.Kind).HasMaxLength(20);
+        builder.Property(c => c.AuthMode).HasMaxLength(20);
         builder.Property(c => c.SiteUrl).HasMaxLength(512);
         builder.Property(c => c.AccountId).HasMaxLength(256);
         builder.Property(c => c.DisplayName).HasMaxLength(256);
@@ -34,6 +35,8 @@ public sealed class ProjectTrackerConfigConfiguration : IEntityTypeConfiguration
         builder.Property(c => c.ExtraClause).HasMaxLength(2000);
         builder.Property(c => c.BoardId).HasMaxLength(128);
         builder.Property(c => c.BoardName).HasMaxLength(256);
+        builder.Property(c => c.StatusField).HasMaxLength(200);
+        builder.Property(c => c.RepoFilterJson).HasDefaultValue("[]");
         builder.Property(c => c.BranchTemplate).HasMaxLength(200);
         builder.Property(c => c.LastPollError).HasMaxLength(2000);
         builder.Property(c => c.LeaseHolder).HasMaxLength(100);
@@ -62,10 +65,11 @@ public sealed class TicketLinkConfiguration : IEntityTypeConfiguration<TicketLin
         builder.ToTable("ticket_links");
         builder.Property(l => l.Kind).HasMaxLength(20);
         builder.Property(l => l.SiteUrl).HasMaxLength(512);
-        builder.Property(l => l.TicketKey).HasMaxLength(64);
-        builder.Property(l => l.TicketId).HasMaxLength(64);
+        // GitHub keys are owner/repo#n (up to ~150 characters); its ids are GraphQL node ids.
+        builder.Property(l => l.TicketKey).HasMaxLength(160);
+        builder.Property(l => l.TicketId).HasMaxLength(128);
         builder.Property(l => l.TicketUrl).HasMaxLength(2048);
-        builder.Property(l => l.EpicKey).HasMaxLength(64);
+        builder.Property(l => l.EpicKey).HasMaxLength(160);
         builder.Property(l => l.Subpath).HasMaxLength(500);
         builder.Property(l => l.ContentHash).HasMaxLength(100);
         builder.Property(l => l.RemoteStatus).HasMaxLength(200);
@@ -73,7 +77,7 @@ public sealed class TicketLinkConfiguration : IEntityTypeConfiguration<TicketLin
         builder.Property(l => l.PendingPhase).HasConversion<string>().HasMaxLength(20);
         builder.Property(l => l.LastTransitionError).HasMaxLength(1000);
         builder.Property(l => l.PrState).HasMaxLength(20);
-        builder.Property(l => l.ParentKey).HasMaxLength(64);
+        builder.Property(l => l.ParentKey).HasMaxLength(160);
         builder.Property(l => l.Role).HasConversion<string>().HasMaxLength(20)
             .HasDefaultValue(TicketRole.Standalone);
         builder.Property(l => l.ParentTitle).HasMaxLength(500);

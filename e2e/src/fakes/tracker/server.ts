@@ -1,6 +1,7 @@
 /**
- * One local HTTP server that is both a fake Jira Cloud site (at its root, `/rest/api/3/…`) and a
- * fake Azure DevOps organization (under `/{org}/…`). Specs hold the instance and mutate its
+ * One local HTTP server that is a fake Jira Cloud site (at its root, `/rest/api/3/…`), a
+ * fake Azure DevOps organization (under `/{org}/…`) and a fake GitHub GraphQL API (under
+ * `/github`, site URL `http://127.0.0.1:<port>/github`). Specs hold the instance and mutate its
  * state directly; `/__fake/*` exposes the same state over HTTP for standalone use
  * (`npm run fake-tracker`).
  *
@@ -12,10 +13,12 @@ import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { FakeAdo, type FakeAdoOptions } from "./ado.js";
 import { send, type Ctx, type InjectedFailure, type RecordedRequest } from "./common.js";
+import { FakeGitHub, type FakeGitHubOptions } from "./github.js";
 import { FakeJira, type AppliedTransition, type FakeJiraOptions } from "./jira.js";
 
 export * from "./ado.js";
 export * from "./common.js";
+export * from "./github.js";
 export * from "./jira.js";
 
 export interface FakeTrackerOptions {
@@ -23,11 +26,13 @@ export interface FakeTrackerOptions {
   host?: string;
   jira?: FakeJiraOptions;
   ado?: FakeAdoOptions;
+  github?: FakeGitHubOptions;
 }
 
 export class FakeTrackerServer {
   readonly jira: FakeJira;
   readonly ado: FakeAdo;
+  readonly github: FakeGitHub;
   readonly requests: RecordedRequest[] = [];
   private failures: InjectedFailure[] = [];
   /** When true every tracker request answers 503 (the tracker is down). */
@@ -41,6 +46,7 @@ export class FakeTrackerServer {
   constructor(private readonly opts: FakeTrackerOptions = {}) {
     this.jira = new FakeJira(opts.jira);
     this.ado = new FakeAdo(opts.ado);
+    this.github = new FakeGitHub(opts.github);
     this.host = opts.host ?? "127.0.0.1";
   }
 
@@ -58,7 +64,11 @@ export class FakeTrackerServer {
   get adoSiteUrl() {
     return `${this.origin}/${this.ado.org}`;
   }
-  /** Every status move either tracker accepted, in order. */
+  /** The site URL a runner's GitHub connection must hold (its API is at `{site}/graphql`). */
+  get githubSiteUrl() {
+    return `${this.origin}/github`;
+  }
+  /** Every status move either tracker accepted, in order (GitHub's: `github.statusChanges`). */
   get transitions(): AppliedTransition[] {
     return [...this.jira.transitions, ...this.ado.transitions].sort((a, b) => a.at.localeCompare(b.at));
   }
@@ -94,7 +104,7 @@ export class FakeTrackerServer {
   }
 
   /** Requests to one tracker, optionally filtered by method + path regex. */
-  requestsTo(tracker: "jira" | "ado", filter?: { method?: string; path?: RegExp }) {
+  requestsTo(tracker: "jira" | "ado" | "github", filter?: { method?: string; path?: RegExp }) {
     return this.requests.filter((r) => r.tracker === tracker && (!filter?.method || r.method === filter.method) && (!filter?.path || filter.path.test(r.path)));
   }
 
@@ -117,11 +127,20 @@ export class FakeTrackerServer {
       ? "admin"
       : this.jira.handles(path)
         ? "jira"
-        : this.ado.handles(segments)
-          ? "ado"
-          : "unknown";
+        : this.github.handles(path)
+          ? "github"
+          : this.ado.handles(segments)
+            ? "ado"
+            : "unknown";
     const authorization = (req.headers.authorization as string | undefined) ?? null;
-    const authOk = tracker === "jira" ? authorization === this.jira.authorization || path.startsWith("/__media/") : tracker === "ado" ? authorization === this.ado.authorization : true;
+    const authOk =
+      tracker === "jira"
+        ? authorization === this.jira.authorization || path.startsWith("/__media/")
+        : tracker === "ado"
+          ? authorization === this.ado.authorization
+          : tracker === "github"
+            ? this.github.isAuthorized(authorization)
+            : true;
     const record: RecordedRequest = {
       at: new Date().toISOString(),
       tracker,
@@ -138,7 +157,7 @@ export class FakeTrackerServer {
 
     if (this.latencyMs > 0) await new Promise((r) => setTimeout(r, this.latencyMs));
     if (tracker === "admin") return this.admin(ctx);
-    if (this.down && (tracker === "jira" || tracker === "ado")) return send(ctx, 503, { message: "fake tracker is down" });
+    if (this.down && (tracker === "jira" || tracker === "ado" || tracker === "github")) return send(ctx, 503, { message: "fake tracker is down" });
     const failure = this.failures.find((f) => (!f.tracker || f.tracker === tracker) && (!f.method || f.method === record.method) && f.path.test(path));
     if (failure) {
       if (failure.times !== undefined && --failure.times <= 0) this.failures = this.failures.filter((f) => f !== failure);
@@ -146,6 +165,7 @@ export class FakeTrackerServer {
     }
     if (tracker === "jira") return this.jira.handle(ctx);
     if (tracker === "ado") return this.ado.handle(ctx);
+    if (tracker === "github") return this.github.handle(ctx);
     return send(ctx, 404, { message: `fake tracker: nothing at ${path}` });
   }
 
@@ -154,6 +174,14 @@ export class FakeTrackerServer {
       return send(ctx, 200, {
         jira: { siteUrl: this.jiraSiteUrl, email: this.jira.email, issues: [...this.jira.issues.values()], transitions: this.jira.transitions },
         ado: { siteUrl: this.adoSiteUrl, org: this.ado.org, items: [...this.ado.items.values()], transitions: this.ado.transitions },
+        github: {
+          siteUrl: this.githubSiteUrl,
+          login: this.github.login,
+          projects: [...this.github.projects.values()],
+          issues: [...this.github.issues.values()],
+          items: [...this.github.items.values()],
+          statusChanges: this.github.statusChanges,
+        },
       });
     }
     if (ctx.method === "GET" && ctx.path === "/__fake/requests") return send(ctx, 200, this.requests.map((r) => ({ ...r, authorization: r.authorization ? "(redacted)" : null })));
@@ -170,6 +198,21 @@ export class FakeTrackerServer {
     if (ctx.method === "POST" && (m = /^\/__fake\/ado\/items\/(\d+)\/comments$/.exec(ctx.path))) {
       const b = ctx.body as { bodyHtml: string; author?: string };
       return send(ctx, 201, this.ado.addComment(Number(m[1]), b.bodyHtml, b.author));
+    }
+    if (ctx.method === "POST" && ctx.path === "/__fake/github/projects") return send(ctx, 201, this.github.addProject(ctx.body as never));
+    if (ctx.method === "POST" && ctx.path === "/__fake/github/issues") return send(ctx, 201, this.github.addIssue(ctx.body as never));
+    if (ctx.method === "POST" && ctx.path === "/__fake/github/items") {
+      const b = ctx.body as { projectId: string; issueKey?: string; type?: never; status?: string | null };
+      return send(ctx, 201, this.github.addItem(b.projectId, b));
+    }
+    if (ctx.method === "POST" && ctx.path === "/__fake/github/comments") {
+      const b = ctx.body as { key: string; body: string; author?: string };
+      return send(ctx, 201, this.github.addComment(b.key, b.body, b.author));
+    }
+    if (ctx.method === "POST" && ctx.path === "/__fake/github/status") {
+      const b = ctx.body as { projectId: string; key: string; status: string | null };
+      this.github.setStatus(b.projectId, b.key, b.status);
+      return send(ctx, 200, this.github.itemFor(b.projectId, b.key));
     }
     if (ctx.method === "GET" && ctx.path === "/__fake/transitions") return send(ctx, 200, this.transitions);
     if (ctx.method === "POST" && ctx.path === "/__fake/down") {

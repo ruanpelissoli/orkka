@@ -38,9 +38,9 @@ public static partial class TicketNormalizer
         string? knownHash,
         IReadOnlyList<RawComment> newComments)
     {
-        var description = Cap(ToMarkdown(raw.DescriptionHtml, names), MaxDescriptionChars);
-        var acceptance = NullIfEmpty(Cap(ToMarkdown(raw.AcceptanceCriteriaHtml, names), MaxDescriptionChars));
-        var repro = NullIfEmpty(Cap(ToMarkdown(raw.ReproStepsHtml, names), MaxDescriptionChars));
+        var description = Cap(Text(raw.DescriptionHtml, raw.Markdown, names), MaxDescriptionChars);
+        var acceptance = NullIfEmpty(Cap(Text(raw.AcceptanceCriteriaHtml, raw.Markdown, names), MaxDescriptionChars));
+        var repro = NullIfEmpty(Cap(Text(raw.ReproStepsHtml, raw.Markdown, names), MaxDescriptionChars));
         var title = CollapseInline(raw.Title);
         var labels = raw.Labels.Select(l => l.Trim()).Where(l => l.Length > 0).Distinct(StringComparer.Ordinal).ToArray();
 
@@ -51,11 +51,11 @@ public static partial class TicketNormalizer
             ? null
             : new TrackerTicketBody(title, raw.Type, raw.Status, raw.StatusCategory, raw.Priority,
                 description, acceptance, repro, labels, attachments, raw.UpdatedAt,
-                raw.Components.Length > 0 ? raw.Components : null, raw.AreaPath);
+                raw.Components.Length > 0 ? raw.Components : null, raw.AreaPath, raw.Repository);
 
         var comments = newComments
             .Select(c => new TrackerTicketComment(c.Id, c.Author, c.CreatedAt,
-                Cap(ToMarkdown(c.BodyHtml, names), MaxCommentChars)))
+                Cap(Text(c.BodyHtml, c.Markdown, names), MaxCommentChars)))
             .ToArray();
 
         // Status, assignment, intake and the hierarchy travel on every report — the host tracks
@@ -94,6 +94,26 @@ public static partial class TicketNormalizer
         var bytes = Encoding.UTF8.GetBytes(string.Join("\u001f", parts));
         return Convert.ToHexStringLower(SHA256.HashData(bytes));
     }
+
+    /// <summary>A text field as markdown: HTML converted (<see cref="ToMarkdown"/>), or markdown
+    /// (GitHub) kept as written — only its HTML comments (issue-template guidance) are dropped and
+    /// line endings unified.</summary>
+    public static string Text(string? value, bool markdown, IReadOnlyList<AttachmentName>? attachments = null)
+        => markdown ? CleanMarkdown(value) : ToMarkdown(value, attachments);
+
+    public static string CleanMarkdown(string? markdown)
+    {
+        if (string.IsNullOrWhiteSpace(markdown))
+            return "";
+        var text = HtmlComment().Replace(markdown.Replace("\r\n", "\n", StringComparison.Ordinal), "");
+        return ExtraBlankLines().Replace(text, "\n\n").Trim();
+    }
+
+    [GeneratedRegex(@"<!--.*?-->", RegexOptions.Singleline)]
+    private static partial Regex HtmlComment();
+
+    [GeneratedRegex(@"\n{3,}")]
+    private static partial Regex ExtraBlankLines();
 
     /// <summary>HTML → markdown. Inline images that are one of the ticket's attachments become
     /// <c>[attachment: file name]</c>; other absolute images stay as markdown images; relative

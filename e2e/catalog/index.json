@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-19T16:00:07.618Z",
+  "generatedAt": "2026-11-19T16:35:10.354Z",
   "counts": {
-    "total": 729,
+    "total": 743,
     "files": 37,
     "byArea": {
       "ONB": 4,
@@ -10,16 +10,16 @@
       "HYF": 20,
       "RURL": 12,
       "FRG": 13,
-      "TSRC": 24,
-      "TCLI": 13,
+      "TSRC": 29,
+      "TCLI": 15,
       "BRD": 46,
       "TSK": 52,
       "PLN": 16,
       "PR": 20,
       "RDK": 21,
       "SES": 15,
-      "TING": 25,
-      "TWB": 13,
+      "TING": 30,
+      "TWB": 15,
       "AIR": 7,
       "TEAM": 37,
       "DSN": 26,
@@ -43,25 +43,25 @@
       "GRD": 8
     },
     "byAutomation": {
-      "planned": 609,
-      "automated": 86,
+      "planned": 621,
+      "automated": 88,
       "manual": 33,
       "blocked": 1
     },
     "byPriority": {
-      "P1": 354,
-      "P2": 223,
-      "P0": 129,
+      "P1": 360,
+      "P2": 225,
+      "P0": 135,
       "P3": 23
     },
     "byMode": {
       "all": 389,
       "hybrid-repo": 227,
       "hybrid-folder": 53,
-      "offline": 17,
-      "tracker": 75
+      "offline": 19,
+      "tracker": 87
     },
-    "linkedToSpecs": 34
+    "linkedToSpecs": 36
   },
   "refs": {
     "apiRoutes": [
@@ -3134,6 +3134,113 @@
       "tests": []
     },
     {
+      "id": "TSRC-025",
+      "area": "TSRC",
+      "title": "Connect GitHub Projects from Settings → Trackers: the gh login or a token",
+      "file": "catalog/18-ticket-source.md",
+      "line": 416,
+      "priority": "P0",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "ui",
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/settings/trackers",
+        "orkka-ui:packages/ui/src/components/settings/TrackerConnections.tsx",
+        "orkka-api:POST /api/trackers/connections"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "TSRC-026",
+      "area": "TSRC",
+      "title": "A GitHub source on the card: owner, project, status field, statuses, repositories",
+      "file": "catalog/18-ticket-source.md",
+      "line": 439,
+      "priority": "P0",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "ui"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/p/[projectId]/settings",
+        "orkka-ui:packages/ui/src/components/project/TicketSourceCard.tsx",
+        "i18n:ticketSource"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "TSRC-027",
+      "area": "TSRC",
+      "title": "Save and read back a GitHub source; what does not apply is refused",
+      "file": "catalog/18-ticket-source.md",
+      "line": 462,
+      "priority": "P1",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:PUT /api/projects/{projectId}/tracker",
+        "orkka-api:GET /api/projects/{projectId}/tracker"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "TSRC-028",
+      "area": "TSRC",
+      "title": "GitHub queries via the runner: owners, projects, fields, statuses, repos, preview",
+      "file": "catalog/18-ticket-source.md",
+      "line": 485,
+      "priority": "P1",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:POST /api/trackers/connections/{connectionId}/query"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "TSRC-029",
+      "area": "TSRC",
+      "title": "A runner too old for GitHub is told to update",
+      "file": "catalog/18-ticket-source.md",
+      "line": 506,
+      "priority": "P2",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:POST /api/trackers/connections",
+        "orkka-api:POST /api/trackers/connections/{connectionId}/query"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
       "id": "TCLI-001",
       "area": "TCLI",
       "title": "Add a Jira connection: token piped on stdin, tested, stored",
@@ -3409,6 +3516,51 @@
       ],
       "since": "2026-10-26",
       "tests": []
+    },
+    {
+      "id": "TCLI-014",
+      "area": "TCLI",
+      "title": "Add a GitHub connection with a token; GitHub Enterprise Server is refused",
+      "file": "catalog/19-tracker-cli.md",
+      "line": 225,
+      "priority": "P1",
+      "modes": [
+        "offline"
+      ],
+      "surface": [
+        "cli"
+      ],
+      "automation": "automated",
+      "refs": [
+        "cli:tracker"
+      ],
+      "since": "2026-11-19",
+      "tests": [
+        "tests/offline/runner-tracker-cli.spec.ts"
+      ]
+    },
+    {
+      "id": "TCLI-015",
+      "area": "TCLI",
+      "title": "Add a GitHub connection that uses the gh login: nothing is stored",
+      "file": "catalog/19-tracker-cli.md",
+      "line": 244,
+      "priority": "P0",
+      "modes": [
+        "offline"
+      ],
+      "surface": [
+        "cli"
+      ],
+      "automation": "automated",
+      "refs": [
+        "cli:tracker",
+        "cli:doctor"
+      ],
+      "since": "2026-11-19",
+      "tests": [
+        "tests/offline/runner-tracker-cli.spec.ts"
+      ]
     },
     {
       "id": "BRD-001",
@@ -7849,6 +8001,113 @@
       "tests": []
     },
     {
+      "id": "TING-026",
+      "area": "TING",
+      "title": "GitHub intake: my open pickup-status issues become tasks; drafts and PRs never",
+      "file": "catalog/27-tracker-ingestion.md",
+      "line": 431,
+      "priority": "P0",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:GET /api/projects/{projectId}/tasks",
+        "orkka-api:src/Orkka.LocalRunner/Trackers/GitHubProjectsClient.cs"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "TING-027",
+      "area": "TING",
+      "title": "A tracked GitHub issue keeps syncing when it moves, leaves the filter or gets comments",
+      "file": "catalog/27-tracker-ingestion.md",
+      "line": 449,
+      "priority": "P1",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:GET /api/tasks/{taskId}/messages",
+        "orkka-api:src/Orkka.LocalRunner/Trackers/GitHubProjectsClient.cs"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "TING-028",
+      "area": "TING",
+      "title": "Sub-issues make a Story: only mine that have not started, in GitHub's order",
+      "file": "catalog/27-tracker-ingestion.md",
+      "line": 469,
+      "priority": "P0",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:GET /api/projects/{projectId}/tasks",
+        "orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.Stories.cs"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "TING-029",
+      "area": "TING",
+      "title": "GitHub refusals become the poll error: SSO, a missing scope, a rate limit",
+      "file": "catalog/27-tracker-ingestion.md",
+      "line": 486,
+      "priority": "P1",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api",
+        "ui"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:GET /api/projects/{projectId}/tracker",
+        "orkka-api:POST /api/trackers/connections/{connectionId}/query"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "TING-030",
+      "area": "TING",
+      "title": "A runner too old for GitHub is not given a GitHub source",
+      "file": "catalog/27-tracker-ingestion.md",
+      "line": 506,
+      "priority": "P2",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api",
+        "hub"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:GET /api/projects/{projectId}/tracker",
+        "orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.cs"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
       "id": "TWB-001",
       "area": "TWB",
       "title": "Started is written when the task starts developing",
@@ -8111,6 +8370,48 @@
         "orkka-api:GET /api/tasks/{taskId}/messages"
       ],
       "since": "2026-10-26",
+      "tests": []
+    },
+    {
+      "id": "TWB-014",
+      "area": "TWB",
+      "title": "GitHub: a move sets the Status option; an issue off the project is added first",
+      "file": "catalog/28-tracker-writeback.md",
+      "line": 208,
+      "priority": "P0",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:src/Orkka.LocalRunner/Trackers/GitHubProjectsClient.cs",
+        "orkka-api:GET /api/tasks/{taskId}/messages"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "TWB-015",
+      "area": "TWB",
+      "title": "A GitHub issue's pull request says \"Closes owner/repo#n\"",
+      "file": "catalog/28-tracker-writeback.md",
+      "line": 228,
+      "priority": "P1",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:src/Modules/Orkka.Modules.SourceControl/Infrastructure/Services/OrkkaPullRequestService.cs",
+        "orkka-api:src/Modules/Orkka.Modules.SourceControl/Infrastructure/Services/StoryLandingService.cs"
+      ],
+      "since": "2026-11-19",
       "tests": []
     },
     {

@@ -14,8 +14,11 @@ public sealed class TrackerWriteBack(
     IWorkspaceSecretStore secrets,
     Func<string, ITrackerStatusWriter> writers,
     Func<TrackerPrCheck, CancellationToken, Task<RunnerOpResult>> pullRequestState,
-    ILogger<TrackerWriteBack> logger)
+    ILogger<TrackerWriteBack> logger,
+    TrackerCredentialResolver? credentials = null)
 {
+    private readonly TrackerCredentialResolver _credentials = credentials ?? new TrackerCredentialResolver(secrets);
+
     public static readonly TimeSpan TransitionTimeout = TimeSpan.FromSeconds(30);
     public static readonly TimeSpan DefaultPrCheckBudget = TimeSpan.FromSeconds(60);
 
@@ -50,15 +53,10 @@ public sealed class TrackerWriteBack(
         {
             var entry = store.Get(t.ConnectionId)
                 ?? throw new TrackerException("This machine no longer holds that tracker connection.");
-            var secret = secrets.Get(entry.Id);
-            if (string.IsNullOrEmpty(secret))
-                throw new TrackerException(
-                    $"The token for '{entry.Id}' is missing from {secrets.Description} on this machine — add the connection again with `./orkka tracker add`.");
-            credential = new TrackerCredential(entry.SiteUrl, TrackerService.CredentialEmail(entry), secret);
-
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
             timeout.CancelAfter(TransitionTimeout);
-            var moved = await writers(entry.Kind).TransitionAsync(credential, t.TicketKey, t.TicketId, t.TargetStatus, timeout.Token);
+            credential = await _credentials.ResolveAsync(entry, timeout.Token);
+            var moved = await writers(entry.Kind).TransitionAsync(credential, t, timeout.Token);
             logger.LogInformation(moved ? "{TicketKey} → {Status}" : "{TicketKey} → {Status} (already there)", t.TicketKey, t.TargetStatus);
             return new TrackerTransitionAck(t.TransitionId, true);
         }

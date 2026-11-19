@@ -249,20 +249,38 @@
       "runnerUnsupported": "Your runner didn't answer — it is offline or too old for this. Start it with `./orkka start` (or update it: `git pull`, then `./orkka start`), then try again.",
       "failed": "The tracker refused the connection: {error}",
       "failedGeneric": "The tracker refused the connection.",
-      "requestFailed": "Could not add the connection."
+      "requestFailed": "Could not add the connection.",
+      "githubTitle": "Add GitHub Projects",
+      "hostLabel": "GitHub host",
+      "hostPlaceholder": "github.com",
+      "hostHint": "github.com, or your GHE.com host (acme.ghe.com). GitHub Enterprise Server is not supported.",
+      "hostInvalid": "Use github.com or a GHE.com host like acme.ghe.com.",
+      "authLabel": "Sign in with",
+      "authGh": "My GitHub CLI login (recommended)",
+      "authGhHint": "Your runner asks `gh auth token` when it needs one and stores nothing. The login needs the project scope: `gh auth refresh -h {host} -s project`.",
+      "authToken": "A token",
+      "authTokenHint": "A classic token, or a fine-grained one, kept in this machine’s secret store.",
+      "githubTokenLabel": "GitHub token",
+      "githubScopes": "Classic token: the project and repo scopes. Fine-grained: Projects (Read & write) and Issues (Read & write) on the organization. With SAML single sign-on, authorize the token for the organization.",
+      "githubTokenLink": "Create a token on GitHub",
+      "ghStays": "Your runner checks the gh login on this machine now and reads it again for each call. Orkka stores no token for this connection."
     },
     "sectionTitle": "Ticket trackers",
-    "sectionIntro": "Your Jira and Azure DevOps connections. Each one lives on the machine that added it — the token never leaves that machine, and only your runner talks to the tracker.",
+    "sectionIntro": "Your Jira, Azure DevOps and GitHub connections. Each one lives on the machine that added it — the token never leaves that machine, and only your runner talks to the tracker.",
     "kind": {
       "jira": "Jira",
-      "ado": "Azure DevOps"
+      "ado": "Azure DevOps",
+      "github": "GitHub"
     },
-    "tokenNote": "The command asks for your API token (Jira) or personal access token (Azure DevOps) and keeps it in that machine's secret store. The token stays on your machine; Orkka never sees it.",
+    "tokenNote": "The command asks for your API token (Jira) or personal access token (Azure DevOps) and keeps it in that machine’s secret store; GitHub uses your gh login unless you pass --token. The token stays on your machine; Orkka never sees it.",
     "healthy": "Connected",
     "unhealthy": "Not working",
     "account": "as {account}",
     "machine": "on {machine}",
-    "lastSeen": "last seen {when}"
+    "lastSeen": "last seen {when}",
+    "githubCliNote": "Uses your GitHub CLI (gh) login. Add --host acme.ghe.com for GHE.com, or --token to paste a token instead.",
+    "authModeGh": "uses your gh login",
+    "authModeToken": "token"
   },
   "workspaces": {
     "label": "Workspace",
@@ -282,7 +300,7 @@
     "runnerOffline": "Runner offline"
   },
   "ticketSource": {
-    "intro": "Pick up the tickets assigned to you in Jira or Azure DevOps. Your runner polls the tracker with your own connection.",
+    "intro": "Pick up the tickets assigned to you in Jira, Azure DevOps or GitHub Projects. Your runner polls the tracker with your own connection.",
     "noConnections": "You have no tracker connections yet. Add one in Settings → Trackers, then come back here.",
     "addConnectionLink": "Add a tracker connection",
     "runnerOffline": "Your runner didn't answer, so the tracker can't be browsed. Start it with `./orkka start`, or update it with `git pull` + `./orkka start` if it is too old.",
@@ -349,7 +367,8 @@
       "rule": "Give every routing rule a value and a repository.",
       "subpath": "A subfolder is a relative path inside the repository, like packages/api — no “..”, no drive letters, no leading slash.",
       "poll": "Between {min} and {max} seconds.",
-      "branch": "Must contain {key} — that is how the tracker links the branch to its ticket."
+      "branch": "Must contain {key} — that is how the tracker links the branch to its ticket.",
+      "project": "Pick the GitHub project the issues live on."
     },
     "title": "Ticket source",
     "readOnly": "You need the Manage projects permission to change the ticket source.",
@@ -367,7 +386,8 @@
     "queryFailedGeneric": "The tracker did not answer.",
     "scopeLabel": {
       "jira": "Jira project",
-      "ado": "Azure DevOps project"
+      "ado": "Azure DevOps project",
+      "github": "Owner (organization or user)"
     },
     "scopePlaceholder": "Pick a project",
     "boardLabel": "Board",
@@ -410,7 +430,19 @@
     "removeConfirm": "Remove this ticket source? Tickets already picked up stay on the board.",
     "removed": "Ticket source removed.",
     "removeFailed": "Could not remove the ticket source.",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "projectLabel": "GitHub project",
+    "projectHint": "Issues on this project are picked up. Draft issues and pull requests on it are skipped.",
+    "projectPlaceholder": "Pick a project",
+    "projectOption": "#{number} {title}",
+    "statusFieldLabel": "Status field",
+    "statusFieldHint": "The single-select field your project keeps its status in — usually Status.",
+    "statusFieldOption": "{name} ({count, plural, one {# option} other {# options}})",
+    "repoFilterLabel": "Repositories",
+    "repoFilterAll": "Issues from every repository on the project are picked up. Pick some to limit it.",
+    "repoFilterSome": "Only issues from {count, plural, one {this repository} other {these # repositories}} are picked up.",
+    "githubIntakeHint": "Every issue on the project assigned to you, in one of the statuses below. An issue with sub-issues assigned to you is worked as a Story.",
+    "routingHintGithub": "An issue goes to the project repository with the same remote as its own repository. Otherwise these rules are checked top to bottom and the first match wins; an issue matching none is routed by the AI, or you are asked."
   },
   "ticketSourceStatus": {
     "checked": "Tickets from {tracker} · last checked {when} on {machine}",

@@ -13,7 +13,8 @@ export function TicketSourceStatusLine({ config }: { config: ProjectTrackerConfi
   const tKind = useTranslations("dashboard.trackers.kind");
   if (!config) return null;
 
-  const kind = config.connection?.kind === "ado" ? "ado" : "jira";
+  const connectionKind = config.connection?.kind;
+  const kind = connectionKind === "ado" ? "ado" : connectionKind === "github" ? "github" : "jira";
   const tracker = tKind(kind);
   const machine = config.connection?.machineName ?? null;
 

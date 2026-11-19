@@ -112,7 +112,7 @@ public sealed class TrackerConfigTests : IDisposable
     public void Validator_AnEmptyScope_SaysWhatToPick()
         => new SaveProjectTrackerValidator().TestValidate(Valid() with { Scope = "" })
             .ShouldHaveValidationErrorFor(r => r.Scope)
-            .WithErrorMessage("Pick the Jira project or Azure DevOps project the tickets live in.");
+            .WithErrorMessage("Pick the Jira project, Azure DevOps project or GitHub owner the tickets live in.");
 
     [Fact]
     public void Validator_InEpicsMode_RequiresAtLeastOneEpic_EachMappedOnce()

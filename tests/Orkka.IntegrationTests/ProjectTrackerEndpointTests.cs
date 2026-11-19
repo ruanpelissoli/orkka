@@ -277,10 +277,10 @@ public sealed class ProjectTrackerEndpointTests(OrkkaApiFactory factory)
     public async Task AddConnection_Invalid_IsA400_ThatDoesNotQuoteTheToken()
     {
         var response = await _client.PostAsJsonAsync("/api/trackers/connections",
-            new AddTrackerConnectionBody("github", "acme", null, Token));
+            new AddTrackerConnectionBody("linear", "acme", null, Token));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        (await response.Content.ReadAsStringAsync()).Should().NotContain(Token).And.Contain("Jira");
+        (await response.Content.ReadAsStringAsync()).Should().NotContain(Token).And.Contain("Jira").And.Contain("GitHub");
     }
 
     [Fact]

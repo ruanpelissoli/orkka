@@ -88,6 +88,12 @@ namespace Orkka.Modules.Trackers.Infrastructure.Migrations
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("RepoFilterJson")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("[]");
+
                     b.Property<string>("Scope")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -99,6 +105,10 @@ namespace Orkka.Modules.Trackers.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("TEXT")
                         .HasDefaultValue("All");
+
+                    b.Property<string>("StatusField")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("StatusMapJson")
                         .IsRequired()
@@ -151,7 +161,7 @@ namespace Orkka.Modules.Trackers.Infrastructure.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("EpicKey")
-                        .HasMaxLength(64)
+                        .HasMaxLength(160)
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("GroupId")
@@ -180,7 +190,7 @@ namespace Orkka.Modules.Trackers.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ParentKey")
-                        .HasMaxLength(64)
+                        .HasMaxLength(160)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ParentTitle")
@@ -240,12 +250,12 @@ namespace Orkka.Modules.Trackers.Infrastructure.Migrations
 
                     b.Property<string>("TicketId")
                         .IsRequired()
-                        .HasMaxLength(64)
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TicketKey")
                         .IsRequired()
-                        .HasMaxLength(64)
+                        .HasMaxLength(160)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TicketUrl")
@@ -284,6 +294,10 @@ namespace Orkka.Modules.Trackers.Infrastructure.Migrations
 
                     b.Property<string>("AccountId")
                         .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AuthMode")
+                        .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
                     b.Property<long?>("CheckedAt")

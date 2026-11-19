@@ -34,6 +34,9 @@ public sealed record TrackerConnectionEntry
     public required string SiteUrl { get; init; }
     /// <summary>Jira only: the Atlassian account email the API token belongs to.</summary>
     public string? Email { get; init; }
+    /// <summary>A <see cref="TrackerAuthModes"/> value; null = a token in the secret store.
+    /// GitHub connections may use the developer's gh login instead (<see cref="TrackerAuthModes.GhCli"/>).</summary>
+    public string? Auth { get; init; }
     public string? AccountId { get; init; }
     public string? DisplayName { get; init; }
     public bool Healthy { get; init; }
@@ -44,7 +47,12 @@ public sealed record TrackerConnectionEntry
     /// <summary>What the Hello carries: metadata only. The email stays on this machine too —
     /// the host has no use for it.</summary>
     public RunnerTrackerConnection ToMetadata() =>
-        new(Id, Kind, SiteUrl, AccountId, DisplayName, Healthy, HealthDetail, CheckedAt);
+        new(Id, Kind, SiteUrl, AccountId, DisplayName, Healthy, HealthDetail, CheckedAt,
+            Kind == TrackerKinds.GitHub ? (TrackerAuthModes.IsGhCli(Auth) ? TrackerAuthModes.GhCli : TrackerAuthModes.Token) : null);
+
+    /// <summary>Uses the developer's gh login rather than a stored token.</summary>
+    [JsonIgnore]
+    public bool UsesGhCli => Kind == TrackerKinds.GitHub && TrackerAuthModes.IsGhCli(Auth);
 }
 
 /// <summary>
@@ -205,11 +213,53 @@ public static partial class TrackerSites
         return null;
     }
 
+    /// <summary>
+    /// GitHub: empty or <c>github.com</c> (any URL on it, or <c>api.github.com</c>) becomes
+    /// <c>https://github.com</c>; a GHE.com data-residency host (<c>acme.ghe.com</c>, or its
+    /// <c>api.acme.ghe.com</c>) becomes <c>https://acme.ghe.com</c>. Null for anything else —
+    /// GitHub Enterprise Server (a self-hosted host) is not supported.
+    /// </summary>
+    public static string? NormalizeGitHubHost(string? input)
+    {
+        if (LoopbackTestSite(input) is { } testSite)
+            return testSite;
+        if (string.IsNullOrWhiteSpace(input))
+            return GitHubDotCom;
+        var host = HostOf(input);
+        if (host is null)
+            return null;
+        if (host is "github.com" or "www.github.com" or "api.github.com")
+            return GitHubDotCom;
+        if (host.StartsWith("api.", StringComparison.Ordinal))
+            host = host["api.".Length..];
+        return host.EndsWith(".ghe.com", StringComparison.Ordinal) && GheSub().IsMatch(host[..^".ghe.com".Length])
+            ? $"https://{host}"
+            : null;
+    }
+
+    public const string GitHubDotCom = "https://github.com";
+
+    /// <summary>Where a GitHub site's API lives: <c>https://api.github.com</c>,
+    /// <c>https://api.acme.ghe.com</c>; a loopback test site serves it at its own root.</summary>
+    public static string GitHubApiBase(string siteUrl)
+    {
+        var uri = new Uri(siteUrl);
+        if (uri.IsLoopback)
+            return siteUrl.TrimEnd('/');
+        return $"https://api.{uri.Host}";
+    }
+
+    /// <summary>The host gh knows the login by (<c>gh auth token --hostname …</c>).</summary>
+    public static string GitHubCliHost(string siteUrl)
+        => Uri.TryCreate(siteUrl, UriKind.Absolute, out var uri) ? uri.Authority : "github.com";
+
     /// <summary><c>jira-acme</c> for acme.atlassian.net, <c>ado-contoso</c> for
-    /// dev.azure.com/contoso; <c>-2</c>, <c>-3</c>… when the id is taken.</summary>
+    /// dev.azure.com/contoso, <c>github</c> for github.com, <c>github-acme</c> for acme.ghe.com;
+    /// <c>-2</c>, <c>-3</c>… when the id is taken.</summary>
     public static string UniqueId(string kind, string siteUrl, IEnumerable<string> taken)
     {
-        var baseId = $"{kind}-{SiteSlug(kind, siteUrl)}";
+        var slug = SiteSlug(kind, siteUrl);
+        var baseId = slug.Length == 0 ? kind : $"{kind}-{slug}";
         var used = taken.ToHashSet(StringComparer.OrdinalIgnoreCase);
         if (!used.Contains(baseId))
             return baseId;
@@ -223,6 +273,8 @@ public static partial class TrackerSites
 
     internal static string SiteSlug(string kind, string siteUrl)
     {
+        if (kind == TrackerKinds.GitHub && string.Equals(siteUrl.TrimEnd('/'), GitHubDotCom, StringComparison.OrdinalIgnoreCase))
+            return "";
         var name = siteUrl;
         if (Uri.TryCreate(siteUrl, UriKind.Absolute, out var uri))
         {
@@ -230,7 +282,9 @@ public static partial class TrackerSites
                 ? uri.AbsolutePath.Trim('/')
                 : uri.Host.EndsWith(".atlassian.net", StringComparison.OrdinalIgnoreCase)
                     ? uri.Host[..^".atlassian.net".Length]
-                    : uri.Host;
+                    : uri.Host.EndsWith(".ghe.com", StringComparison.OrdinalIgnoreCase)
+                        ? uri.Host[..^".ghe.com".Length]
+                        : uri.Host;
         }
         var slug = NonSlug().Replace(name.ToLowerInvariant(), "-").Trim('-');
         if (slug.Length > 40)
@@ -276,4 +330,8 @@ public static partial class TrackerSites
 
     [GeneratedRegex("[^a-z0-9]+")]
     private static partial Regex NonSlug();
+
+    // A GHE.com subdomain: the enterprise's slug.
+    [GeneratedRegex(@"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")]
+    private static partial Regex GheSub();
 }

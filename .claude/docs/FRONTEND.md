@@ -35,7 +35,7 @@ ui/
 │   │           └── settings/           # /settings → /settings/workspace
 │   │               ├── workspace/  preferences/  notifications/
 │   │               ├── machine/        # the runner, AI CLIs, forge CLIs, pending command approvals
-│   │               ├── trackers/       # Jira / Azure DevOps connections
+│   │               ├── trackers/       # Jira / Azure DevOps / GitHub Projects connections
 │   │               ├── usage/          # token usage and estimated list-price spend (/api/usage/*)
 │   │               └── api-keys/       # orkka_key_… for MCP and scripts
 │   ├── components/                     # app-only: layout, page (skeletons, errors, redirects), projects,

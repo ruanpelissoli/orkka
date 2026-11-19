@@ -3,9 +3,10 @@ namespace Orkka.Modules.Trackers.Domain;
 using Orkka.SharedKernel.Domain;
 
 /// <summary>
-/// A tracker connection one of the developer's machines holds — Jira Cloud or Azure DevOps
-/// Services. Metadata only, upserted from the runner's Hello: the token lives in that
-/// machine's secret store and Orkka never sees it. A project's ticket source points at one of
+/// A tracker connection one of the developer's machines holds — Jira Cloud, Azure DevOps
+/// Services or GitHub Projects. Metadata only, upserted from the runner's Hello: the token lives
+/// in that machine's secret store (or, for GitHub, may be the developer's gh login) and Orkka
+/// never sees it. A project's ticket source points at one of
 /// these, which is also why only its owner can configure that source: only their runner can
 /// answer for it.
 /// </summary>
@@ -18,8 +19,12 @@ public sealed class TrackerConnection : TenantEntity
     /// the runner names it by. Unique per (org, user).</summary>
     public required string ConnectionKey { get; set; }
 
-    /// <summary>"jira" or "ado" (<c>TrackerKinds</c>).</summary>
+    /// <summary>"jira", "ado" or "github" (<c>TrackerKinds</c>).</summary>
     public required string Kind { get; set; }
+
+    /// <summary>GitHub: "gh" (the developer's gh login, nothing stored) or "token"; null for
+    /// Jira and Azure DevOps, which always hold a token (<c>TrackerAuthModes</c>).</summary>
+    public string? AuthMode { get; set; }
 
     public required string SiteUrl { get; set; }
 

@@ -1,7 +1,7 @@
 import type { TrackerKind } from "./types";
 
 /**
- * Tasks imported from a Jira / Azure DevOps ticket carry its key, URL and epic. These helpers
+ * Tasks imported from a Jira / Azure DevOps / GitHub ticket carry its key, URL and epic. These helpers
  * are the client-side reading of those fields: which tracker a URL belongs to, and the title
  * without the "[KEY] " prefix ingestion writes into it (the card shows the key as a badge).
  */
@@ -17,6 +17,7 @@ export function trackerKindFromUrl(url: string | null | undefined): TrackerKind 
   }
   if (host === "atlassian.net" || host.endsWith(".atlassian.net")) return "jira";
   if (host === "dev.azure.com" || host.endsWith(".visualstudio.com")) return "ado";
+  if (host === "github.com" || host.endsWith(".ghe.com")) return "github";
   return null;
 }
 
@@ -34,11 +35,12 @@ export function stripTicketKey(title: string, externalKey: string | null | undef
 
 /**
  * Which tracker an ExternalComment message came from. Ingestion writes
- * "**Author** commented on KEY in Jira (…)" / "… in Azure DevOps (…)".
+ * "**Author** commented on KEY in Jira (…)" / "… in Azure DevOps (…)" / "… in GitHub (…)".
  */
 export function trackerKindFromComment(content: string): TrackerKind | null {
   const head = content.slice(0, 400);
   if (/ in Azure DevOps \(/.test(head)) return "ado";
+  if (/ in GitHub \(/.test(head)) return "github";
   if (/ in Jira \(/.test(head)) return "jira";
   return null;
 }

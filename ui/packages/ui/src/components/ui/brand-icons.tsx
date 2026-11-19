@@ -72,9 +72,10 @@ export function RepoProviderIcon({
   );
 }
 
-/** TrackerConnection.kind — "jira" or "ado". */
+/** TrackerConnection.kind — "jira", "ado" or "github". */
 export function TrackerKindIcon({ kind, size = 14, className }: IconProps & { kind: string }) {
   const isAdo = kind === "ado";
+  const isGitHub = kind === "github";
   return (
     <svg
       width={size}
@@ -87,9 +88,11 @@ export function TrackerKindIcon({ kind, size = 14, className }: IconProps & { ki
       strokeLinejoin="round"
       className={className}
       aria-hidden
-      data-tracker-icon={isAdo ? "ado" : "jira"}
+      data-tracker-icon={isAdo ? "ado" : isGitHub ? "github" : "jira"}
     >
-      {isAdo ? (
+      {isGitHub ? (
+        REPO_PATHS.github
+      ) : isAdo ? (
         REPO_PATHS.azuredevops
       ) : (
         <>

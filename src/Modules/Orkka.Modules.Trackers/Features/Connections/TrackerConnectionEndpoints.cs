@@ -23,13 +23,15 @@ public sealed record TrackerConnectionResponse(
     string? HealthDetail,
     string MachineName,
     DateTimeOffset LastSeenAt,
-    DateTimeOffset? CheckedAt);
+    DateTimeOffset? CheckedAt,
+    // GitHub: "gh" (the developer's gh login) or "token"; null for Jira / Azure DevOps.
+    string? AuthMode = null);
 
 internal static class TrackerConnectionMappers
 {
     public static TrackerConnectionResponse ToResponse(this TrackerConnection c) => new(
         c.Id, c.ConnectionKey, c.Kind, c.SiteUrl, c.AccountId, c.DisplayName,
-        c.Healthy, c.HealthDetail, c.MachineName, c.LastSeenAt, c.CheckedAt);
+        c.Healthy, c.HealthDetail, c.MachineName, c.LastSeenAt, c.CheckedAt, c.AuthMode);
 }
 
 /// <summary>
@@ -64,9 +66,14 @@ public sealed record TrackerQueryBody(
     string[]? IntakeStatuses = null,
     // "All" or "Epics" (case-insensitive); null = All.
     string? ScopeMode = null,
-    // Preview: the board intake is limited to (Jira board id / Azure DevOps team id).
+    // Preview: the board intake is limited to (Jira board id / Azure DevOps team id); GitHub: the
+    // project (node id) — also for statuses, fields and repos.
     string? BoardId = null,
-    string? BoardName = null);
+    string? BoardName = null,
+    // GitHub: the single-select field holding the status (statuses, preview); null = "Status".
+    string? StatusField = null,
+    // GitHub preview: only issues from these repositories (owner/name).
+    string[]? RepoFilter = null);
 
 /// <summary>Supported=false means the caller's runner could not answer — offline, or too old
 /// for tracker connections. The settings page says so instead of showing an error.</summary>
@@ -97,6 +104,7 @@ public sealed class TrackerQueryEndpoint(
     [
         TrackerQueryKinds.Test, TrackerQueryKinds.Scopes, TrackerQueryKinds.Epics,
         TrackerQueryKinds.Statuses, TrackerQueryKinds.Preview, TrackerQueryKinds.Boards,
+        TrackerQueryKinds.Fields, TrackerQueryKinds.Repos,
     ];
 
     public override void Configure() => Post("/api/trackers/connections/{connectionId:ulid}/query");
@@ -136,7 +144,9 @@ public sealed class TrackerQueryEndpoint(
                 ? TrackerScopeModes.Epics
                 : TrackerScopeModes.All,
             string.IsNullOrWhiteSpace(req.BoardId) ? null : req.BoardId.Trim(),
-            string.IsNullOrWhiteSpace(req.BoardId) || string.IsNullOrWhiteSpace(req.BoardName) ? null : req.BoardName.Trim());
+            string.IsNullOrWhiteSpace(req.BoardId) || string.IsNullOrWhiteSpace(req.BoardName) ? null : req.BoardName.Trim(),
+            string.IsNullOrWhiteSpace(req.StatusField) ? null : req.StatusField.Trim(),
+            req.RepoFilter?.Where(Features.ProjectConfig.ProjectTrackerMappers.IsRepoName).Select(r => r.Trim()).ToArray());
 
         try
         {
@@ -187,11 +197,14 @@ public sealed class TrackerQueryEndpoint(
 
 /// <summary>A connection typed into the settings page. Its token is relayed to the caller's own
 /// runner and goes nowhere else: not stored, not logged, not echoed, not audited.</summary>
-/// <param name="Kind">"jira" or "ado".</param>
-/// <param name="Site">Jira site (<c>acme.atlassian.net</c>) or Azure DevOps organization.</param>
-public sealed record AddTrackerConnectionBody(string Kind, string Site, string? Email, string Token)
+/// <param name="Kind">"jira", "ado" or "github".</param>
+/// <param name="Site">Jira site (<c>acme.atlassian.net</c>), Azure DevOps organization, or the
+/// GitHub host (<c>github.com</c> — the default when empty — or <c>acme.ghe.com</c>).</param>
+/// <param name="Token">The token; empty for a GitHub connection that uses the gh login.</param>
+/// <param name="AuthMode">GitHub: "gh" (the developer's gh login, the default) or "token".</param>
+public sealed record AddTrackerConnectionBody(string Kind, string? Site, string? Email, string? Token, string? AuthMode = null)
 {
-    public override string ToString() => $"AddTrackerConnectionBody {{ Kind = {Kind}, Site = {Site}, Token = *** }}";
+    public override string ToString() => $"AddTrackerConnectionBody {{ Kind = {Kind}, Site = {Site}, AuthMode = {AuthMode}, Token = *** }}";
 }
 
 /// <summary>Supported=false: the caller's runner is offline or too old. Ok=false: the tracker
@@ -205,14 +218,27 @@ public sealed class AddTrackerConnectionValidator : Validator<AddTrackerConnecti
     public AddTrackerConnectionValidator()
     {
         // Messages never quote what was sent: the token must not come back in a 400.
-        RuleFor(x => x.Kind).Must(k => k is TrackerKinds.Jira or TrackerKinds.AzureDevOps)
-            .WithMessage("Pick Jira Cloud (jira) or Azure DevOps (ado).");
-        RuleFor(x => x.Site).NotEmpty().MaximumLength(300)
-            .WithMessage("Give the Jira site or the Azure DevOps organization.");
-        RuleFor(x => x.Email).NotEmpty().MaximumLength(320)
-            .When(x => x.Kind == TrackerKinds.Jira)
-            .WithMessage("Give the email of your Atlassian account.");
-        RuleFor(x => x.Token).NotEmpty().MaximumLength(4000)
+        RuleFor(x => x.Kind).Must(k => k is TrackerKinds.Jira or TrackerKinds.AzureDevOps or TrackerKinds.GitHub)
+            .WithMessage("Pick Jira Cloud (jira), Azure DevOps (ado) or GitHub (github).");
+        // WithMessage covers only the rule right before it, so each rule carries its own.
+        RuleFor(x => x.Site)
+            .NotEmpty().WithMessage("Give the Jira site or the Azure DevOps organization.")
+            .When(x => x.Kind != TrackerKinds.GitHub);
+        RuleFor(x => x.Site).MaximumLength(300)
+            .WithMessage(x => x.Kind == TrackerKinds.GitHub
+                ? "Give github.com or your GHE.com host."
+                : "Give the Jira site or the Azure DevOps organization.");
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Give the email of your Atlassian account.")
+            .MaximumLength(320).WithMessage("Give the email of your Atlassian account.")
+            .When(x => x.Kind == TrackerKinds.Jira);
+        RuleFor(x => x.AuthMode).Must(m => m is null or TrackerAuthModes.GhCli or TrackerAuthModes.Token)
+            .When(x => x.Kind == TrackerKinds.GitHub)
+            .WithMessage("Use your gh login (gh) or a token (token).");
+        // WithMessage covers only the rule right before it — the empty case needs its own.
+        RuleFor(x => x.Token).NotEmpty().WithMessage("Paste the token.")
+            .When(x => x.Kind != TrackerKinds.GitHub || x.AuthMode == TrackerAuthModes.Token);
+        RuleFor(x => x.Token).MaximumLength(4000)
             .WithMessage("Paste the token.");
     }
 }
@@ -253,7 +279,8 @@ public sealed class AddTrackerConnectionEndpoint(
             using var response = await client.PostAsJsonAsync(
                 $"{relay.BaseUrl}/internal/runner/tracker-connections",
                 new RelayAddTrackerConnectionRequest(currentUser.OrgId.ToString(), relay.UserId,
-                    new AddTrackerConnectionRequest(req.Kind, req.Site.Trim(), req.Email?.Trim(), req.Token)),
+                    new AddTrackerConnectionRequest(req.Kind, (req.Site ?? "").Trim(), req.Email?.Trim(), req.Token ?? "",
+                        req.Kind == TrackerKinds.GitHub ? req.AuthMode ?? TrackerAuthModes.GhCli : null)),
                 Json, ct);
             response.EnsureSuccessStatusCode();
             relayed = await response.Content.ReadFromJsonAsync<RelayAddTrackerConnectionResponse>(Json, ct);
@@ -296,6 +323,7 @@ public sealed class AddTrackerConnectionEndpoint(
             db.Connections.Add(row);
         }
         row.Kind = added.Kind;
+        row.AuthMode = added.AuthMode;
         row.SiteUrl = added.SiteUrl;
         row.AccountId = added.AccountId;
         row.DisplayName = added.DisplayName;

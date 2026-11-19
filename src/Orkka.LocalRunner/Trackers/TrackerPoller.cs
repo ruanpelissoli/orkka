@@ -59,8 +59,11 @@ public sealed class TrackerTicketPoller(
     Func<string, ITrackerTicketSource> sources,
     TrackerAttachmentCache cache,
     ILogger<TrackerTicketPoller> logger,
-    TimeProvider? timeProvider = null)
+    TimeProvider? timeProvider = null,
+    TrackerCredentialResolver? credentials = null)
 {
+    private readonly TrackerCredentialResolver _credentials = credentials ?? new TrackerCredentialResolver(secrets);
+
     public const int MaxComments = 30;
     public static readonly TimeSpan AssignmentTimeout = TimeSpan.FromMinutes(2);
 
@@ -81,16 +84,11 @@ public sealed class TrackerTicketPoller(
         {
             var entry = store.Get(assignment.ConnectionId)
                 ?? throw new TrackerException($"This machine has no tracker connection '{assignment.ConnectionId}'.");
-            var secret = secrets.Get(entry.Id);
-            if (string.IsNullOrEmpty(secret))
-                throw new TrackerException(
-                    $"The token for '{entry.Id}' is missing from {secrets.Description} on this machine — add the connection again with `./orkka tracker add`.");
-            credential = new TrackerCredential(entry.SiteUrl, TrackerService.CredentialEmail(entry), secret);
-            var source = sources(entry.Kind);
-
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
             timeout.CancelAfter(Timeout);
             var token = timeout.Token;
+            credential = await _credentials.ResolveAsync(entry, token);
+            var source = sources(entry.Kind);
 
             var raw = await source.FetchTicketsAsync(credential, assignment, token);
             var known = assignment.Known
@@ -224,7 +222,8 @@ public sealed class TrackerPollerService(
         TrackerSyncResponse? sync;
         try
         {
-            sync = await hub.SyncAsync(new TrackerSyncRequest(connectionIds, hub.InstanceId, [TrackerSyncFeatures.Boards]), ct);
+            sync = await hub.SyncAsync(new TrackerSyncRequest(connectionIds, hub.InstanceId,
+                [TrackerSyncFeatures.Boards, TrackerSyncFeatures.GitHub]), ct);
         }
         catch (Exception ex) when (IsMissingMethod(ex))
         {

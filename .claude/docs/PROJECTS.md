@@ -9,7 +9,7 @@ the developer's own, and Orkka's job is the board, the pipeline and the agents t
 
 (The old Managed/Unmanaged split, hosted apps, provisioning and the brief-to-roadmap flow were
 removed in P0 of the pivot, the GitHub App in P1 — see `.claude/CLAUDE.md` → Product Vision.
-Jira/Azure DevOps ticket sources and workspaces per job came after — see CLAUDE.md.)
+Jira/Azure DevOps/GitHub Projects ticket sources and workspaces per job came after — see CLAUDE.md.)
 
 ## Creating a project
 

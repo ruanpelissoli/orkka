@@ -202,7 +202,8 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
             i.Title, i.State, WorkItemUrl(c, i.Project ?? scope, i.Id)))];
     }
 
-    public async Task<TrackerStatus[]> StatusesAsync(TrackerCredential c, string scope, CancellationToken ct)
+    public async Task<TrackerStatus[]> StatusesAsync(TrackerCredential c, string scope, CancellationToken ct,
+        TrackerBoardRef? board = null, string? statusField = null)
     {
         var states = await StatesAsync(c, scope, ct);
         return states.Statuses;
@@ -238,7 +239,7 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
 
     public async Task<TrackerPreview> PreviewAsync(TrackerCredential c, string scope, string[] epicKeys,
         string? extraClause, bool includeDescendants, string[]? intakeStatuses, string? scopeMode, CancellationToken ct,
-        TrackerBoardRef? board = null)
+        TrackerBoardRef? board = null, string? statusField = null, string[]? repoFilter = null)
     {
         var epicsMode = TrackerScopeModes.IsEpics(scopeMode);
         var boardCondition = await BoardConditionAsync(c, scope, board, ct);

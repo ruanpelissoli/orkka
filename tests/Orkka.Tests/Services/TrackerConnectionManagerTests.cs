@@ -77,7 +77,8 @@ public sealed class TrackerConnectionManagerTests : IDisposable
     }
 
     [Theory]
-    [InlineData("github", "x", "a@b.c", "Pick Jira Cloud or Azure DevOps")]
+    [InlineData("linear", "x", "a@b.c", "Pick Jira Cloud, Azure DevOps or GitHub")]
+    [InlineData("github", "github.acme.corp", null, "GitHub Enterprise Server is not supported")]
     [InlineData("jira", "not a site!", "a@b.c", "Jira Cloud site")]
     [InlineData("jira", "acme.atlassian.net", null, "email")]
     [InlineData("jira", "acme.atlassian.net", "a@b.c", "No token")]

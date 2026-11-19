@@ -412,3 +412,112 @@ since: 2026-11-18
 - 3: the source reads back `boardId` and `boardName:"Web"`; 4: both null.
 - 5: `result.ok:false`, `error:"The board 'Gone' was not found in Shop — pick another board in the ticket source settings."`
 **Notes**: a runner without the `tracker-boards` capability answers the boards query (and a preview with a board) with "Your runner does not know boards yet — update Orkka…". Covered at unit level by `tests/Orkka.IntegrationTests/TrackerBoardEndpointTests.cs`.
+
+## TSRC-025 Connect GitHub Projects from Settings → Trackers: the gh login or a token
+```yaml
+priority: P0
+surface: [ui, api]
+automation: planned
+refs:
+  - orkka-ui:/settings/trackers
+  - orkka-ui:packages/ui/src/components/settings/TrackerConnections.tsx
+  - orkka-api:POST /api/trackers/connections
+since: 2026-11-19
+```
+**Preconditions**: Runner online (capability `tracker-github`); the fake GitHub; the stub gh on the runner's PATH.
+**Steps**:
+1. Open Settings → Trackers → "Add GitHub Projects"; keep the host `github.com`, see the two options.
+2. Type the fake's site as host, keep "Use my gh login"; Add.
+3. Add it again with "Paste a token" and the fake's token.
+4. Type `github.acme-corp.example` as host.
+**Expected**:
+- 1: the gh-login option is selected by default and explains it runs `gh auth token` and needs `gh auth refresh -h <host> -s project`; the token option shows the scopes (classic: project + repo; fine-grained: Projects + Issues read & write) and the SSO hint.
+- 2: `POST /api/trackers/connections {kind:"github", site, token:"", authMode:"gh"}` → `{supported:true, ok:true, connection:{kind:"github", authMode:"gh"}}`; the row shows "uses your gh login"; nothing is stored on the machine but trackers.json metadata.
+- 3: the same connection id, now `authMode:"token"`; the token is in the secret store only (never in the response, the audit log or the database).
+- 4: the host is refused before anything is sent: GitHub Enterprise Server is not supported.
+
+## TSRC-026 A GitHub source on the card: owner, project, status field, statuses, repositories
+```yaml
+priority: P0
+surface: [ui]
+automation: planned
+refs:
+  - orkka-ui:/p/[projectId]/settings
+  - orkka-ui:packages/ui/src/components/project/TicketSourceCard.tsx
+  - i18n:ticketSource
+since: 2026-11-19
+```
+**Preconditions**: A GitHub connection to the fake; owner `e2e-local` with project "Shop roadmap" (Status: Todo / In Progress / In Review / Done; also a "Priority" single-select) and a closed project "Old board"; issues on it from `e2e-local/app` and `e2e-local/api`.
+**Steps**:
+1. Settings → "Ticket source" → pick the GitHub connection; pick the owner `e2e-local`.
+2. Open the project picker; pick "Shop roadmap".
+3. Open the status-field picker; keep "Status"; look at the pickup statuses and the six-step map.
+4. In the repository filter pick `e2e-local/app`; Preview; Save; reload.
+**Expected**:
+- 1: owners are the developer (marked "(you)") then their organizations; epics, the Epics mode, the extra clause, include-descendants and component / area-path rules are not shown.
+- 2: only open projects, by title; a project is required (no "whole owner" option) and saving without one is blocked.
+- 3: the fields are the project's single-select fields; pickup defaults to "Todo"; Developing = "In Progress", In review = "In Review", Merged = "Done", the rest "Don't change".
+- 4: the repositories are the ones whose issues are on the project; the preview counts only `e2e-local/app` issues assigned to me in Todo and shows `project:"Shop roadmap" is:issue is:open assignee:@me status:"Todo" repo:e2e-local/app`; after reload project, field and filter are still selected.
+
+## TSRC-027 Save and read back a GitHub source; what does not apply is refused
+```yaml
+priority: P1
+surface: [api]
+automation: planned
+refs:
+  - orkka-api:PUT /api/projects/{projectId}/tracker
+  - orkka-api:GET /api/projects/{projectId}/tracker
+since: 2026-11-19
+```
+**Preconditions**: A GitHub connection reported by the runner.
+**Steps**:
+1. `PUT …/tracker {trackerConnectionId, scope:"e2e-local", boardId:<project id>, boardName:"Shop roadmap", statusField:"Status", repoFilter:["e2e-local/app"], intakeStatuses:["Todo"]}`; `GET …/tracker`.
+2. The same without `boardId`.
+3. With `scopeMode:"Epics"` and an epic; with a `component` routing rule; with `repoFilter:["not a repo"]`.
+4. With `extraClause:"x"` and `includeDescendants:true`.
+**Expected**:
+- 1: reads back `boardId`, `boardName`, `statusField:"Status"`, `repoFilter:["e2e-local/app"]`.
+- 2: 400 "Pick the GitHub project the issues are on."
+- 3: 400 "GitHub Projects have no epics — an issue with sub-issues is worked as a Story…", 400 "GitHub issues are routed by label (or by their repository) — not by component.", 400 "The repository filter lists repositories as owner/name, at most 100 of them."
+- 4: saved with `extraClause:null`, `includeDescendants:false`. A Jira/ADO source always reads back `statusField:null`, `repoFilter:[]`.
+**Notes**: covered at unit level by `tests/Orkka.IntegrationTests/TrackerGitHubEndpointTests.cs` (save/read-back, project required, epics and non-label rules refused, repository filter shape, gh-login add needs no token).
+
+## TSRC-028 GitHub queries via the runner: owners, projects, fields, statuses, repos, preview
+```yaml
+priority: P1
+surface: [api]
+automation: planned
+refs:
+  - orkka-api:POST /api/trackers/connections/{connectionId}/query
+since: 2026-11-19
+```
+**Preconditions**: As TSRC-026, through the API.
+**Steps**:
+1. `query {kind:"scopes"}`; `{kind:"boards", scope:"e2e-local"}`.
+2. `{kind:"fields", scope:"e2e-local", boardId}`; `{kind:"statuses", scope:"e2e-local", boardId, statusField:"Status"}`; `{kind:"repos", scope:"e2e-local", boardId}`.
+3. `{kind:"preview", scope:"e2e-local", boardId, statusField:"Status", intakeStatuses:["Todo"], repoFilter:["e2e-local/app"]}`.
+4. `{kind:"statuses", …, statusField:"Nope"}`; `{kind:"boards", scope:"nobody"}`; `{kind:"preview", …, boardId:"PVT_gone", boardName:"Gone"}`.
+**Expected**:
+- 1: `scopes` = `e2e-dev` then `e2e-local`; `boards` = open projects with `id` (node id), `name`, `number`, `url`.
+- 2: `fields` = Status and Priority with their options; `statuses` = Todo/In Progress/In Review/Done, `defaults.intakeStatuses:["Todo"]`, `defaults.statusMap {developing:"In Progress", inReview:"In Review", merged:"Done"}`; `repos` = `["e2e-local/api","e2e-local/app"]`.
+- 3: `matchCount` = my open Todo issues from `e2e-local/app` (drafts and pull requests never count); `effectiveQuery` is the sentence form.
+- 4: `ok:false` with "The project 'Shop roadmap' has no single-select field 'Nope' — pick the field that holds the status… (Status, Priority).", "GitHub has no user or organization 'nobody' that this account can see.", "The board 'Gone' was not found in e2e-local — pick another board in the ticket source settings."
+
+## TSRC-029 A runner too old for GitHub is told to update
+```yaml
+priority: P2
+surface: [api]
+automation: planned
+refs:
+  - orkka-api:POST /api/trackers/connections
+  - orkka-api:POST /api/trackers/connections/{connectionId}/query
+since: 2026-11-19
+```
+**Preconditions**: A runner whose Hello lacks the `tracker-github` capability.
+**Steps**:
+1. `POST /api/trackers/connections {kind:"github", …}`.
+2. `query {kind:"fields", …}` / `{kind:"repos", …}` / a preview with `statusField` or `repoFilter`.
+**Expected**:
+- 1: `{supported:true, ok:false, error:"Your runner does not know GitHub Projects yet — update Orkka (`git pull`, then `./orkka start`)."}` — nothing is relayed.
+- 2: `result {ok:false}` with the same message.
+**Notes**: covered at unit level by `tests/Orkka.Tests/Features/Trackers/TrackerGitHubTests.cs` (RunnerRelay_RefusesGitHubWork_ToARunnerWithoutTheCapability) and `tests/Orkka.IntegrationTests/TrackerGitHubEndpointTests.cs` (Poll_HandsTheSourceOnlyToARunnerThatKnowsGitHub).

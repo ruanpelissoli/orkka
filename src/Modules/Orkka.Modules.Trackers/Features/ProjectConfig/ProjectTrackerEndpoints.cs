@@ -1,6 +1,8 @@
 namespace Orkka.Modules.Trackers.Features.ProjectConfig;
 
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using Orkka.LocalRunner.Contracts;
 using FastEndpoints;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -56,9 +58,14 @@ public sealed record ProjectTrackerConfigResponse(
     TrackerRoutingRuleDto[] RoutingRules,
     Ulid? DefaultRepoId,
     int StoryMode,
-    // The board intake is limited to (Jira board id / Azure DevOps team id); null = every board.
+    // The board intake is limited to (Jira board id / Azure DevOps team id / GitHub project node
+    // id); null = every board.
     string? BoardId = null,
-    string? BoardName = null);
+    string? BoardName = null,
+    // GitHub: the single-select field holding the status (null = "Status").
+    string? StatusField = null,
+    // GitHub: intake only from these repositories (owner/name); empty = every repository.
+    string[]? RepoFilter = null);
 
 public sealed record SaveProjectTrackerRequest(
     Ulid TrackerConnectionId,
@@ -76,9 +83,13 @@ public sealed record SaveProjectTrackerRequest(
     TrackerRoutingRuleDto[]? RoutingRules = null,
     Ulid? DefaultRepoId = null,
     int StoryMode = 1,
-    // Null or empty = every board in the scope.
+    // Null or empty = every board in the scope. GitHub: the project — required.
     string? BoardId = null,
-    string? BoardName = null);
+    string? BoardName = null,
+    // GitHub: the single-select field holding the status; null = "Status".
+    string? StatusField = null,
+    // GitHub: owner/name repositories intake is limited to; null or empty = every repository.
+    string[]? RepoFilter = null);
 
 public sealed class SaveProjectTrackerValidator : Validator<SaveProjectTrackerRequest>
 {
@@ -87,11 +98,15 @@ public sealed class SaveProjectTrackerValidator : Validator<SaveProjectTrackerRe
         // WithMessage covers only the rule right before it — the empty case needs its own, or an
         // empty scope came back as FluentValidation's "'scope' must not be empty."
         RuleFor(x => x.Scope)
-            .NotEmpty().WithMessage("Pick the Jira project or Azure DevOps project the tickets live in.")
-            .MaximumLength(256).WithMessage("Pick the Jira project or Azure DevOps project the tickets live in.");
+            .NotEmpty().WithMessage("Pick the Jira project, Azure DevOps project or GitHub owner the tickets live in.")
+            .MaximumLength(256).WithMessage("Pick the Jira project, Azure DevOps project or GitHub owner the tickets live in.");
         RuleFor(x => x.ExtraClause).MaximumLength(2000);
         RuleFor(x => x.BoardId).MaximumLength(128).WithMessage("Pick a board from the list.");
         RuleFor(x => x.BoardName).MaximumLength(256).WithMessage("Pick a board from the list.");
+        RuleFor(x => x.StatusField).MaximumLength(200).WithMessage("Pick the status field from the list.");
+        RuleFor(x => x.RepoFilter)
+            .Must(r => r is null || (r.Length <= 100 && r.All(ProjectTrackerMappers.IsRepoName)))
+            .WithMessage("The repository filter lists repositories as owner/name, at most 100 of them.");
         RuleFor(x => x.PollIntervalSeconds)
             .InclusiveBetween(ProjectTrackerConfig.MinPollIntervalSeconds, ProjectTrackerConfig.MaxPollIntervalSeconds)
             .WithMessage($"Check for tickets every {ProjectTrackerConfig.MinPollIntervalSeconds}–{ProjectTrackerConfig.MaxPollIntervalSeconds} seconds.");
@@ -169,9 +184,33 @@ internal static class TrackerSubpath
     }
 }
 
-internal static class ProjectTrackerMappers
+internal static partial class ProjectTrackerMappers
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+
+    /// <summary>A GitHub repository as <c>owner/name</c>.</summary>
+    public static bool IsRepoName(string? value) => value is not null && RepoName().IsMatch(value.Trim());
+
+    [GeneratedRegex(@"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]{1,100}$")]
+    private static partial Regex RepoName();
+
+    /// <summary>The stored repository filter; unreadable = none.</summary>
+    public static string[] ParseRepoFilter(string? json)
+    {
+        try
+        {
+            var parsed = string.IsNullOrWhiteSpace(json) ? null : JsonSerializer.Deserialize<string[]>(json, Json);
+            return [.. (parsed ?? []).Where(IsRepoName).Select(r => r.Trim()).Distinct(StringComparer.OrdinalIgnoreCase)];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
+
+    public static string SerializeRepoFilter(string[]? repos)
+        => JsonSerializer.Serialize((repos ?? []).Where(IsRepoName).Select(r => r.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToArray(), Json);
 
     /// <summary>The stored map, read tolerantly: keys in any case, unknown keys ignored, and the
     /// old <c>started</c> key (from before the steps were widened) read as <c>planning</c>.</summary>
@@ -223,7 +262,9 @@ internal static class ProjectTrackerMappers
             c.DefaultRepoId,
             c.StoryMode,
             c.BoardId,
-            c.BoardId is null ? null : c.BoardName);
+            c.BoardId is null ? null : c.BoardName,
+            c.StatusField,
+            ParseRepoFilter(c.RepoFilterJson));
     }
 
     /// <summary>The stored intake statuses; an empty or unreadable list means "To Do".</summary>
@@ -353,6 +394,27 @@ public sealed class SaveProjectTrackerEndpoint(
             return;
         }
         ProjectTrackerMappers.TryParseScopeMode(req.ScopeMode, out var scopeMode);
+        var github = connection.Kind == TrackerKinds.GitHub;
+        if (github)
+        {
+            // The project IS the source: no whole-owner intake, no epics, no JQL/WIQL.
+            if (string.IsNullOrWhiteSpace(req.BoardId))
+            {
+                ThrowError(r => r.BoardId, "Pick the GitHub project the issues are on.");
+                return;
+            }
+            if (scopeMode == TrackerScopeMode.Epics || epics.Length > 0)
+            {
+                ThrowError(r => r.ScopeMode,
+                    "GitHub Projects have no epics — an issue with sub-issues is worked as a Story. Pick up all your issues on the project.");
+                return;
+            }
+            if (routingRules.FirstOrDefault(r => !string.Equals(r.Kind.Trim(), "label", StringComparison.OrdinalIgnoreCase)) is { } strayKind)
+            {
+                ThrowError(r => r.RoutingRules, $"GitHub issues are routed by label (or by their repository) — not by {strayKind.Kind}.");
+                return;
+            }
+        }
 
         var config = await db.ProjectConfigs.Include(c => c.Epics)
             .FirstOrDefaultAsync(c => c.ProjectId == projectId, ct);
@@ -373,12 +435,14 @@ public sealed class SaveProjectTrackerEndpoint(
         config.OwnerUserId = currentUser.UserId;
         config.TrackerConnectionId = connection.Id;
         config.Scope = req.Scope.Trim();
-        config.ExtraClause = string.IsNullOrWhiteSpace(req.ExtraClause) ? null : req.ExtraClause.Trim();
+        config.ExtraClause = github || string.IsNullOrWhiteSpace(req.ExtraClause) ? null : req.ExtraClause.Trim();
         config.BoardId = string.IsNullOrWhiteSpace(req.BoardId) ? null : req.BoardId.Trim();
         config.BoardName = config.BoardId is null
             ? null
             : string.IsNullOrWhiteSpace(req.BoardName) ? config.BoardId : req.BoardName.Trim();
-        config.IncludeDescendants = req.IncludeDescendants;
+        config.IncludeDescendants = !github && req.IncludeDescendants;
+        config.StatusField = github && !string.IsNullOrWhiteSpace(req.StatusField) ? req.StatusField.Trim() : null;
+        config.RepoFilterJson = ProjectTrackerMappers.SerializeRepoFilter(github ? req.RepoFilter : null);
         config.AutoSubmit = req.AutoSubmit;
         config.PollIntervalSeconds = req.PollIntervalSeconds;
         config.StatusMapJson = ProjectTrackerMappers.SerializeStatusMap(req.StatusMap);
@@ -448,6 +512,8 @@ public sealed class SaveProjectTrackerEndpoint(
                 connection.Kind,
                 config.Scope,
                 board = config.BoardId is null ? null : new { id = config.BoardId, name = config.BoardName },
+                config.StatusField,
+                repoFilter = ProjectTrackerMappers.ParseRepoFilter(config.RepoFilterJson),
                 scopeMode = config.ScopeMode.ToString(),
                 epics = epics.Select(e => e.EpicKey).ToArray(),
                 intakeStatuses = ProjectTrackerMappers.ParseIntakeStatuses(config.IntakeStatusesJson),

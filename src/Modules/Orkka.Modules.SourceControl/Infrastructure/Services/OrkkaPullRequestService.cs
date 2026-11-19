@@ -184,9 +184,15 @@ public sealed class OrkkaPullRequestService(
     private async Task<Result<GitHubPullRequest>> PublishAsync(
         LocalPullRequest pr, RepoSummary repo, CancellationToken ct)
     {
+        // A task imported from a GitHub issue in this same repository says "Closes owner/repo#n",
+        // so GitHub links the pull request to the issue and closes it on merge.
+        var body = pr.Body ?? "";
+        if (pr.TaskId is { } taskId && await TasksApi.GetTaskSnapshotAsync(taskId, ct) is { ExternalUrl: { } issueUrl })
+            body = GitHubIssueLinks.AppendClosing(body, GitHubIssueLinks.ClosingReferences([issueUrl], repo.GitUrl));
+
         var published = await gitOps.OpenPullRequestAsync(
             pr.OrgId, pr.RepoId, await RunnerUserForAsync(pr, ct),
-            pr.HeadBranch, pr.BaseBranch, pr.Title, pr.Body ?? "",
+            pr.HeadBranch, pr.BaseBranch, pr.Title, body,
             repo.ForgeKind, repo.CliAccount, ct);
 
         if (published.IsFailure)

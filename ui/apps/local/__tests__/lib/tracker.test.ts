@@ -3,8 +3,36 @@ import {
   duplicateEpicKeys,
   isValidBranchTemplate,
   isValidPollInterval,
+  normalizeGitHubHost,
   normalizeTrackerSubpath,
+  routingRuleKindsFor,
 } from "@/lib/tracker";
+import { trackerAddCommand } from "@/lib/runner-commands";
+
+describe("GitHub tracker rules", () => {
+  it.each([
+    ["", "github.com"],
+    ["github.com", "github.com"],
+    ["https://github.com/orgs/acme/projects/5", "github.com"],
+    ["api.github.com", "github.com"],
+    ["acme.ghe.com", "acme.ghe.com"],
+    ["https://ACME.ghe.com/acme", "acme.ghe.com"],
+    ["api.acme.ghe.com", "acme.ghe.com"],
+    ["git.corp.example", null],
+    ["ghe.com", null],
+  ] as const)("host %s → %s", (input, host) => {
+    expect(normalizeGitHubHost(input)).toBe(host);
+  });
+
+  it("routes GitHub issues by label only (the repository is matched first)", () => {
+    expect(routingRuleKindsFor("github")).toEqual(["label"]);
+  });
+
+  it("adds a GitHub connection from the terminal with the gh login by default", () => {
+    expect(trackerAddCommand("github")).toBe("./orkka tracker add github");
+    expect(trackerAddCommand("github", "acme")).toBe("./orkka tracker add github --workspace acme");
+  });
+});
 
 /** Mirrors orkka-api's TrackerSubpath / SaveProjectTrackerValidator. */
 describe("tracker rules", () => {

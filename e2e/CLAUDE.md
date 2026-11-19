@@ -1,9 +1,9 @@
 # CLAUDE.md — orkka-e2e-tests
 
-End-to-end test programme for Orkka **after the 2026-11 local-only pivot**: one machine, no account, no cloud, run from a git clone. `./orkka start` builds the clone and runs ONE foreground process (`dotnet src/Orkka/bin/Release/net10.0/orkka.dll start`): the `Orkka.Local` host (127.0.0.1:6750 by default — the API, the hubs, the built static UI from `ui/apps/local/dist`, SQLite at `~/.orkka/data/orkka.db`) and the runner, in the same process. A project is a base folder (a monorepo or a folder of repos); tickets come from Jira / Azure DevOps; agents run on the developer's own AI CLI; reviewed work on a remote is published as a forge PR with the developer's `gh`/`az`/`glab`. Three deliverables live here:
+End-to-end test programme for Orkka **after the 2026-11 local-only pivot**: one machine, no account, no cloud, run from a git clone. `./orkka start` builds the clone and runs ONE foreground process (`dotnet src/Orkka/bin/Release/net10.0/orkka.dll start`): the `Orkka.Local` host (127.0.0.1:6750 by default — the API, the hubs, the built static UI from `ui/apps/local/dist`, SQLite at `~/.orkka/data/orkka.db`) and the runner, in the same process. A project is a base folder (a monorepo or a folder of repos); tickets come from Jira / Azure DevOps / GitHub Projects; agents run on the developer's own AI CLI; reviewed work on a remote is published as a forge PR with the developer's `gh`/`az`/`glab`. Three deliverables live here:
 
 1. **`catalog/`** — the test-case catalogue (`catalog/README.md` is the format contract incl. the **Retired IDs**; `catalog/COVERAGE.md` is generated). `50-local-workflow.md` (`LWF`) covers the local-only workflow.
-2. **`tests/` + `src/`** — the Playwright + typed-API harness (`caseIds(...)` links a spec to catalogue IDs), the sandboxed Orkka (`src/local/stack.ts`), and the offline test doubles: a **fake Jira Cloud + Azure DevOps server**, a **stub `gh`**, **local bare git remotes**.
+2. **`tests/` + `src/`** — the Playwright + typed-API harness (`caseIds(...)` links a spec to catalogue IDs), the sandboxed Orkka (`src/local/stack.ts`), and the offline test doubles: a **fake Jira Cloud + Azure DevOps + GitHub (Projects v2 GraphQL) server**, a **stub `gh`**, **local bare git remotes**.
 3. **`runs/`** — one report per run (`report.md` + `report.json`) and the append-only `runs/INDEX.md` (rows before 2026-10 are prod runs of the cloud product; 2026-10/11 offline rows predate the local stack).
 
 ## Session-start ritual
@@ -33,13 +33,13 @@ Auth model: the install secret (`<sandbox>/home/workspaces/_local/secrets/instal
 
 | Command | What | Needs |
 |---|---|---|
-| `npm run test:offline` | fake Jira/ADO self-tests, stub gh (incl. draft/ready/edit), bare remotes, `./orkka tracker …` / `commands …` (`dotnet orkka.dll`, skipped when unbuilt) | nothing running |
+| `npm run test:offline` | fake Jira/ADO/GitHub self-tests, stub gh (incl. draft/ready/edit), bare remotes, `./orkka tracker …` / `commands …` (`dotnet orkka.dll`, skipped when unbuilt) | nothing running |
 | `npm run test:smoke` | key + session, workspaces, runner, connections, signed-out page, Host allowlist (421), CSRF | sandbox |
 | `npm run test:api` | workspaces (WSP, via the install-secret bearer; WSP-002 creates a second workspace in the sandbox, WSP-006 uses it), ticket-source validation (TSRC) | sandbox |
 | `npm run test:workflow` | **LWF-002…008**: base folder → project, write-only Jira connection (token only in the secret store — scanned files + the SQLite database and its WAL), ticket source, ADO intake. Steps 4–6 (standalone ticket, question routing, Story) run REAL agents on your AI subscription — only with `E2E_WORKFLOW_AGENTS=1` (≈3 small Haiku pipeline runs, 30–60 min; `--grep-invert` the steps you do not want, e.g. only the Story) | sandbox + signed-in AI CLI |
 | `npm run test:screens` | the key screens (LWF-009) → `<sandbox>/screens/*.png`; run with `E2E_KEEP_PROJECTS=1 E2E_SCREENS_PROJECT=<slug>` after a workflow run | sandbox |
 | `npm run test:ui-inventory` | every local page renders, no 5xx | sandbox |
-| `npm run fake-tracker` | the fake Jira/ADO standalone on :4010 | — |
+| `npm run fake-tracker` | the fake Jira/ADO/GitHub standalone on :4010 (GitHub site `<origin>/github`, API `<origin>/github/graphql`) | — |
 
 Never pass `--reporter=…`: it replaces the config's reporters and no run report is written. Every run: pre-sweep of stale `e2e-*` projects → tests → teardown deletes everything created → `runs/<stamp>-<suite>/report.md` + `runs/INDEX.md` row. `E2E_KEEP_PROJECTS=1` skips BOTH the sweep and the teardown (a spec that reads what an earlier run left). Failures: `<sandbox>/home/logs/orkka.log` (host + runner, structured) and `<sandbox>/orkka-start.out` (the console).
 
@@ -54,7 +54,7 @@ Never pass `--reporter=…`: it replaces the config's reporters and no run repor
 
 ## Layout
 
-`config/` the `.env` schema · `src/local` the sandboxed Orkka (`stack.ts`), secret scans (`secret-scan.ts`: files + the SQLite database) · `src/api` typed client · `src/auth` API key / storage state · `src/safety` guards, sweep · `src/runner` the offline `./orkka` CLI sandbox (`dotnet orkka.dll`), presence/capabilities · `src/fakes/tracker` fake Jira Cloud + Azure DevOps · `src/fakes/stub-gh.ts` + `fixtures/stub-gh/` · `src/testdata` bare remotes, fixture apps, base folders (`base-folder.ts`) · `src/flows/local-workflow.ts` workflow building blocks (from-folder, add connection, Discuss, apply, followers) · `src/fixtures/test.ts` Playwright fixtures (`api`, `projects`, `localRunner`, `fakeTracker`, `stubGh`, `bareRemotes`) · `src/reporter` run reports · `src/catalog` parser + manifest · `scripts/` operator commands (`stack.ts`, …).
+`config/` the `.env` schema · `src/local` the sandboxed Orkka (`stack.ts`), secret scans (`secret-scan.ts`: files + the SQLite database) · `src/api` typed client · `src/auth` API key / storage state · `src/safety` guards, sweep · `src/runner` the offline `./orkka` CLI sandbox (`dotnet orkka.dll`), presence/capabilities · `src/fakes/tracker` fake Jira Cloud + Azure DevOps + GitHub (`github.ts`: the GraphQL operations of `GitHubProjectsClient`; it also accepts the stub gh's `gho_stub_<login>` token, so a "use my gh login" connection works) · `src/fakes/stub-gh.ts` + `fixtures/stub-gh/` · `src/testdata` bare remotes, fixture apps, base folders (`base-folder.ts`) · `src/flows/local-workflow.ts` workflow building blocks (from-folder, add connection, Discuss, apply, followers) · `src/fixtures/test.ts` Playwright fixtures (`api`, `projects`, `localRunner`, `fakeTracker`, `stubGh`, `bareRemotes`) · `src/reporter` run reports · `src/catalog` parser + manifest · `scripts/` operator commands (`stack.ts`, …).
 
 ## Known facts (2026-11-18)
 

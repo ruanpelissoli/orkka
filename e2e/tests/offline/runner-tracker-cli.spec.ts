@@ -35,9 +35,9 @@ test.describe("./orkka tracker CLI against the fake tracker @offline", () => {
     if (home) fs.rmSync(home, { recursive: true, force: true });
   });
 
-  const run = (args: string[], input = "", optIns = true) =>
+  const run = (args: string[], input = "", optIns = true, extraEnv: Record<string, string> = {}) =>
     execa("dotnet", [exe, ...args, "--workspace", workspace], {
-      env: { ...process.env, ORKKA_HOME: home, ORKKA_NO_UPDATE_CHECK: "1", ...(optIns ? RUNNER_TEST_OPT_INS : {}) },
+      env: { ...process.env, ORKKA_HOME: home, ORKKA_NO_UPDATE_CHECK: "1", ...(optIns ? RUNNER_TEST_OPT_INS : {}), ...extraEnv },
       input, reject: false, timeout: 90_000, cwd: os.homedir(),
     });
 
@@ -102,6 +102,56 @@ test.describe("./orkka tracker CLI against the fake tracker @offline", () => {
     const addedAdo = readTrackersFile(workspace, home).find((e) => e.kind === "ado" && e.siteUrl === fakeTracker.adoSiteUrl && e.healthy);
     expect(addedAdo).toBeTruthy();
     seeded.push({ id: addedAdo!.id, kind: "ado", siteUrl: addedAdo!.siteUrl, workspace, home });
+  });
+
+  test("tracker add github --token: the token is tested against the fake GitHub and stored; never printed", caseIds("TCLI-014"), async ({ fakeTracker }) => {
+    test.skip(!exe, "no ./orkka with tracker support");
+    const r = await run(["tracker", "add", "github", "--host", fakeTracker.githubSiteUrl, "--token"], `${fakeTracker.github.token}\n`);
+    expect(r.exitCode, r.stdout + r.stderr).toBe(0);
+    expect(r.stdout).toMatch(new RegExp(`signed in as ${fakeTracker.github.name} \\(${fakeTracker.github.login}\\)`));
+    const added = readTrackersFile(workspace, home).find((e) => e.kind === "github" && e.siteUrl === fakeTracker.githubSiteUrl && e.healthy);
+    expect(added, "a healthy github entry").toBeTruthy();
+    expect(added!.auth, "a token connection has no gh auth mode").toBeUndefined();
+    seeded.push({ id: added!.id, kind: "github", siteUrl: added!.siteUrl, workspace, home });
+    expect(fs.readFileSync(path.join(home, "workspaces", workspace, "secrets", added!.id), "utf8").trim()).toBe(fakeTracker.github.token);
+    expect(r.stdout + r.stderr).not.toContain(fakeTracker.github.token);
+    // GraphQL with a Bearer token, at the loopback site's own /graphql.
+    expect(fakeTracker.requestsTo("github", { method: "POST", path: /^\/github\/graphql$/ }).map((x) => x.authOk)).toEqual([true]);
+    const list = await run(["tracker", "list"]);
+    expect(list.stdout).toMatch(new RegExp(`${added!.id}\\s+github\\s+http://127\\.0\\.0\\.1:\\d+/github`));
+  });
+
+  test("tracker add github without --token uses the gh login: nothing stored; a missing project scope says what to run", caseIds("TCLI-015"), async ({ fakeTracker, stubGh }) => {
+    test.skip(!exe, "no ./orkka with tracker support");
+    const pathKey = Object.keys(process.env).find((k) => k.toUpperCase() === "PATH") ?? "PATH";
+    const env = { [pathKey]: stubGh.pathWithStub() };
+    const r = await run(["tracker", "add", "github", "--host", fakeTracker.githubSiteUrl], "", true, env);
+    expect(r.exitCode, r.stdout + r.stderr).toBe(0);
+    expect(r.stdout).toMatch(/Using your GitHub CLI login for 127\.0\.0\.1:\d+/);
+    const added = readTrackersFile(workspace, home).find((e) => e.kind === "github" && e.auth === "gh");
+    expect(added, "a gh-login entry").toBeTruthy();
+    seeded.push({ id: added!.id, kind: "github", siteUrl: added!.siteUrl, workspace, home });
+    expect(fs.existsSync(path.join(home, "workspaces", workspace, "secrets", added!.id)), "no token stored for a gh login").toBe(false);
+    expect(r.stdout + r.stderr).not.toContain(fakeTracker.github.ghLoginToken);
+    // Read-only: only `gh auth token --hostname <host>` — never a login, a refresh or a write.
+    expect(stubGh.calls().map((c) => c.argv.join(" "))).toEqual([expect.stringMatching(/^auth token --hostname 127\.0\.0\.1:\d+$/)]);
+
+    fakeTracker.github.scopes = "repo, read:org";
+    const t = await run(["tracker", "test", added!.id], "", true, env);
+    expect(t.exitCode).toBe(1);
+    expect(t.stdout).toMatch(/lacks the 'project' scope .* run `gh auth refresh -h 127\.0\.0\.1:\d+ -s project`/);
+
+    stubGh.update((s) => { s.signedIn = false; });
+    const t2 = await run(["tracker", "test", added!.id], "", true, env);
+    expect(t2.exitCode).toBe(1);
+    expect(t2.stdout).toMatch(/The GitHub CLI is not signed in to 127\.0\.0\.1:\d+ [—-] run `gh auth login -h/);
+  });
+
+  test("tracker add github refuses a GitHub Enterprise Server host", caseIds("TCLI-014"), async () => {
+    test.skip(!exe, "no ./orkka with tracker support");
+    const r = await run(["tracker", "add", "github", "--host", "github.acme-corp.example", "--token"], "ghp_x\n");
+    expect(r.exitCode).toBe(1);
+    expect(r.stdout + r.stderr).toMatch(/GitHub Enterprise Server is not supported/);
   });
 
   test("tracker remove deletes the entry and its token", caseIds("TCLI-009"), async ({ fakeTracker }) => {
