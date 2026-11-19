@@ -25,6 +25,11 @@ interface LaneColumnProps {
   milestoneNames?: Record<string, string>;
   /** Agent time spent in this lane over the metrics window. Absent for lanes no agent runs in. */
   metric?: BoardLaneMetric;
+  /** False while dragging a card whose project has no Testing lane — on the workspace board the
+   * lane is there because another project tests, and is no drop target for this card. */
+  activeDragAllowsTesting?: boolean;
+  /** Cards name their project — the workspace board showing every project. */
+  showProject?: boolean;
 }
 
 function LaneColumn({
@@ -36,6 +41,8 @@ function LaneColumn({
   pinned,
   milestoneNames,
   metric,
+  activeDragAllowsTesting = true,
+  showProject = false,
 }: LaneColumnProps) {
   const t = useTranslations("dashboard.boardMetrics");
   const { setNodeRef, isOver } = useDroppable({ id: laneKey });
@@ -54,6 +61,7 @@ function LaneColumn({
   // Determine if this lane is a valid backward drop target
   const isValidTarget = (() => {
     if (!activeDragLane) return false;
+    if (laneKey === LANE_KEYS.TESTING && !activeDragAllowsTesting) return false;
     const sourceIndex = LANES.findIndex((l) => l.key === activeDragLane);
     const thisIndex = LANES.findIndex((l) => l.key === laneKey);
     return thisIndex !== -1 && sourceIndex !== -1 && thisIndex < sourceIndex;
@@ -132,6 +140,7 @@ function LaneColumn({
               task={task}
               onTaskClick={onTaskClick}
               milestoneName={task.milestoneId ? milestoneNames?.[task.milestoneId] : null}
+              showProject={showProject}
             />
           ))}
         </AnimatePresence>

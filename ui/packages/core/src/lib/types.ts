@@ -886,6 +886,19 @@ export interface TaskSummary {
   storyKey?: string | null;
   /** How many sub-tasks the member's story has — board cards only. */
   storyCount?: number | null;
+  /** The card's project — set on every board and board-search card, so the workspace board can
+   * badge it and link it to `/p/{slug}/tasks/{n}`. Absent on cards built from a live event. */
+  project?: BoardProjectRef | null;
+}
+
+/** The project a board card belongs to. */
+export interface BoardProjectRef {
+  id: string;
+  key: string;
+  name: string;
+  slug: string;
+  /** The project has the Testing lane (QA or manual verification on). */
+  hasTesting: boolean;
 }
 
 /** Newest agent message on a task, truncated server-side for the board card preview */

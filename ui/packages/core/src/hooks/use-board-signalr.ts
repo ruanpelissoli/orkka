@@ -129,7 +129,14 @@ interface MilestonePlanChangedEvent {
 }
 
 interface UseBoardSignalROptions {
-  projectId: string;
+  /** The project whose board group to join (its ULID). */
+  projectId?: string;
+  /**
+   * Several projects at once — the workspace board joins the board group of every project it
+   * shows, each through the hub's own JoinBoard check. One set of handlers either way: a hook
+   * per project would register every handler once per project and run each event N times.
+   */
+  projectIds?: readonly string[];
   onLaneChanged?: (event: LaneChangedEvent) => void;
   onStatusChanged?: (event: StatusChangedEvent) => void;
   onTaskUpdated?: (event: TaskUpdatedEvent) => void;
@@ -154,6 +161,7 @@ interface UseBoardSignalROptions {
 
 function useBoardSignalR({
   projectId,
+  projectIds,
   onLaneChanged,
   onStatusChanged,
   onTaskUpdated,
@@ -168,9 +176,16 @@ function useBoardSignalR({
   onConnected,
 }: UseBoardSignalROptions) {
   const { connection, isConnected } = useSignalRConnection();
+  // A stable key for the set of groups, so a new array with the same ids does not resubscribe.
+  const groupKey = (projectIds ?? (projectId ? [projectId] : [])).join(",");
 
   useEffect(() => {
     if (!connection || !isConnected) return;
+    const ids = groupKey ? groupKey.split(",") : [];
+    // No group, no handlers: handlers are per connection, not per group, so registering them
+    // here would deliver another board's events (e.g. a disabled metrics strip on the workspace
+    // board would refetch on every one of them).
+    if (ids.length === 0) return;
 
     // Reconcile only AFTER the group is joined. Refetching first would leave a window in
     // which a change lands between the fetch and the subscription, and is then never
@@ -179,9 +194,8 @@ function useBoardSignalR({
     // Join is idempotent and always sent (reconnects need the re-join); Leave is
     // ref-counted because the board and the autopilot toggle share one connection, and one
     // unmounting must not kick the other out of the group.
-    trackGroupJoin(`board:${projectId}`);
-    connection
-      .invoke("JoinBoard", projectId)
+    for (const id of ids) trackGroupJoin(`board:${id}`);
+    Promise.all(ids.map((id) => connection.invoke("JoinBoard", id)))
       .then(() => onConnected?.())
       .catch(() => {
         // SignalR may not be available
@@ -245,11 +259,13 @@ function useBoardSignalR({
       connection.off("MilestoneChanged", handleMilestoneChanged);
       connection.off("MilestonePlanChanged", handleMilestonePlanChanged);
       connection.off("AutopilotChanged", handleAutopilotChanged);
-      if (trackGroupLeave(`board:${projectId}`)) {
-        connection.invoke("LeaveBoard", projectId).catch(() => {});
+      for (const id of ids) {
+        if (trackGroupLeave(`board:${id}`)) {
+          connection.invoke("LeaveBoard", id).catch(() => {});
+        }
       }
     };
-  }, [connection, isConnected, projectId, onLaneChanged, onStatusChanged, onTaskUpdated, onTaskCreated, onTaskDeleted, onTaskMergeFailed, onTaskDependenciesChanged, onTaskLastMessageChanged, onMilestoneChanged, onMilestonePlanChanged, onAutopilotChanged, onConnected]);
+  }, [connection, isConnected, groupKey, onLaneChanged, onStatusChanged, onTaskUpdated, onTaskCreated, onTaskDeleted, onTaskMergeFailed, onTaskDependenciesChanged, onTaskLastMessageChanged, onMilestoneChanged, onMilestonePlanChanged, onAutopilotChanged, onConnected]);
 }
 
 export { useBoardSignalR };

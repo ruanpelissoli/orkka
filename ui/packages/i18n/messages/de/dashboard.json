@@ -718,7 +718,8 @@
     "activity": "Aktivität",
     "skills": "Skills",
     "automation": "Automatisierung",
-    "memory": "Gedächtnis"
+    "memory": "Gedächtnis",
+    "workspaceBoard": "Workspace-Board"
   },
   "documents": {
     "title": "Dokumente",
@@ -1098,7 +1099,19 @@
     "notFromTracker": "Nicht aus einem Tracker",
     "milestoneFilter": "Meilenstein",
     "code": "Code",
-    "viewSwitch": "Board-Ansicht"
+    "viewSwitch": "Board-Ansicht",
+    "workspaceBoard": "Workspace-Board"
+  },
+  "workspaceBoard": {
+    "title": "Workspace-Board",
+    "subtitle": "Alle Aufgaben dieses Workspace, über alle Projekte",
+    "subtitleNamed": "Alle Aufgaben in {workspace}, über alle Projekte",
+    "projectFilter": "Projekt",
+    "allProjects": "Alle Projekte",
+    "openProjectBoard": "Projekt-Board öffnen",
+    "newTaskIn": "Neue Aufgabe in…",
+    "unknownProject": "Dieses Projekt gehört nicht zu diesem Workspace, daher werden alle Projekte angezeigt.",
+    "showAll": "Alle Projekte anzeigen"
   },
   "firstRun": {
     "title": "Noch keine Projekte",
@@ -2457,6 +2470,10 @@
         "title": "Projekteinstellungen",
         "body": "Pipeline-Spalten, Autonomie, Integrationen und alles Weitere zum Betrieb dieses Projekts."
       },
+      "workspaceBoard": {
+        "title": "Workspace-Board",
+        "body": "Alle Aufgaben dieses Workspace aus allen Projekten auf einem Board. Mit dem Filter auf ein Projekt eingrenzen; hier öffnet sich Orkka."
+      },
       "inbox": {
         "title": "Posteingang",
         "body": "Alles, was einen Menschen braucht – projektübergreifend: Rückfragen von Agenten, Pläne zur Freigabe, Reviews zum Mergen."
@@ -2501,6 +2518,7 @@
     "machine": "Rechner",
     "trackers": "Tracker",
     "mcpKeys": "MCP-Schlüssel",
-    "usage": "Nutzung"
+    "usage": "Nutzung",
+    "workspaceBoard": "Workspace-Board"
   }
 }

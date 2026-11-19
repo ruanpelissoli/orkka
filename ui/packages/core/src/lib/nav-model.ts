@@ -73,7 +73,10 @@ function getProjectNav(projectId: string, t: NavTranslator): NavItem[] {
 }
 
 function getGlobalNav(t: NavTranslator): NavItem[] {
+  // The workspace board leads: every task of this workspace across its projects, the landing
+  // page. Shown inside a project too, one click from that project's own board.
   return [
+    { key: "workspaceBoard", label: t("sidebar.workspaceBoard"), href: "/board", icon: "board", exact: true },
     { key: "inbox", label: t("sidebar.inbox"), href: "/inbox", icon: "inbox" },
     { key: "notifications", label: t("sidebar.notifications"), href: "/notifications", icon: "bell" },
     { key: "account", label: t("settingsNav.title"), href: "/settings", icon: "settings" },
@@ -83,7 +86,7 @@ function getGlobalNav(t: NavTranslator): NavItem[] {
 function getMobileTabs(projectId: string | undefined, t: NavTranslator): MobileTab[] {
   if (!projectId) {
     return [
-      { key: "home", label: t("mobileNav.home"), href: "/dashboard", icon: "home", exact: true },
+      { key: "board", label: t("mobileNav.board"), href: "/board", icon: "board", exact: true },
       { key: "alerts", label: t("mobileNav.alerts"), href: "/notifications", icon: "bell" },
       { key: "settings", label: t("mobileNav.settings"), href: "/settings", icon: "settings" },
     ];

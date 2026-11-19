@@ -118,6 +118,11 @@ const dashboardRoutes: RouteObject[] = [
     path: "dashboard",
     element: page(() => import("@/app/[locale]/(dashboard)/dashboard/page")),
   },
+  // The workspace board: every project's tasks, with a project filter. The landing page.
+  {
+    path: "board",
+    element: page(() => import("@/app/[locale]/(dashboard)/board/page"), <BoardSkeleton />),
+  },
   { path: "inbox", element: page(() => import("@/app/[locale]/(dashboard)/inbox/page")) },
   {
     path: "notifications",

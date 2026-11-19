@@ -718,7 +718,8 @@
     "activity": "Atividade",
     "skills": "Skills",
     "automation": "Automação",
-    "memory": "Memória"
+    "memory": "Memória",
+    "workspaceBoard": "Quadro do workspace"
   },
   "documents": {
     "title": "Documentos",
@@ -1098,7 +1099,19 @@
     "notFromTracker": "Não veio de um gerenciador de tickets",
     "milestoneFilter": "Marco",
     "code": "Código",
-    "viewSwitch": "Visualização do quadro"
+    "viewSwitch": "Visualização do quadro",
+    "workspaceBoard": "Quadro do workspace"
+  },
+  "workspaceBoard": {
+    "title": "Quadro do workspace",
+    "subtitle": "Todas as tarefas deste workspace, em todos os projetos",
+    "subtitleNamed": "Todas as tarefas de {workspace}, em todos os projetos",
+    "projectFilter": "Projeto",
+    "allProjects": "Todos os projetos",
+    "openProjectBoard": "Abrir o quadro do projeto",
+    "newTaskIn": "Nova tarefa em…",
+    "unknownProject": "Esse projeto não está neste workspace, então todos os projetos são mostrados.",
+    "showAll": "Mostrar todos os projetos"
   },
   "firstRun": {
     "title": "Nenhum projeto ainda",
@@ -2457,6 +2470,10 @@
         "title": "Configurações do projeto",
         "body": "Colunas do pipeline, autonomia, integrações e todo o resto sobre como este projeto funciona."
       },
+      "workspaceBoard": {
+        "title": "Quadro do workspace",
+        "body": "Todas as tarefas deste workspace, de todos os projetos, em um só quadro. Filtre por um projeto quando quiser; é onde o Orkka abre."
+      },
       "inbox": {
         "title": "Caixa de entrada",
         "body": "Tudo que depende de uma pessoa, em todos os seus projetos: perguntas dos agentes, planos para aprovar, revisões para dar merge."
@@ -2501,6 +2518,7 @@
     "machine": "Máquina",
     "trackers": "Trackers",
     "mcpKeys": "Chaves MCP",
-    "usage": "Uso"
+    "usage": "Uso",
+    "workspaceBoard": "Quadro do workspace"
   }
 }

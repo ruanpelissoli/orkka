@@ -54,6 +54,7 @@ const SETTINGS_SECTIONS: Record<string, string> = {
 /** Top-level pages. */
 const TOP_LEVEL: Record<string, CrumbLabelKey> = {
   dashboard: { namespace: "common", key: "nav.dashboard" },
+  board: dash("sidebar.workspaceBoard"),
   inbox: dash("sidebar.inbox"),
   notifications: dash("sidebar.notifications"),
   projects: dash("sidebar.projects"),

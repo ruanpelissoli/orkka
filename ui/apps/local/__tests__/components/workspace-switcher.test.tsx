@@ -71,7 +71,7 @@ describe("WorkspaceSwitcher", () => {
     fireEvent.click(screen.getByRole("button", { expanded: false }));
     fireEvent.click(screen.getByTestId(`workspace-option-${WS_B}`));
 
-    await waitFor(() => expect(hardNavigate).toHaveBeenCalledWith("/en/dashboard"));
+    await waitFor(() => expect(hardNavigate).toHaveBeenCalledWith("/en/board"));
     expect(getClientWorkspace()).toBe(WS_B);
     expect(mockInvalidateApiCache).toHaveBeenCalled();
     expect(mockApi.workspaces.setActive).toHaveBeenCalledWith(WS_B, "");
@@ -90,7 +90,7 @@ describe("WorkspaceSwitcher", () => {
     expect(await screen.findAllByLabelText("runnerOnline")).not.toHaveLength(0);
   });
 
-  it("creates a workspace by name and opens its dashboard", async () => {
+  it("creates a workspace by name and opens its board", async () => {
     const WS_C = "01JCCCCCCCCCCCCCCCCCCCCCCC";
     mockApi.workspaces.create.mockResolvedValue({
       orgId: WS_C,
@@ -106,7 +106,7 @@ describe("WorkspaceSwitcher", () => {
     fireEvent.change(screen.getByLabelText("nameLabel"), { target: { value: "Initech" } });
     fireEvent.click(screen.getByRole("button", { name: "create" }));
 
-    await waitFor(() => expect(hardNavigate).toHaveBeenCalledWith("/en/dashboard"));
+    await waitFor(() => expect(hardNavigate).toHaveBeenCalledWith("/en/board"));
     expect(mockApi.workspaces.create).toHaveBeenCalledWith("Initech", "");
     expect(getClientWorkspace()).toBe(WS_C);
   });
@@ -115,7 +115,7 @@ describe("WorkspaceSwitcher", () => {
     setClientWorkspace("01JZZZZZZZZZZZZZZZZZZZZZZZ");
     show(WS_A, true);
 
-    await waitFor(() => expect(hardNavigate).toHaveBeenCalledWith("/en/dashboard"));
+    await waitFor(() => expect(hardNavigate).toHaveBeenCalledWith("/en/board"));
     expect(getClientWorkspace()).toBe(WS_A);
   });
 });
