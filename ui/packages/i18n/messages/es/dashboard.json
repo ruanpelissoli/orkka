@@ -718,7 +718,8 @@
     "activity": "Actividad",
     "skills": "Skills",
     "automation": "Automatización",
-    "memory": "Memoria"
+    "memory": "Memoria",
+    "workspaceBoard": "Tablero del espacio de trabajo"
   },
   "documents": {
     "title": "Documentos",
@@ -1098,7 +1099,19 @@
     "notFromTracker": "No viene de un gestor de tickets",
     "milestoneFilter": "Hito",
     "code": "Código",
-    "viewSwitch": "Vista del tablero"
+    "viewSwitch": "Vista del tablero",
+    "workspaceBoard": "Tablero del espacio de trabajo"
+  },
+  "workspaceBoard": {
+    "title": "Tablero del espacio de trabajo",
+    "subtitle": "Todas las tareas de este espacio de trabajo, en todos sus proyectos",
+    "subtitleNamed": "Todas las tareas de {workspace}, en todos sus proyectos",
+    "projectFilter": "Proyecto",
+    "allProjects": "Todos los proyectos",
+    "openProjectBoard": "Abrir el tablero del proyecto",
+    "newTaskIn": "Nueva tarea en…",
+    "unknownProject": "Ese proyecto no está en este espacio de trabajo, así que se muestran todos los proyectos.",
+    "showAll": "Mostrar todos los proyectos"
   },
   "firstRun": {
     "title": "Aún no hay proyectos",
@@ -2457,6 +2470,10 @@
         "title": "Ajustes del proyecto",
         "body": "Carriles del flujo, autonomía, integraciones y todo lo demás sobre cómo funciona este proyecto."
       },
+      "workspaceBoard": {
+        "title": "Tablero del espacio de trabajo",
+        "body": "Todas las tareas de este espacio de trabajo, de todos sus proyectos, en un solo tablero. Filtra por un proyecto cuando quieras; es donde se abre Orkka."
+      },
       "inbox": {
         "title": "Bandeja de entrada",
         "body": "Todo lo que espera a una persona, en todos tus proyectos: preguntas de los agentes, planes por aprobar, revisiones por fusionar."
@@ -2501,6 +2518,7 @@
     "machine": "Máquina",
     "trackers": "Trackers",
     "mcpKeys": "Claves MCP",
-    "usage": "Uso"
+    "usage": "Uso",
+    "workspaceBoard": "Tablero del espacio de trabajo"
   }
 }

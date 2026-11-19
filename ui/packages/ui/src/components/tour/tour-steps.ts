@@ -54,6 +54,7 @@ function getTourSteps(projectId: string): TourStep[] {
     { key: "design", href: project("/design"), anchor: "nav-design" },
     { key: "architect", href: project("/architect"), anchor: "nav-architect" },
     { key: "settings", href: project("/settings"), anchor: "nav-settings" },
+    { key: "workspaceBoard", href: "/board", anchor: "nav-workspaceBoard" },
     { key: "inbox", href: "/inbox", anchor: "nav-inbox" },
     { key: "notifications", href: "/notifications", anchor: "nav-notifications" },
     { key: "account", href: "/settings", anchor: "nav-account" },

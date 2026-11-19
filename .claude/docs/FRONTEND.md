@@ -17,9 +17,10 @@ ui/
 │   ├── app/                            # page and layout modules, in their URL's folder layout
 │   │   └── [locale]/                   # every URL carries a locale prefix (/en/…)
 │   │       ├── layout.tsx, error.tsx, not-found.tsx
-│   │       ├── page.tsx                # → /dashboard
+│   │       ├── page.tsx                # → /board
 │   │       └── (dashboard)/            # route group: the signed-in shell (sidebar, providers;
 │   │           │                       #   loads workspaces + api.org.me in the browser)
+│   │           ├── board/              # the workspace board: every project's tasks (?project= narrows)
 │   │           ├── dashboard/          # empty state → /projects/new, else → /p/{last or first project}
 │   │           ├── inbox/              # what waits on you
 │   │           ├── notifications/
@@ -68,10 +69,10 @@ route table — every URL the app answers, in one file:
 /:locale                           app/[locale]/layout.tsx — catalogs, IntlProvider, NEXT_LOCALE cookie,
 │                                  <html lang>, default title; a non-locale first segment = an
 │                                  unprefixed URL → redirected to /{preferred locale}/…
-├── (index)                        app/[locale]/page.tsx → /dashboard
+├── (index)                        app/[locale]/page.tsx → /board
 ├── (errorElement)                 app/[locale]/error.tsx (stale chunk after a rebuild → full reload)
 ├── (dashboard layout)             app/[locale]/(dashboard)/layout.tsx, Suspense → DashboardSkeleton
-│   ├── dashboard, inbox, notifications, projects, projects/new
+│   ├── board (BoardSkeleton), dashboard, inbox, notifications, projects, projects/new
 │   ├── p/:projectId/…             overview, board (BoardSkeleton), tasks, tasks/new, tasks/:taskId
 │   │                              (+ merge, review), roadmap (+ :milestoneId), repos, team
 │   │                              (TeamSkeleton), architect, activity, automation, memory, skills,
@@ -189,7 +190,31 @@ returned as `{ error }` so the API's reason reaches the user.
 
 ### Realtime
 SignalR (`useBoardSignalR`, `useTaskSignalR`, …) still hydrates live data on top of what a page
-loaded; the board and task detail keep their own subscriptions.
+loaded; the board and task detail keep their own subscriptions. Hub handlers are per connection,
+not per group: one `useBoardSignalR` call joins one project (`projectId`) or several
+(`projectIds`) with ONE set of handlers — never call it once per project — and with no project it
+joins and listens to nothing.
+
+### Workspace board
+`/{locale}/board` (`app/[locale]/(dashboard)/board/page.tsx`) is the landing page: `/`, a workspace
+switch and a new workspace all go there; `/dashboard` still opens the last project. It shows every
+task of the workspace across its projects through the project board's own `TaskBoard`, given a
+`workspace` scope (`{ project, projectUlids }`):
+- **Data:** `api.board.workspace(project)` (`GET /api/board`) and `api.board.searchWorkspace`;
+  every card carries `project` (`BoardProjectRef`). A created task refetches the board (the hub
+  event names no project); every other event patches the lanes as on a project board.
+- **Filter:** `?project=<slug>` (a select: "All projects" + each project); an unknown value shows
+  every project with a notice. Narrowed, cards lose their project badge, the page links to the
+  project's own board, and only that project's group is joined.
+- **Cards:** badged with the project name when every project shows; `?task=` takes the task
+  CODE (numbers repeat across projects); the detail modal loads the card's own project. A card
+  never drops into Testing when its project has none (`project.hasTesting`, `LaneColumn`
+  `activeDragAllowsTesting`). No metrics strip or lane summaries — they are per project
+  (`useBoardMetrics({ enabled: false })`).
+- **New task:** narrowed (or a single project) → straight to that project's `tasks/new`;
+  otherwise a menu asks which project.
+- Nav: the global nav leads with "Workspace board" (sidebar, mobile tab bar, product tour step
+  `workspaceBoard`); the project board links back to it.
 
 ---
 

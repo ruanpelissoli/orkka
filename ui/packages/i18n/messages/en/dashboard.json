@@ -718,7 +718,8 @@
     "activity": "Activity",
     "skills": "Skills",
     "automation": "Automation",
-    "memory": "Memory"
+    "memory": "Memory",
+    "workspaceBoard": "Workspace board"
   },
   "documents": {
     "title": "Documents",
@@ -1098,7 +1099,19 @@
     "notFromTracker": "Not from a tracker",
     "milestoneFilter": "Milestone",
     "code": "Code",
-    "viewSwitch": "Board view"
+    "viewSwitch": "Board view",
+    "workspaceBoard": "Workspace board"
+  },
+  "workspaceBoard": {
+    "title": "Workspace board",
+    "subtitle": "Every task in this workspace, across its projects",
+    "subtitleNamed": "Every task in {workspace}, across its projects",
+    "projectFilter": "Project",
+    "allProjects": "All projects",
+    "openProjectBoard": "Open project board",
+    "newTaskIn": "New task in…",
+    "unknownProject": "That project is not in this workspace, so every project is shown.",
+    "showAll": "Show all projects"
   },
   "firstRun": {
     "title": "No projects yet",
@@ -2457,6 +2470,10 @@
         "title": "Project settings",
         "body": "Pipeline lanes, autonomy, integrations, and everything else about how this project runs."
       },
+      "workspaceBoard": {
+        "title": "Workspace board",
+        "body": "Every task of this workspace, across all its projects, on one board. Narrow it to one project with the filter; it's where Orkka opens."
+      },
       "inbox": {
         "title": "Inbox",
         "body": "Everything waiting on a human, across all your projects — questions from agents, plans to approve, reviews to merge."
@@ -2501,6 +2518,7 @@
     "machine": "Machine",
     "trackers": "Trackers",
     "mcpKeys": "MCP keys",
-    "usage": "Usage"
+    "usage": "Usage",
+    "workspaceBoard": "Workspace board"
   }
 }

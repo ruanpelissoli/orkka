@@ -63,6 +63,7 @@ Then choose:
 ### 3. Tickets become tasks
 
 Every ticket assigned to you in a pickup status lands on the board.
+Orkka opens on the **workspace board**: every task of the workspace (one per job) across all its projects, with a filter to narrow it to one project.
 A **Story** with sub-tasks becomes one shared branch with one pull request, and its sub-tasks are worked in tracker order.
 
 <p align="center"><img src="docs/images/board.png" alt="The board: a two-sub-task Story finished, with time, token and failure-rate stats per lane" width="860"></p>

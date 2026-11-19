@@ -66,11 +66,12 @@ export function WorkspaceProvider({ workspaces, currentId, stale, children }: Wo
     if (getClientWorkspace() === currentId) return;
     fixed.current = true;
     setClientWorkspace(currentId);
-    if (stale) hardNavigate(localized("/dashboard"));
+    if (stale) hardNavigate(localized("/board"));
   }, [currentId, stale, localized]);
 
   const switchTo = useCallback(
-    async (orgId: string, path = "/dashboard") => {
+    // A switched-to workspace opens on its board: every project of that job at once.
+    async (orgId: string, path = "/board") => {
       setClientWorkspace(orgId);
       invalidateApiCache();
       await disconnect().catch(() => undefined);
@@ -92,7 +93,7 @@ export function WorkspaceProvider({ workspaces, currentId, stale, children }: Wo
     async (name: string) => {
       const token = await getToken();
       const created = await api.workspaces.create(name, token);
-      await switchTo(created.orgId, "/dashboard");
+      await switchTo(created.orgId, "/board");
     },
     [getToken, switchTo]
   );

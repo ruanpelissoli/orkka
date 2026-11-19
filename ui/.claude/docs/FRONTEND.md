@@ -2,7 +2,7 @@
 
 ## Overview
 
-A static single-page app (Vite + React Router + use-intl), built to `apps/local/dist` and served by the Orkka host on the developer's own machine — no Node at runtime. Mobile-first. Every page loads its data in the browser (see Core Rules). No accounts and no Clerk: the local host authenticates (see **Auth** below). SignalR for real-time updates. Tailwind CSS v4. There is no landing page, marketing site or SEO surface — `/` goes straight to the dashboard.
+A static single-page app (Vite + React Router + use-intl), built to `apps/local/dist` and served by the Orkka host on the developer's own machine — no Node at runtime. Mobile-first. Every page loads its data in the browser (see Core Rules). No accounts and no Clerk: the local host authenticates (see **Auth** below). SignalR for real-time updates. Tailwind CSS v4. There is no landing page, marketing site or SEO surface — `/` goes straight to the workspace board (every task of the workspace, across its projects).
 
 ---
 
@@ -20,9 +20,10 @@ apps/local/
 │   └── [locale]/
 │       ├── layout.tsx                  # Catalogs + IntlProvider, NEXT_LOCALE cookie, unprefixed-URL redirect
 │       ├── error.tsx, not-found.tsx    # Route error boundary, 404
-│       ├── page.tsx                    # Client redirect to /dashboard
+│       ├── page.tsx                    # Client redirect to /board
 │       └── (dashboard)/
 │           ├── layout.tsx              # Client: loads workspaces + org.me → permissions, preferences, SignalR
+│           ├── board/page.tsx          # The workspace board: every project's tasks, ?project= narrows
 │           ├── dashboard/page.tsx      # Last project, or the first-run "Create a project" state
 │           ├── projects/new/page.tsx   # Create a project from a base folder (discovery preview)
 │           ├── p/[projectId]/          # Overview, board, tasks, repos, team, memory, skills,
@@ -59,10 +60,10 @@ route table — every URL the app answers, in one file:
 /:locale                           app/[locale]/layout.tsx — catalogs, IntlProvider, NEXT_LOCALE cookie,
 │                                  <html lang>, default title; a non-locale first segment = an
 │                                  unprefixed URL → redirected to /{preferred locale}/…
-├── (index)                        app/[locale]/page.tsx → /dashboard
+├── (index)                        app/[locale]/page.tsx → /board
 ├── (errorElement)                 app/[locale]/error.tsx (stale chunk after a rebuild → full reload)
 ├── (dashboard layout)             app/[locale]/(dashboard)/layout.tsx, Suspense → DashboardSkeleton
-│   ├── dashboard, inbox, notifications, projects, projects/new
+│   ├── board (BoardSkeleton), dashboard, inbox, notifications, projects, projects/new
 │   ├── p/:projectId/…             overview, board (BoardSkeleton), tasks, tasks/new, tasks/:taskId
 │   │                              (+ merge, review), roadmap (+ :milestoneId), repos, team
 │   │                              (TeamSkeleton), architect, activity, automation, memory, skills,
@@ -180,7 +181,23 @@ returned as `{ error }` so the API's reason reaches the user.
 
 ### Realtime
 SignalR (`useBoardSignalR`, `useTaskSignalR`, …) still hydrates live data on top of what a page
-loaded; the board and task detail keep their own subscriptions.
+loaded; the board and task detail keep their own subscriptions. Hub handlers are per connection,
+not per group: one `useBoardSignalR` call joins one project (`projectId`) or several
+(`projectIds`) with ONE set of handlers — never call it once per project — and with no project it
+joins and listens to nothing.
+
+### Workspace board
+`/{locale}/board` is the landing page (`/`, a workspace switch and a new workspace go there;
+`/dashboard` still opens the last project): every task of the workspace across its projects, in
+the project board's own `TaskBoard` given a `workspace` scope (`{ project, projectUlids }`).
+`api.board.workspace` / `searchWorkspace` (`GET /api/board[/search]`) return cards that carry
+their `project`; `?project=<slug>` narrows the board (an unknown value shows every project with a
+notice); cards are badged with their project when every project shows, `?task=` takes the task
+CODE, the detail modal loads the card's own project, a card never drops into a Testing lane its
+project lacks, and there is no metrics strip (per project). "New task" goes straight to the
+narrowed (or only) project, otherwise a menu asks which project. The global nav leads with
+"Workspace board"; the project board links to it. Full notes: the repository root's
+`.claude/docs/FRONTEND.md` → Workspace board.
 
 ---
 

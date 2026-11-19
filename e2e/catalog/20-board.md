@@ -761,3 +761,192 @@ since: 2026-09-15
 - No unread indicator lights up and no lane refetch happens for these events (informational only; refreshing on every chunk would storm the API).
 - Reloading the board renders the same preview from `lastAgentMessage` in the board payload.
 **Notes**: the preview is not shown for tasks without an agent message.
+
+## BRD-039 Workspace board shows every project's tasks, each badged with its project
+```yaml
+priority: P0
+surface: [ui, api]
+automation: planned
+refs:
+  - orkka-ui:/board
+  - orkka-api:GET /api/board
+  - orkka-ui:packages/ui/src/components/board/TaskCard.tsx
+  - i18n:workspaceBoard
+since: 2026-11-19
+```
+**Preconditions**: a fresh workspace with projects `e2e-shop-<stamp>` (key SHOP) and `e2e-bill-<stamp>` (key BILL), one Drafting task in each (both number 1).
+**Steps**:
+1. Open `/board` (or click "Workspace board" in the sidebar).
+2. `GET /api/board`.
+**Expected**:
+- Heading "Workspace board", subtitle "Every task in {workspace name}, across its projects"; the sidebar item "Workspace board" is highlighted.
+- The Drafting lane holds both cards; each card carries a project badge (`e2e-shop-…`, `e2e-bill-…`) and its own code (SHOP-1, BILL-1).
+- The project filter reads "All projects" and lists both projects by name; there is no metrics strip and no time-window selector (metrics are per project).
+- API: 200 `{lanes:[…]}` in pipeline order; every card has `project {id, key, name, slug, hasTesting}` and a `code` with its own project's key.
+**Notes**: every task in Orkka is the developer's own work (tracker intake only takes tickets assigned to them), so this is everything assigned to them in the workspace — there is no assignee filter.
+
+## BRD-040 Narrow the workspace board to one project from the filter; it stays in the URL
+```yaml
+priority: P1
+surface: [ui, api]
+automation: planned
+refs:
+  - orkka-ui:/board
+  - orkka-api:GET /api/board
+  - i18n:workspaceBoard
+since: 2026-11-19
+```
+**Preconditions**: as BRD-039.
+**Steps**:
+1. On `/board`, pick `e2e-bill-…` in the project filter.
+2. Reload; click "Open project board".
+3. Open `/board?project=no-such-project`; click "Show all projects".
+4. `GET /api/board?projectId={billSlug}`, then `?projectId={billId}`.
+**Expected**:
+- The URL becomes `/board?project={billSlug}`; only BILL-1 shows and cards carry no project badge; an open `?task=` is dropped.
+- After reload the filter still reads `e2e-bill-…`; "Open project board" goes to `/p/{billSlug}/board`.
+- An unknown `?project=` shows every project with the notice "That project is not in this workspace, so every project is shown."; "Show all projects" removes the parameter.
+- API: both forms return only BILL's tasks.
+
+## BRD-041 The workspace board's Testing lane, drag rules and archived toggle
+```yaml
+priority: P1
+surface: [ui, api]
+automation: planned
+refs:
+  - orkka-ui:/board
+  - orkka-api:GET /api/board
+  - orkka-api:PATCH /api/tasks/{id}/lane
+  - orkka-ui:packages/ui/src/components/board/LaneColumn.tsx
+since: 2026-11-19
+```
+**Preconditions**: as BRD-039, with QA enabled on BILL only (`PATCH /api/projects/{bill} {settings:{…, qaEnabled:true}}`); a SHOP task and a BILL task staged in Code Review; one more SHOP task archived.
+**Steps**:
+1. `GET /api/board`; `GET /api/board?projectId={shopSlug}`.
+2. On `/board`, drag the BILL card from Code Review to Testing; drag the SHOP card toward Testing, then to Developing.
+3. Tick "Include archived".
+**Expected**:
+- With every project the lanes include Testing (BILL tests); narrowed to SHOP they do not. `project.hasTesting` is true on BILL cards, false on SHOP cards.
+- The BILL card drops into Testing (`PATCH …/lane {targetLane:"Testing"}` → 200). While the SHOP card is dragged, Testing is dimmed and refuses the drop (no request); Developing accepts it.
+- "Include archived" refetches `GET /api/board?includeArchived=true` and the archived SHOP card appears faded.
+
+## BRD-042 Open a task from the workspace board in its own project
+```yaml
+priority: P1
+surface: [ui]
+automation: planned
+refs:
+  - orkka-ui:/board
+  - orkka-ui:packages/ui/src/components/board/TaskDetailModal.tsx
+since: 2026-11-19
+```
+**Preconditions**: as BRD-039 (SHOP-1 and BILL-1 share the number 1).
+**Steps**:
+1. On `/board`, click the BILL-1 card.
+2. Reload; click the modal's link to the task page.
+**Expected**:
+- The URL gains `?task=BILL-1` (the code, not the number — numbers repeat across projects) and the modal shows BILL-1, not SHOP-1.
+- After reload the same task is open; its full-page link goes to `/p/{billSlug}/tasks/1`.
+
+## BRD-043 New task from the workspace board asks which project
+```yaml
+priority: P1
+surface: [ui]
+automation: planned
+refs:
+  - orkka-ui:/board
+  - orkka-ui:/p/[projectId]/tasks/new
+  - i18n:workspaceBoard
+since: 2026-11-19
+```
+**Preconditions**: as BRD-039.
+**Steps**:
+1. On `/board` (all projects), click "New Task"; pick `e2e-shop-…`.
+2. On `/board?project={billSlug}`, click "New Task".
+3. Repeat step 1 in a workspace with a single project.
+**Expected**:
+- Step 1: a menu opens with the heading item "New task in…" (not selectable) and both projects; picking SHOP goes to `/p/{shopSlug}/tasks/new?from=board`.
+- Step 2: no menu — the button links straight to `/p/{billSlug}/tasks/new?from=board`.
+- Step 3: no menu — the only project is used.
+- Without TasksCreate the button is absent.
+
+## BRD-044 The workspace board updates live for every project
+```yaml
+priority: P1
+surface: [ui, hub]
+automation: planned
+refs:
+  - orkka-ui:/board
+  - orkka-ui:packages/core/src/hooks/use-board-signalr.ts
+  - hub:TaskHub.LaneChanged
+  - hub:TaskHub.TaskCreated
+since: 2026-11-19
+```
+**Preconditions**: as BRD-039; `/board` open in the browser.
+**Steps**:
+1. From another client, `PATCH /api/tasks/{shopTask}/lane {targetLane:"Ready"}` then `POST /api/tasks/{shopTask}/block`.
+2. `POST /api/projects/{bill}/tasks {title:"live-created"}`.
+3. Pick `e2e-shop-…` in the filter and move the BILL task the same way.
+**Expected**:
+- The hub connection invokes `JoinBoard` once per project of the workspace (each checked against the caller's workspace, as on a project board).
+- Step 1: the SHOP card moves to Ready without a reload.
+- Step 2: the board refetches `GET /api/board` and "live-created" appears in Drafting with its BILL badge and code.
+- Step 3: narrowed to SHOP, the connection has left BILL's group (`LeaveBoard`) and the BILL move changes nothing on screen.
+
+## BRD-045 Workspace board isolation: another workspace's projects never show
+```yaml
+priority: P0
+surface: [api]
+automation: planned
+refs:
+  - orkka-api:GET /api/board
+  - orkka-api:GET /api/board/search
+since: 2026-11-19
+```
+**Preconditions**: workspaces A and B, each with a project and a task (`needle-A`, `needle-B`).
+**Steps**:
+1. With `X-Orkka-Workspace: A`: `GET /api/board`; `GET /api/board/search?q=needle`.
+2. `GET /api/board?projectId={B's project id}` and `?projectId={B's slug}`; `GET /api/board/search?q=needle&projectId={B's id}`.
+3. `GET /api/board?projectId={random ULID}`.
+4. In a workspace with no projects: `GET /api/board`.
+**Expected**:
+- 1 → only A's task; the search returns `needle-A` only.
+- 2 and 3 → 404 (another workspace's project is indistinguishable from none).
+- 4 → 200 with the lanes and no tasks.
+
+## BRD-046 Search the workspace board
+```yaml
+priority: P2
+surface: [ui, api]
+automation: planned
+refs:
+  - orkka-ui:/board
+  - orkka-api:GET /api/board/search
+since: 2026-11-19
+```
+**Preconditions**: as BRD-039 with titles "Export the cart" (SHOP) and "Export invoices" (BILL).
+**Steps**:
+1. On `/board`, type `export` in the search box.
+2. Narrow the filter to `e2e-shop-…`; search again.
+3. `GET /api/board/search?q=export&includeArchived=true&includeMessages=true`.
+**Expected**:
+- Step 1: the grid shows both cards with their project badges (`GET /api/board/search?q=export…`).
+- Step 2: only "Export the cart" (`…&projectId={shopSlug}`).
+- Step 3: 200, the same card shape as the board, at most 100.
+
+## BRD-047 The project board links to the workspace board
+```yaml
+priority: P2
+surface: [ui]
+automation: planned
+refs:
+  - orkka-ui:/p/[projectId]/board
+  - orkka-ui:/board
+  - i18n:boardPage
+since: 2026-11-19
+```
+**Preconditions**: any project.
+**Steps**:
+1. Open `/p/{slug}/board`; click "Workspace board" next to the view switch.
+**Expected**:
+- Lands on `/board` showing every project of the workspace. The link is hidden below the `sm` breakpoint (the sidebar item "Workspace board" remains).

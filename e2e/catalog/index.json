@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-18T20:21:16.568Z",
+  "generatedAt": "2026-11-19T14:42:44.913Z",
   "counts": {
-    "total": 716,
+    "total": 725,
     "files": 37,
     "byArea": {
       "ONB": 4,
@@ -12,7 +12,7 @@
       "FRG": 13,
       "TSRC": 24,
       "TCLI": 13,
-      "BRD": 37,
+      "BRD": 46,
       "TSK": 52,
       "PLN": 16,
       "PR": 20,
@@ -43,19 +43,19 @@
       "GRD": 8
     },
     "byAutomation": {
-      "planned": 596,
+      "planned": 605,
       "automated": 86,
       "manual": 33,
       "blocked": 1
     },
     "byPriority": {
-      "P1": 347,
-      "P2": 219,
-      "P0": 127,
+      "P1": 352,
+      "P2": 221,
+      "P0": 129,
       "P3": 23
     },
     "byMode": {
-      "all": 377,
+      "all": 386,
       "hybrid-repo": 226,
       "hybrid-folder": 52,
       "offline": 17,
@@ -86,6 +86,8 @@
       "DELETE /api/tasks/{taskId}/resolve-merge/queued",
       "DELETE /api/trackers/connections/{connectionId}",
       "GET /api/audit",
+      "GET /api/board",
+      "GET /api/board/search",
       "GET /api/inbox",
       "GET /api/me/api-keys",
       "GET /api/me/runner",
@@ -297,6 +299,7 @@
     ],
     "uiPages": [
       "/",
+      "/board",
       "/dashboard",
       "/inbox",
       "/notifications",
@@ -438,6 +441,7 @@
       "trackers",
       "uiMisc",
       "usagePage",
+      "workspaceBoard",
       "workspaceSettings",
       "workspaces"
     ],
@@ -752,7 +756,7 @@
       ],
       "automation": "planned",
       "refs": [
-        "orkka-ui:/dashboard",
+        "orkka-ui:/board",
         "orkka-ui:apps/local/components/workspace/WorkspaceSwitcher.tsx",
         "orkka-api:POST /api/me/active-workspace",
         "i18n:workspaces"
@@ -776,7 +780,7 @@
       ],
       "automation": "planned",
       "refs": [
-        "orkka-ui:/dashboard",
+        "orkka-ui:/board",
         "orkka-api:POST /api/workspaces",
         "orkka-api:POST /api/me/active-workspace",
         "i18n:workspaces",
@@ -800,7 +804,7 @@
       ],
       "automation": "planned",
       "refs": [
-        "orkka-ui:/dashboard",
+        "orkka-ui:/board",
         "orkka-ui:apps/local/components/workspace/WorkspaceProvider.tsx"
       ],
       "since": "2026-10-26",
@@ -4219,6 +4223,209 @@
         "hub:TaskHub.TaskLastMessageChanged"
       ],
       "since": "2026-09-15",
+      "tests": []
+    },
+    {
+      "id": "BRD-039",
+      "area": "BRD",
+      "title": "Workspace board shows every project's tasks, each badged with its project",
+      "file": "catalog/20-board.md",
+      "line": 765,
+      "priority": "P0",
+      "modes": [
+        "all"
+      ],
+      "surface": [
+        "ui",
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/board",
+        "orkka-api:GET /api/board",
+        "orkka-ui:packages/ui/src/components/board/TaskCard.tsx",
+        "i18n:workspaceBoard"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "BRD-040",
+      "area": "BRD",
+      "title": "Narrow the workspace board to one project from the filter; it stays in the URL",
+      "file": "catalog/20-board.md",
+      "line": 788,
+      "priority": "P1",
+      "modes": [
+        "all"
+      ],
+      "surface": [
+        "ui",
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/board",
+        "orkka-api:GET /api/board",
+        "i18n:workspaceBoard"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "BRD-041",
+      "area": "BRD",
+      "title": "The workspace board's Testing lane, drag rules and archived toggle",
+      "file": "catalog/20-board.md",
+      "line": 811,
+      "priority": "P1",
+      "modes": [
+        "all"
+      ],
+      "surface": [
+        "ui",
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/board",
+        "orkka-api:GET /api/board",
+        "orkka-api:PATCH /api/tasks/{id}/lane",
+        "orkka-ui:packages/ui/src/components/board/LaneColumn.tsx"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "BRD-042",
+      "area": "BRD",
+      "title": "Open a task from the workspace board in its own project",
+      "file": "catalog/20-board.md",
+      "line": 833,
+      "priority": "P1",
+      "modes": [
+        "all"
+      ],
+      "surface": [
+        "ui"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/board",
+        "orkka-ui:packages/ui/src/components/board/TaskDetailModal.tsx"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "BRD-043",
+      "area": "BRD",
+      "title": "New task from the workspace board asks which project",
+      "file": "catalog/20-board.md",
+      "line": 851,
+      "priority": "P1",
+      "modes": [
+        "all"
+      ],
+      "surface": [
+        "ui"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/board",
+        "orkka-ui:/p/[projectId]/tasks/new",
+        "i18n:workspaceBoard"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "BRD-044",
+      "area": "BRD",
+      "title": "The workspace board updates live for every project",
+      "file": "catalog/20-board.md",
+      "line": 873,
+      "priority": "P1",
+      "modes": [
+        "all"
+      ],
+      "surface": [
+        "ui",
+        "hub"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/board",
+        "orkka-ui:packages/core/src/hooks/use-board-signalr.ts",
+        "hub:TaskHub.LaneChanged",
+        "hub:TaskHub.TaskCreated"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "BRD-045",
+      "area": "BRD",
+      "title": "Workspace board isolation: another workspace's projects never show",
+      "file": "catalog/20-board.md",
+      "line": 896,
+      "priority": "P0",
+      "modes": [
+        "all"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:GET /api/board",
+        "orkka-api:GET /api/board/search"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "BRD-046",
+      "area": "BRD",
+      "title": "Search the workspace board",
+      "file": "catalog/20-board.md",
+      "line": 917,
+      "priority": "P2",
+      "modes": [
+        "all"
+      ],
+      "surface": [
+        "ui",
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/board",
+        "orkka-api:GET /api/board/search"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "BRD-047",
+      "area": "BRD",
+      "title": "The project board links to the workspace board",
+      "file": "catalog/20-board.md",
+      "line": 937,
+      "priority": "P2",
+      "modes": [
+        "all"
+      ],
+      "surface": [
+        "ui"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/p/[projectId]/board",
+        "orkka-ui:/board",
+        "i18n:boardPage"
+      ],
+      "since": "2026-11-19",
       "tests": []
     },
     {

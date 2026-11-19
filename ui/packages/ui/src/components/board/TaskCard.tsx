@@ -28,6 +28,8 @@ interface TaskCardProps {
    * and scale in from nothing under the cursor on every drag.
    */
   atRest?: boolean;
+  /** Badge the card with its project — the workspace board showing every project. */
+  showProject?: boolean;
 }
 
 function TaskTypeIcon({ type }: { type: string }) {
@@ -91,7 +93,8 @@ const ATTENTION_STATUSES: Record<string, { labelKey: string; color: string }> = 
   ReasoningTimeout: { labelKey: "attentionTimeout", color: "#f59e0b" }, // warning
 };
 
-function TaskCard({ task, onTaskClick, dragDisabled, milestoneName, atRest }: TaskCardProps) {
+function TaskCard({ task, onTaskClick, dragDisabled, milestoneName, atRest, showProject }: TaskCardProps) {
+  const project = showProject ? task.project : null;
   const t = useTranslations("dashboard");
   const labels = useLabels();
   const {
@@ -236,8 +239,20 @@ function TaskCard({ task, onTaskClick, dragDisabled, milestoneName, atRest }: Ta
         </AnimatePresence>
 
         {/* Repo name, cross-repo marker, and the tracker ticket the task came from */}
-        {(task.repoName || task.groupId || task.externalKey) && (
+        {(project || task.repoName || task.groupId || task.externalKey) && (
           <div className="mb-1.5 flex flex-wrap items-center gap-1">
+            {/* The workspace board mixes projects: the card says which one it belongs to. */}
+            {project && (
+              <Badge
+                size="sm"
+                variant="primary"
+                className="max-w-[160px] truncate"
+                title={project.name}
+                data-testid="task-card-project"
+              >
+                {project.name}
+              </Badge>
+            )}
             {task.externalKey && (
               <ExternalTicketBadge externalKey={task.externalKey} externalUrl={task.externalUrl} />
             )}

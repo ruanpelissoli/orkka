@@ -246,6 +246,12 @@ var channel = Channel.CreateBounded<TaskEntity>(100);
 | `TaskCompleted` | `project:{id}` | Task done |
 | `TaskFailed` | `project:{id}` | Task errored |
 
+### Board groups and the workspace board
+
+`TaskNotifier` sends board events (`LaneChanged`, `StatusChanged`, `TaskCreated`, `TaskUpdated`, `TaskDeleted`, `TaskMergeFailed`, `TaskDependenciesChanged`, `TaskLastMessageChanged`, milestone/autopilot events) to `board:{projectId}`, which a client joins with `TaskHub.JoinBoard(projectId)` — refused unless the project belongs to the caller's workspace (`HubSecurity.ResolveMembershipAsync`, honouring `?workspace=`). The workspace board needs no group of its own: it joins the `board:` group of every project it shows, each through that same check, so a workspace's events never reach another workspace's board.
+
+The two boards share one builder: `BoardBuilder.BuildAsync` (lanes; Testing when any included project tests) and `BoardBuilder.ToCardsAsync` (cards with `Project`, codes and blocker refs keyed by their own project; repos via `IProjectsApi.ListReposForProjectsAsync`, blockers, last agent messages and outside-the-set blocker projects each in one query). `GET /api/projects/{projectId}/board` passes one project; `GET /api/board` passes every project of the workspace (`WorkspaceBoardProjects.ResolveAsync`: `ListProjectIdsAsync` + `GetProjectSummariesAsync`, or `?projectId=` → 404 unless the workspace's). The searches (`…/board/search`, `GET /api/board/search`) share `BoardSearch.SearchAsync`.
+
 ### Token-by-Token Agent Streaming
 
 ```csharp

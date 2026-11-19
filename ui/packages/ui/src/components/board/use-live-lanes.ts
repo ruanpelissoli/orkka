@@ -44,6 +44,18 @@ interface UseLiveLanesOptions {
    * under the old answer.
    */
   includeArchived?: boolean;
+  /**
+   * The workspace board: lanes over every project of the workspace (or `project`, an id or slug),
+   * live over the board group of each of `projectUlids`. Reconciles through `GET /api/board`,
+   * and a created task is fetched rather than built from the event, which names no project.
+   */
+  workspace?: WorkspaceBoardScope;
+}
+
+/** What a workspace board shows: `project` narrows it (null = every project). */
+interface WorkspaceBoardScope {
+  project: string | null;
+  projectUlids: readonly string[];
 }
 
 /**
@@ -58,6 +70,7 @@ function useLiveLanes({
   selectedTaskIdRef,
   onStructuralChange,
   includeArchived = false,
+  workspace,
 }: UseLiveLanesOptions) {
   const withToken = useClientApi();
   const [lanes, setLanes] = useState<BoardLaneResponse[]>(() => normalizeLanes(boardData.lanes));
@@ -82,14 +95,19 @@ function useLiveLanes({
    * A reconnect after sleep or a dropped socket has the same hole. One fetch on connect closes
    * all of them, and it is cheap — the board endpoint is a single query.
    */
+  const workspaceProject = workspace ? workspace.project : undefined;
   const reconcile = useCallback(() => {
-    withToken((token) => api.board.get(projectId, token, includeArchived))
+    withToken((token) =>
+      workspaceProject !== undefined
+        ? api.board.workspace(workspaceProject, token, includeArchived)
+        : api.board.get(projectId, token, includeArchived)
+    )
       .then((fresh) => setLanes(normalizeLanes(fresh.lanes)))
       .catch(() => {
         // Keep what we have — the deltas still apply, and a failed reconcile must never
         // blank a board the user is reading.
       });
-  }, [projectId, withToken, includeArchived]);
+  }, [projectId, workspaceProject, withToken, includeArchived]);
 
   // Toggling the archived filter changes what the board is a view OF, and no SignalR delta
   // describes that — only a refetch can. Skipped on the first run: the server-rendered
@@ -213,6 +231,13 @@ function useLiveLanes({
   }, [onStructuralChange]);
 
   const handleTaskCreated = useCallback((event: TaskCreatedEvent) => {
+    if (workspaceProject !== undefined) {
+      // The event names no project, and a workspace card needs its project for the badge, the
+      // link and the key — one fetch of the board gets it right.
+      reconcile();
+      onStructuralChange?.();
+      return;
+    }
     setLanes((prev) =>
       prev.map((lane) => {
         if (lane.key !== event.currentLane) return lane;
@@ -247,10 +272,11 @@ function useLiveLanes({
       })
     );
     onStructuralChange?.();
-  }, [onStructuralChange]);
+  }, [onStructuralChange, workspaceProject, reconcile]);
 
   useBoardSignalR({
-    projectId: projectUlid,
+    projectId: workspace ? undefined : projectUlid,
+    projectIds: workspace?.projectUlids,
     onLaneChanged: handleLaneChanged,
     onStatusChanged: handleStatusChanged,
     onTaskUpdated: handleTaskUpdated,
@@ -276,3 +302,4 @@ function useLiveLanes({
 }
 
 export { useLiveLanes, normalizeLanes };
+export type { WorkspaceBoardScope };

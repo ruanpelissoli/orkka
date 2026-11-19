@@ -429,6 +429,32 @@ export const api = {
         })}`,
         token
       ),
+    /** The workspace board: every task of the current workspace across its projects,
+     * or of `project` (id or slug) only. Cards carry their project. */
+    workspace: (project: string | null, token: string, includeArchived = false) =>
+      fetchApi<TaskBoardResponse>(
+        `/api/board${buildQueryString({
+          projectId: project || undefined,
+          includeArchived: includeArchived || undefined,
+        })}`,
+        token
+      ),
+    /** The workspace board's search — `board.search` over the workspace, or over `project`. */
+    searchWorkspace: (
+      project: string | null,
+      q: string,
+      opts: { includeMessages: boolean; includeArchived: boolean },
+      token: string
+    ) =>
+      fetchApi<TaskSummary[]>(
+        `/api/board/search${buildQueryString({
+          q,
+          projectId: project || undefined,
+          includeMessages: opts.includeMessages,
+          includeArchived: opts.includeArchived,
+        })}`,
+        token
+      ),
   },
 
   brand: {

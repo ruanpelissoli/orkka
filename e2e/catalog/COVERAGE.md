@@ -1,6 +1,6 @@
 # Catalogue coverage
 
-Generated 2026-11-18T20:21:16.568Z. 716 cases in 37 files; 34 linked to a spec.
+Generated 2026-11-19T14:42:44.913Z. 725 cases in 37 files; 34 linked to a spec.
 
 | Area | Title | Cases | P0 | Linked | P0 linked | automated | planned | manual | blocked |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -9,7 +9,7 @@ Generated 2026-11-18T20:21:16.568Z. 716 cases in 37 files; 34 linked to a spec.
 | ARC | Architect — architecture board and Excalidraw diagram editor | 13 | 1 | 0 | 0 | 0 | 13 | 0 | 0 |
 | AUD | Audit log | 3 | 0 | 0 | 0 | 0 | 3 | 0 | 0 |
 | AUTO | Automation — schedules, playbooks, Autopilot windows, reminders, GitHub triggers | 26 | 1 | 0 | 0 | 0 | 26 | 0 | 0 |
-| BRD | Board — kanban, filters, autopilot, live updates | 37 | 7 | 0 | 0 | 1 | 34 | 2 | 0 |
+| BRD | Board — kanban, filters, autopilot, live updates | 46 | 9 | 0 | 0 | 1 | 43 | 2 | 0 |
 | DOC | Documents — project document browser, editor, revisions and live docs | 19 | 2 | 0 | 0 | 0 | 19 | 0 | 0 |
 | DSN | Design — brand kit and design-asset gallery | 26 | 1 | 0 | 0 | 0 | 26 | 0 | 0 |
 | FRG | Forge publishing — the developer's gh / az / glab open the pull request | 13 | 2 | 0 | 0 | 4 | 7 | 2 | 0 |
@@ -46,7 +46,7 @@ Generated 2026-11-18T20:21:16.568Z. 716 cases in 37 files; 34 linked to a spec.
 
 | Mode | Cases |
 |---|---:|
-| all | 377 |
+| all | 386 |
 | hybrid-folder | 52 |
 | hybrid-repo | 226 |
 | offline | 17 |

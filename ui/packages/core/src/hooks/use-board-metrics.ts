@@ -13,6 +13,8 @@ interface UseBoardMetricsOptions {
   window: AgentStatsWindow;
   /** Server-rendered envelope for the default window, so the first paint has numbers. */
   initial?: BoardMetricsResponse | null;
+  /** False = no fetches and no hub subscription (the workspace board: metrics are per project). */
+  enabled?: boolean;
 }
 
 interface UseBoardMetricsResult {
@@ -41,9 +43,11 @@ function useBoardMetrics({
   projectUlid,
   window,
   initial,
+  enabled = true,
 }: UseBoardMetricsOptions): UseBoardMetricsResult {
   const withToken = useClientApi();
-  const seeded = Boolean(initial && initial.window === window);
+  // A disabled strip counts as seeded: nothing to load, so never a skeleton.
+  const seeded = !enabled || Boolean(initial && initial.window === window);
   const [metrics, setMetrics] = useState<BoardMetricsResponse | null>(
     initial ? normalizeLaneKeys(initial) : null
   );
@@ -51,6 +55,7 @@ function useBoardMetrics({
   const requestRef = useRef(0);
 
   const refetch = useCallback(async () => {
+    if (!enabled) return;
     const requestId = ++requestRef.current;
     try {
       const envelope = await withToken((token) => api.board.metrics(projectId, window, token));
@@ -61,7 +66,7 @@ function useBoardMetrics({
     } finally {
       if (requestId === requestRef.current) setIsLoading(false);
     }
-  }, [withToken, projectId, window]);
+  }, [withToken, projectId, window, enabled]);
 
   // Skip the very first fetch when the server already handed us this window; any window change
   // after that is a real request.
@@ -86,7 +91,7 @@ function useBoardMetrics({
   }, []);
 
   useBoardSignalR({
-    projectId: projectUlid,
+    projectId: enabled ? projectUlid : undefined,
     onStatusChanged: scheduleRefetch,
     onLaneChanged: scheduleRefetch,
     onTaskMergeFailed: scheduleRefetch,

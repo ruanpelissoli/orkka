@@ -29,7 +29,7 @@ import { DoneSummaryCard } from "./DoneSummaryCard";
 import { LaneSummaryCard } from "./LaneSummaryCard";
 import { BOARD_FILTERS, type BoardFilterKey } from "./board-filters";
 import { NO_EPIC_FILTER, distinctEpics, matchesEpicFilter } from "@/lib/external-ticket";
-import { useLiveLanes } from "./use-live-lanes";
+import { useLiveLanes, type WorkspaceBoardScope } from "./use-live-lanes";
 import { moveTaskLane } from "@/lib/actions";
 import { api } from "@/lib/api";
 import { useClientApi } from "@/hooks/use-client-api";
@@ -63,6 +63,13 @@ interface TaskBoardProps {
   milestones?: Milestone[];
   /** Server-rendered metrics for the default window, so the strip has numbers on first paint. */
   initialMetrics?: BoardMetricsResponse | null;
+  /**
+   * The workspace board: every project of the workspace (or `workspace.project`). Cards carry
+   * their project, so the board badges them (when showing every project), opens each in its own
+   * project and keeps a card out of a Testing lane its project does not have. Metrics are per
+   * project, so the strip and the lane summaries are left out.
+   */
+  workspace?: WorkspaceBoardScope;
 }
 
 function TaskBoard({
@@ -71,7 +78,11 @@ function TaskBoard({
   projectUlid,
   milestones = [],
   initialMetrics = null,
+  workspace,
 }: TaskBoardProps) {
+  const isWorkspace = workspace !== undefined;
+  const workspaceProject = workspace ? workspace.project : undefined;
+  const showProject = isWorkspace && !workspace?.project;
   const dndId = useId();
   const t = useTranslations("dashboard");
   const tCommon = useTranslations("common");
@@ -111,6 +122,7 @@ function TaskBoard({
     // archived toggles on one toolbar would be a puzzle, and a board that hides a card the
     // search below it happily returns reads as a bug.
     includeArchived,
+    workspace,
   });
 
   // ── Milestone filter ────────────────────────────────────────────────
@@ -148,6 +160,7 @@ function TaskBoard({
     projectUlid,
     window: metricsWindow,
     initial: initialMetrics,
+    enabled: !isWorkspace,
   });
 
   // ── Attention filters ───────────────────────────────────────────────
@@ -226,7 +239,9 @@ function TaskBoard({
     if (!searchQuery) return;
     let cancelled = false;
     withToken((token) =>
-      api.board.search(projectId, searchQuery, { includeMessages, includeArchived }, token)
+      workspaceProject !== undefined
+        ? api.board.searchWorkspace(workspaceProject, searchQuery, { includeMessages, includeArchived }, token)
+        : api.board.search(projectId, searchQuery, { includeMessages, includeArchived }, token)
     )
       .then((results) => {
         if (!cancelled) setSearchResults(results);
@@ -240,7 +255,7 @@ function TaskBoard({
     return () => {
       cancelled = true;
     };
-  }, [searchQuery, includeMessages, includeArchived, searchKey, projectId, withToken]);
+  }, [searchQuery, includeMessages, includeArchived, searchKey, projectId, workspaceProject, withToken]);
 
   // The open task lives in the ?task= search param (friendly number or id). Only the query
   // changes, so the board stays mounted and keeps its SignalR-applied state — changing the
@@ -248,20 +263,22 @@ function TaskBoard({
   const searchParams = useSearchParams();
   const updateSearchParams = useUpdateSearchParams();
   const taskParam = searchParams.get("task");
-  const selectedTaskId = useMemo(() => {
+  // A number names a task only within one project; the workspace board spans several, so it
+  // names a task by its code (SHOP-12) instead.
+  const selectedTask = useMemo(() => {
     if (!taskParam) return null;
+    const matches = (t: TaskSummary) =>
+      t.id === taskParam || (isWorkspace ? t.code === taskParam : String(t.number) === taskParam);
     for (const lane of lanes) {
-      const match = lane.tasks.find(
-        (t) => t.id === taskParam || String(t.number) === taskParam
-      );
-      if (match) return match.id;
+      const match = lane.tasks.find(matches);
+      if (match) return match;
     }
     // Grid results can include tasks absent from the lanes (e.g. archived)
-    const gridMatch = (searchResults ?? []).find(
-      (t) => t.id === taskParam || String(t.number) === taskParam
-    );
-    return gridMatch?.id ?? null;
-  }, [taskParam, lanes, searchResults]);
+    return (searchResults ?? []).find(matches) ?? null;
+  }, [taskParam, lanes, searchResults, isWorkspace]);
+  const selectedTaskId = selectedTask?.id ?? null;
+  // The task detail loads its project's repos, milestones and agents, and links to its page.
+  const selectedTaskProject = isWorkspace ? (selectedTask?.project?.slug ?? projectId) : projectId;
 
   // Ongoing tasks (queued or agent-active) in board order — powers the modal's
   // prev/next carousel so the user can flip through live work without closing it.
@@ -287,13 +304,14 @@ function TaskBoard({
 
   // ── Task modal ───────────────────────────────────────────────────────
   const handleTaskClick = useCallback((taskId: string) => {
-    const taskNumber =
-      lanes.flatMap((l) => l.tasks).find((t) => t.id === taskId)?.number ??
-      (searchResults ?? []).find((t) => t.id === taskId)?.number;
+    const task =
+      lanes.flatMap((l) => l.tasks).find((t) => t.id === taskId) ??
+      (searchResults ?? []).find((t) => t.id === taskId);
     markRead(taskId);
-    // Prefer the friendly task number in the URL.
-    updateSearchParams((p) => p.set("task", String(taskNumber ?? taskId)));
-  }, [lanes, searchResults, markRead, updateSearchParams]);
+    // Prefer the friendly task number (the code on the workspace board) in the URL.
+    const ref = task ? (isWorkspace ? task.code : String(task.number)) : taskId;
+    updateSearchParams((p) => p.set("task", ref));
+  }, [lanes, searchResults, markRead, updateSearchParams, isWorkspace]);
 
   const handleModalClose = useCallback(() => {
     updateSearchParams((p) => p.delete("task"));
@@ -337,6 +355,9 @@ function TaskBoard({
         .find((l) => l.key === sourceLane)
         ?.tasks.find((t) => t.id === taskId);
       if (!taskToMove) return;
+      // On the workspace board the Testing lane is there when ANY project tests; a card whose
+      // own project has no Testing lane cannot go into it.
+      if (targetLane === LANE_KEYS.TESTING && taskToMove.project && !taskToMove.project.hasTesting) return;
 
       setLanes((prev) =>
         prev.map((lane) => {
@@ -381,7 +402,7 @@ function TaskBoard({
       >
         {/* How the project is moving. Above the filters because it describes the whole board,
             not the slice the filters are about to select. */}
-        <BoardMetricsStrip metrics={metrics} isLoading={metricsLoading} />
+        {!isWorkspace && <BoardMetricsStrip metrics={metrics} isLoading={metricsLoading} />}
 
         {/* Row 1 — scope and controls. Search, what work, what window. */}
         <div className="flex flex-wrap items-center gap-3 px-4 pb-2 lg:px-6">
@@ -468,11 +489,13 @@ function TaskBoard({
               </Select>
             </div>
           )}
-          <StatsWindowSelector
-            value={metricsWindow}
-            onChange={setMetricsWindow}
-            className="shrink-0"
-          />
+          {!isWorkspace && (
+            <StatsWindowSelector
+              value={metricsWindow}
+              onChange={setMetricsWindow}
+              className="shrink-0"
+            />
+          )}
         </div>
 
         {/* Row 2 — what is wrong. Separate from row 1 because these are not another way to
@@ -516,6 +539,7 @@ function TaskBoard({
                   onTaskClick={handleTaskClick}
                   dragDisabled
                   milestoneName={task.milestoneId ? milestoneNames[task.milestoneId] : null}
+                  showProject={showProject}
                 />
               ))}
             </div>
@@ -534,8 +558,11 @@ function TaskBoard({
                   onTaskClick={handleTaskClick}
                   activeDragLane={activeTask?.currentLane ?? null}
                   milestoneNames={milestoneNames}
-                  metric={metrics?.lanes[lane.key]}
+                  metric={isWorkspace ? undefined : metrics?.lanes[lane.key]}
+                  showProject={showProject}
+                  activeDragAllowsTesting={activeTask?.project?.hasTesting ?? true}
                   pinned={
+                    isWorkspace ? undefined :
                     // Done summarizes the outcome (what shipped, what it cost); every other
                     // agent lane summarizes its own column. Drafting and Ready are the human end
                     // of the board — nothing runs there, so there is nothing to summarize.
@@ -558,6 +585,7 @@ function TaskBoard({
               <TaskCard
                 task={activeTask}
                 milestoneName={activeTask.milestoneId ? milestoneNames[activeTask.milestoneId] : null}
+                showProject={showProject}
                 atRest
               />
             </div>
@@ -568,7 +596,7 @@ function TaskBoard({
       {/* Task detail modal */}
       <TaskDetailModal
         taskId={selectedTaskId}
-        projectId={projectId}
+        projectId={selectedTaskProject}
         onClose={handleModalClose}
         activeTaskIds={activeTaskIds}
         onNavigateToTask={handleTaskClick}

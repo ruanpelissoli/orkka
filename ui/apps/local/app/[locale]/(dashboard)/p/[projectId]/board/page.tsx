@@ -123,6 +123,14 @@ export default function BoardPage() {
             {showKanban ? t("boardPage.board") : t("boardPage.code")}
           </h2>
           <BoardViewSwitch projectId={projectId} active={showKanban ? "board" : "code"} taskParam={taskParam} />
+          {/* Every project of this workspace on one board. */}
+          <Link
+            href="/board"
+            className="hidden text-xs text-gray-400 transition-colors hover:text-gray-200 sm:inline"
+            data-testid="project-board-workspace-link"
+          >
+            {t("boardPage.workspaceBoard")}
+          </Link>
         </div>
         <div className="flex items-center gap-3">
           {/* The kanban's own filter row carries "showing N of M", which says strictly more.

@@ -33,6 +33,7 @@ describe("route table", () => {
   it.each([
     ["/en", "/:locale"],
     ["/en/dashboard", "/:locale/dashboard"],
+    ["/en/board", "/:locale/board"],
     ["/en/inbox", "/:locale/inbox"],
     ["/en/notifications", "/:locale/notifications"],
     ["/en/projects", "/:locale/projects"],
@@ -76,10 +77,10 @@ describe("route table", () => {
     expect(patternOf(path)).toBe(pattern);
   });
 
-  it("sends / to the preferred locale", async () => {
+  it("sends / to the workspace board in the preferred locale", async () => {
     document.cookie = "NEXT_LOCALE=fr; path=/";
     const router = start("/");
-    await waitFor(() => expect(router.state.location.pathname).toBe("/fr/dashboard"));
+    await waitFor(() => expect(router.state.location.pathname).toBe("/fr/board"));
   });
 
   it("redirects an unprefixed deep link client-side, keeping its query", async () => {

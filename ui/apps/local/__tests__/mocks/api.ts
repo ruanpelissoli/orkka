@@ -30,6 +30,8 @@ export const mockApi = {
   board: {
     get: vi.fn().mockResolvedValue({ lanes: [] }),
     search: vi.fn().mockResolvedValue([]),
+    workspace: vi.fn().mockResolvedValue({ lanes: [] }),
+    searchWorkspace: vi.fn().mockResolvedValue([]),
     // Rejects by default so the board page's "metrics are optional context" fallback is what
     // every other test exercises — a strip that fails must never take the board with it.
     metrics: vi.fn().mockRejectedValue(new Error("no metrics in tests")),

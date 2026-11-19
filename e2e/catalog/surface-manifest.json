@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-11-18T20:06:36.641Z",
+  "generatedAt": "2026-11-19T14:41:54.889Z",
   "sources": {
     "ui": {
-      "path": "C:\\Projects\\orkka\\orkka-auto\\ui",
-      "sha": "2a7deb25b134"
+      "path": "C:\\Projects\\orkka\\orkka\\.claude\\worktrees\\agent-abdd5d29afb9b0159\\ui",
+      "sha": "fd681ae070db"
     },
     "api": {
-      "path": "C:\\Projects\\orkka\\orkka-auto",
-      "sha": "2a7deb25b134"
+      "path": "C:\\Projects\\orkka\\orkka\\.claude\\worktrees\\agent-abdd5d29afb9b0159",
+      "sha": "fd681ae070db"
     }
   },
   "uiPages": [
@@ -15,6 +15,11 @@
       "app": "local",
       "route": "/",
       "file": "apps/local/app/[locale]/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/board",
+      "file": "apps/local/app/[locale]/(dashboard)/board/page.tsx"
     },
     {
       "app": "local",
@@ -226,6 +231,22 @@
       "permissions": [
         "AuditView"
       ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/board",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/GetWorkspaceBoardEndpoint.cs",
+      "class": "GetWorkspaceBoardEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/board/search",
+      "file": "src/Modules/Orkka.Modules.Tasks/Features/Tasks/SearchBoardTasksEndpoint.cs",
+      "class": "SearchWorkspaceBoardTasksEndpoint",
+      "permissions": [],
       "host": "api"
     },
     {
@@ -2624,17 +2645,18 @@
         "trackers",
         "uiMisc",
         "usagePage",
+        "workspaceBoard",
         "workspaceSettings",
         "workspaces"
       ]
     },
-    "leafCount": 2288
+    "leafCount": 2302
   },
   "counts": {
-    "uiPages": 39,
-    "apiRoutes": 254,
+    "uiPages": 40,
+    "apiRoutes": 256,
     "hubEvents": 20,
     "cliVerbs": 15,
-    "i18nNamespaces": 112
+    "i18nNamespaces": 113
   }
 }

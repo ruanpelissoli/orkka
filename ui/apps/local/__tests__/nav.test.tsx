@@ -47,8 +47,13 @@ describe("getProjectNav", () => {
 });
 
 describe("getGlobalNav", () => {
-  it("returns inbox, notifications and account", () => {
-    expect(getGlobalNav(t).map((i) => i.key)).toEqual(["inbox", "notifications", "account"]);
+  it("leads with the workspace board, then inbox, notifications and account", () => {
+    expect(getGlobalNav(t).map((i) => i.key)).toEqual(["workspaceBoard", "inbox", "notifications", "account"]);
+  });
+
+  it("links the workspace board to /board, active only on that page", () => {
+    const board = getGlobalNav(t).find((i) => i.key === "workspaceBoard");
+    expect(board).toMatchObject({ href: "/board", icon: "board", exact: true, label: "sidebar.workspaceBoard" });
   });
 });
 
@@ -63,9 +68,10 @@ describe("getMobileTabs", () => {
     expect(tabs.find((i) => i.key === "home")?.exact).toBe(true);
   });
 
-  it("returns the 3-tab global set without a create FAB", () => {
+  it("returns the 3-tab global set, led by the workspace board, without a create FAB", () => {
     const tabs = getMobileTabs(undefined, t);
-    expect(tabs.map((i) => i.key)).toEqual(["home", "alerts", "settings"]);
+    expect(tabs.map((i) => i.key)).toEqual(["board", "alerts", "settings"]);
+    expect(tabs[0].href).toBe("/board");
     expect(tabs.some((i) => i.isCreate)).toBe(false);
   });
 });
