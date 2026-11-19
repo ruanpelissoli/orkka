@@ -151,7 +151,7 @@ refs:
 since: 2026-11-18
 ```
 **Preconditions**: the fake tracker also serves Azure DevOps (`/e2eorg`); no agent runs (auto-submit off).
-**Steps**: add an ADO connection; a project on the same base folder with intake `New`, Picked up → `Active`, auto-submit off; a work item assigned to me; a comment on it.
+**Steps**: add an ADO connection; a project on the same base folder with intake `New`, Picked up → `Active`, auto-submit off; a work item assigned to me; the dry run (PSU-009); two poll cycles before Start (PSU-010); Start; a comment on the work item.
 **Expected**: a Draft task routed to `api`; the work item moves New → Active; the comment reaches the thread; the PAT is not in the SQLite database.
 
 ## LWF-009 The key screens render without errors

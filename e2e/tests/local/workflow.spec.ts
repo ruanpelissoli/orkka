@@ -119,6 +119,9 @@ test.describe("the developer's workflow on the local stack @workflow", () => {
       statusMap: { pickedUp: null, planning: "In Progress", developing: null, inReview: null, prOpened: "Code Review", merged: "Done" },
     } as never);
     expect(saved).toMatchObject({ intakeStatuses: ["To Do"], statusMap: { planning: "In Progress", inReview: null, prOpened: "Code Review", merged: "Done" } });
+    // The guided setup's Start: a project from a folder pulls nothing before it (PSU-010, step 7).
+    const started = await api.projects.setup.start(pid());
+    expect(started.setupCompletedAt).toBeTruthy();
   });
 
   test("4. a standalone ticket: Discuss, plan, build, review, publish; Jira follows", caseIds("LWF-005"), async ({ api }) => {
@@ -205,7 +208,7 @@ test.describe("the developer's workflow on the local stack @workflow", () => {
       .toEqual(["Code Review", "Code Review", "Code Review"]);
   });
 
-  test("7. Azure DevOps: a PAT connection and a work item in intake", caseIds("LWF-008"), async ({ api }) => {
+  test("7. Azure DevOps: a PAT connection, the dry run, nothing before Start, then the work item", caseIds("LWF-008", "PSU-009", "PSU-010"), async ({ api }) => {
     const r = await addTrackerConnection(api, { kind: "ado", site: fake.adoSiteUrl, token: fake.ado.pat });
     expect(r, JSON.stringify(r)).toMatchObject({ supported: true, ok: true });
     expect(databaseContains(fake.ado.pat)).toBe(false);
@@ -223,6 +226,20 @@ test.describe("the developer's workflow on the local stack @workflow", () => {
       pollIntervalSeconds: 60,
       statusMap: { planning: "Active", prOpened: "Resolved", merged: "Closed" },
     } as never);
+
+    // The dry run reads ADO exactly as the poll will and lists the work item — creating nothing.
+    const dry = await api.projects.tracker.preview(second.project.id);
+    expect(dry, JSON.stringify(dry)).toMatchObject({ supported: true, ok: true });
+    expect(dry.preview!.tasks.map((t) => t.key)).toEqual(["501"]);
+    expect(dry.preview!.newTaskCount).toBe(1);
+    expect(await listTasks(api, second.project.id)).toEqual([]);
+
+    // Not started: two runner poll cycles go by and the source is never even read.
+    await new Promise((r) => setTimeout(r, 70_000));
+    expect((await api.projects.tracker.get(second.project.id))?.lastPolledAt ?? null).toBeNull();
+    expect(await listTasks(api, second.project.id)).toEqual([]);
+
+    expect((await api.projects.setup.start(second.project.id)).setupCompletedAt).toBeTruthy();
     const task = await waitForTicketTask(api, second.project.id, "501");
     expect(task.title).toContain("max(a, b)");
     expect((await listTasks(api, second.project.id)).length).toBe(1);

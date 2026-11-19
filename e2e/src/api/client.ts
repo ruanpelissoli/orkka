@@ -15,6 +15,8 @@ import type {
   MyRunnerResponse,
   ProjectRepoResponse,
   ProjectResponse,
+  RepoCommandsCheckResponse,
+  IntakePreviewResponse,
   ProjectTrackerConfigResponse,
   RunnerTokenResponse,
   SaveProjectTrackerRequest,
@@ -95,6 +97,18 @@ export class OrkkaApi {
       get: (id: string) => this.http.get<ProjectTrackerConfigResponse | undefined>(`/api/projects/${id}/tracker`, { expect: [200, 204] }),
       put: (id: string, body: SaveProjectTrackerRequest) => this.http.put<ProjectTrackerConfigResponse>(`/api/projects/${id}/tracker`, body),
       delete: (id: string) => this.http.delete<void>(`/api/projects/${id}/tracker`, { expect: [200, 204] }),
+      /** The saved source's dry run on the owner's runner (404 without a source). Creates nothing. */
+      preview: (id: string) =>
+        this.http.post<IntakePreviewResponse>(`/api/projects/${id}/tracker/preview`, undefined, { retry: false, timeoutMs: 4 * 60_000 }),
+    },
+    /** The guided setup: nothing is pulled from a tracker before Start. */
+    setup: {
+      step: (id: string, step: string, done = true) =>
+        this.http.put<ProjectResponse>(`/api/projects/${id}/setup/steps`, { step, done }),
+      start: (id: string, warnings: string[] = []) =>
+        this.http.post<ProjectResponse>(`/api/projects/${id}/setup/start`, { warnings }, { retry: false }),
+      commands: (id: string) =>
+        this.http.post<RepoCommandsCheckResponse>(`/api/projects/${id}/setup/commands`, undefined, { retry: false, timeoutMs: 2 * 60_000 }),
     },
   };
 

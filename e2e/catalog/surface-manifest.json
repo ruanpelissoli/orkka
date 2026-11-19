@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-11-19T15:59:30.266Z",
+  "generatedAt": "2026-11-19T17:26:04.362Z",
   "sources": {
     "ui": {
-      "path": "C:\\Projects\\orkka\\orkka\\.claude\\worktrees\\agent-a6bad14ce75c76bcc\\ui",
-      "sha": "17c47335dca0"
+      "path": "C:\\Projects\\orkka\\orkka\\.claude\\worktrees\\agent-af78789da211c5d73\\ui",
+      "sha": "8f5ded50e012"
     },
     "api": {
-      "path": "C:\\Projects\\orkka\\orkka\\.claude\\worktrees\\agent-a6bad14ce75c76bcc",
-      "sha": "17c47335dca0"
+      "path": "C:\\Projects\\orkka\\orkka\\.claude\\worktrees\\agent-af78789da211c5d73",
+      "sha": "8f5ded50e012"
     }
   },
   "uiPages": [
@@ -95,6 +95,11 @@
       "app": "local",
       "route": "/p/[projectId]/settings",
       "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/settings/page.tsx"
+    },
+    {
+      "app": "local",
+      "route": "/p/[projectId]/setup",
+      "file": "apps/local/app/[locale]/(dashboard)/p/[projectId]/setup/page.tsx"
     },
     {
       "app": "local",
@@ -1433,6 +1438,34 @@
       "host": "api"
     },
     {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/setup/commands",
+      "file": "src/Modules/Orkka.Modules.Runners/Features/Presence/RepoCommandsCheckEndpoint.cs",
+      "class": "RepoCommandsCheckEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/setup/start",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/Projects/ProjectSetupEndpoints.cs",
+      "class": "StartProjectSetupEndpoint",
+      "permissions": [
+        "ProjectsManage"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/{projectId}/setup/steps",
+      "file": "src/Modules/Orkka.Modules.Projects/Features/Projects/ProjectSetupEndpoints.cs",
+      "class": "SetProjectSetupStepEndpoint",
+      "permissions": [
+        "ProjectsManage"
+      ],
+      "host": "api"
+    },
+    {
       "method": "GET",
       "path": "/api/projects/{projectId}/skills",
       "file": "src/Modules/Orkka.Modules.Agents/Features/Skills/SkillEndpoints.cs",
@@ -1566,6 +1599,14 @@
       "permissions": [
         "ProjectsManage"
       ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/tracker/preview",
+      "file": "src/Modules/Orkka.Modules.Trackers/Features/ProjectConfig/TrackerIntakePreviewEndpoint.cs",
+      "class": "TrackerIntakePreviewEndpoint",
+      "permissions": [],
       "host": "api"
     },
     {
@@ -2380,6 +2421,14 @@
     },
     {
       "method": "POST",
+      "path": "/internal/runner/repo-commands/vet",
+      "file": "src/Orkka.Runners.Server/Hosting/RunnerRelayEndpoints.cs",
+      "class": "RunnerRelayEndpoints",
+      "permissions": [],
+      "host": "relay"
+    },
+    {
+      "method": "POST",
       "path": "/internal/runner/repo/attach-remote",
       "file": "src/Orkka.Runners.Server/Hosting/LocalFolderRelayEndpoints.cs",
       "class": "LocalFolderRelayEndpoints",
@@ -2492,6 +2541,12 @@
     }
   ],
   "hubs": [
+    {
+      "path": "?",
+      "hub": "20261119154631_TrackerGitHub",
+      "joinMethods": [],
+      "events": []
+    },
     {
       "path": "/hubs/tasks",
       "hub": "TaskHub",
@@ -2621,6 +2676,7 @@
         "prReview",
         "preferencesPage",
         "projectOverview",
+        "projectSetup",
         "providerMismatch",
         "repoAccessCheck",
         "repoBrowser",
@@ -2667,13 +2723,13 @@
         "workspaces"
       ]
     },
-    "leafCount": 2331
+    "leafCount": 2521
   },
   "counts": {
-    "uiPages": 40,
-    "apiRoutes": 258,
+    "uiPages": 41,
+    "apiRoutes": 263,
     "hubEvents": 20,
     "cliVerbs": 15,
-    "i18nNamespaces": 114
+    "i18nNamespaces": 115
   }
 }

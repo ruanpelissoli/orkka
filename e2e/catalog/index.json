@@ -1,13 +1,14 @@
 {
-  "generatedAt": "2026-11-19T16:35:10.354Z",
+  "generatedAt": "2026-11-19T17:26:39.425Z",
   "counts": {
-    "total": 743,
-    "files": 37,
+    "total": 757,
+    "files": 38,
     "byArea": {
       "ONB": 4,
       "WSP": 13,
       "HYB": 32,
       "HYF": 20,
+      "PSU": 14,
       "RURL": 12,
       "FRG": 13,
       "TSRC": 29,
@@ -43,25 +44,25 @@
       "GRD": 8
     },
     "byAutomation": {
-      "planned": 621,
-      "automated": 88,
+      "planned": 628,
+      "automated": 95,
       "manual": 33,
       "blocked": 1
     },
     "byPriority": {
-      "P1": 360,
-      "P2": 225,
-      "P0": 135,
+      "P1": 365,
+      "P2": 227,
+      "P0": 142,
       "P3": 23
     },
     "byMode": {
       "all": 389,
       "hybrid-repo": 227,
-      "hybrid-folder": 53,
+      "hybrid-folder": 64,
       "offline": 19,
-      "tracker": 87
+      "tracker": 90
     },
-    "linkedToSpecs": 36
+    "linkedToSpecs": 43
   },
   "refs": {
     "apiRoutes": [
@@ -101,6 +102,7 @@
       "GET /api/org/settings",
       "GET /api/projects",
       "GET /api/projects/{id}",
+      "GET /api/projects/{projectId}",
       "GET /api/projects/{projectId}/agent-stats",
       "GET /api/projects/{projectId}/agents",
       "GET /api/projects/{projectId}/agents/{agentId}",
@@ -234,10 +236,13 @@
       "POST /api/projects/{projectId}/run-config/detect",
       "POST /api/projects/{projectId}/schedules",
       "POST /api/projects/{projectId}/schedules/{scheduleId}/run",
+      "POST /api/projects/{projectId}/setup/commands",
+      "POST /api/projects/{projectId}/setup/start",
       "POST /api/projects/{projectId}/skills",
       "POST /api/projects/{projectId}/task-groups/{id}/repo-requests",
       "POST /api/projects/{projectId}/tasks",
       "POST /api/projects/{projectId}/tasks/forecast",
+      "POST /api/projects/{projectId}/tracker/preview",
       "POST /api/repos/{repoId}/pulls/{number}/close",
       "POST /api/repos/{repoId}/pulls/{number}/comments",
       "POST /api/repos/{repoId}/pulls/{number}/merge",
@@ -276,6 +281,7 @@
       "POST /api/trackers/connections",
       "POST /api/trackers/connections/{connectionId}/query",
       "POST /api/workspaces",
+      "POST /internal/runner/repo-commands/vet",
       "POST /internal/runner/repo/read",
       "POST /internal/runner/tracker-query",
       "POST /internal/runner/utility",
@@ -295,6 +301,7 @@
       "PUT /api/projects/{projectId}/memories/{memoryId}",
       "PUT /api/projects/{projectId}/run-config",
       "PUT /api/projects/{projectId}/schedules/{scheduleId}",
+      "PUT /api/projects/{projectId}/setup/steps",
       "PUT /api/projects/{projectId}/skills/{skillId}",
       "PUT /api/projects/{projectId}/tracker",
       "PUT /blobs/{container}/{**blob}"
@@ -317,6 +324,7 @@
       "/p/[projectId]/roadmap",
       "/p/[projectId]/roadmap/[milestoneId]",
       "/p/[projectId]/settings",
+      "/p/[projectId]/setup",
       "/p/[projectId]/skills",
       "/p/[projectId]/tasks",
       "/p/[projectId]/tasks/[taskId]",
@@ -403,6 +411,7 @@
       "prReview",
       "preferencesPage",
       "projectOverview",
+      "projectSetup",
       "providerMismatch",
       "repoAccessCheck",
       "repoBrowser",
@@ -2071,6 +2080,322 @@
       "costUsd": 0,
       "since": "2026-09-15",
       "tests": []
+    },
+    {
+      "id": "PSU-001",
+      "area": "PSU",
+      "title": "Creating a project from a folder opens its guided setup",
+      "file": "catalog/15-project-setup.md",
+      "line": 7,
+      "priority": "P0",
+      "modes": [
+        "hybrid-folder"
+      ],
+      "surface": [
+        "ui"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/projects/new",
+        "orkka-ui:/p/[projectId]/setup",
+        "i18n:projectSetup"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "PSU-002",
+      "area": "PSU",
+      "title": "A new project starts with its setup open",
+      "file": "catalog/15-project-setup.md",
+      "line": 25,
+      "priority": "P0",
+      "modes": [
+        "hybrid-folder"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "automated",
+      "refs": [
+        "orkka-api:POST /api/projects",
+        "orkka-api:GET /api/projects/{projectId}"
+      ],
+      "since": "2026-11-19",
+      "tests": [
+        "tests/api/project-setup.spec.ts"
+      ]
+    },
+    {
+      "id": "PSU-003",
+      "area": "PSU",
+      "title": "Confirm and take back setup steps",
+      "file": "catalog/15-project-setup.md",
+      "line": 41,
+      "priority": "P1",
+      "modes": [
+        "hybrid-folder"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "automated",
+      "refs": [
+        "orkka-api:PUT /api/projects/{projectId}/setup/steps"
+      ],
+      "since": "2026-11-19",
+      "tests": [
+        "tests/api/project-setup.spec.ts"
+      ]
+    },
+    {
+      "id": "PSU-004",
+      "area": "PSU",
+      "title": "The setup resumes at the first step not confirmed",
+      "file": "catalog/15-project-setup.md",
+      "line": 58,
+      "priority": "P1",
+      "modes": [
+        "hybrid-folder"
+      ],
+      "surface": [
+        "ui"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/p/[projectId]/setup",
+        "orkka-ui:/p/[projectId]/board"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "PSU-005",
+      "area": "PSU",
+      "title": "Folder & repos: branch, landing mode, forge, CLI account and commands",
+      "file": "catalog/15-project-setup.md",
+      "line": 76,
+      "priority": "P1",
+      "modes": [
+        "hybrid-folder"
+      ],
+      "surface": [
+        "ui",
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/p/[projectId]/setup",
+        "orkka-api:PATCH /api/projects/{projectId}/repos/{repoId}",
+        "orkka-api:POST /api/projects/{projectId}/rescan"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "PSU-006",
+      "area": "PSU",
+      "title": "The command check: declared, approved or waiting — with the exact approve command",
+      "file": "catalog/15-project-setup.md",
+      "line": 96,
+      "priority": "P0",
+      "modes": [
+        "hybrid-folder"
+      ],
+      "surface": [
+        "api",
+        "cli"
+      ],
+      "automation": "automated",
+      "refs": [
+        "orkka-api:POST /api/projects/{projectId}/setup/commands",
+        "orkka-api:POST /internal/runner/repo-commands/vet",
+        "cli:commands"
+      ],
+      "since": "2026-11-19",
+      "tests": [
+        "tests/api/project-setup.spec.ts"
+      ]
+    },
+    {
+      "id": "PSU-007",
+      "area": "PSU",
+      "title": "The machine check, with Re-check",
+      "file": "catalog/15-project-setup.md",
+      "line": 117,
+      "priority": "P0",
+      "modes": [
+        "hybrid-folder"
+      ],
+      "surface": [
+        "ui",
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/p/[projectId]/setup",
+        "orkka-api:GET /api/me/runner",
+        "orkka-api:GET /api/projects/{projectId}/repos/access-check"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "PSU-008",
+      "area": "PSU",
+      "title": "Ticket source: connect a tracker inline, or choose None",
+      "file": "catalog/15-project-setup.md",
+      "line": 135,
+      "priority": "P1",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "ui",
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/p/[projectId]/setup",
+        "orkka-api:POST /api/trackers/connections",
+        "orkka-api:PUT /api/projects/{projectId}/tracker",
+        "orkka-api:DELETE /api/projects/{projectId}/tracker"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "PSU-009",
+      "area": "PSU",
+      "title": "The dry run lists exactly what the first poll would pull — and creates nothing",
+      "file": "catalog/15-project-setup.md",
+      "line": 158,
+      "priority": "P0",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api",
+        "ui"
+      ],
+      "automation": "automated",
+      "refs": [
+        "orkka-api:POST /api/projects/{projectId}/tracker/preview",
+        "orkka-api:POST /internal/runner/tracker-query",
+        "orkka-ui:/p/[projectId]/setup"
+      ],
+      "since": "2026-11-19",
+      "tests": [
+        "tests/local/workflow.spec.ts"
+      ]
+    },
+    {
+      "id": "PSU-010",
+      "area": "PSU",
+      "title": "Nothing is pulled before Start; Start opens intake",
+      "file": "catalog/15-project-setup.md",
+      "line": 177,
+      "priority": "P0",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "automated",
+      "refs": [
+        "orkka-api:POST /api/projects/{projectId}/setup/start",
+        "orkka-api:GET /api/projects/{projectId}/tracker"
+      ],
+      "since": "2026-11-19",
+      "tests": [
+        "tests/local/workflow.spec.ts"
+      ]
+    },
+    {
+      "id": "PSU-011",
+      "area": "PSU",
+      "title": "Start is idempotent and records what \"Start anyway\" overrode",
+      "file": "catalog/15-project-setup.md",
+      "line": 196,
+      "priority": "P1",
+      "modes": [
+        "hybrid-folder"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "automated",
+      "refs": [
+        "orkka-api:POST /api/projects/{projectId}/setup/start"
+      ],
+      "since": "2026-11-19",
+      "tests": [
+        "tests/api/project-setup.spec.ts"
+      ]
+    },
+    {
+      "id": "PSU-012",
+      "area": "PSU",
+      "title": "Review: Start disabled while anything is red; \"Start anyway\" lists the warnings",
+      "file": "catalog/15-project-setup.md",
+      "line": 212,
+      "priority": "P0",
+      "modes": [
+        "hybrid-folder"
+      ],
+      "surface": [
+        "ui"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/p/[projectId]/setup"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "PSU-013",
+      "area": "PSU",
+      "title": "Re-run setup checks from project settings",
+      "file": "catalog/15-project-setup.md",
+      "line": 229,
+      "priority": "P2",
+      "modes": [
+        "hybrid-folder"
+      ],
+      "surface": [
+        "ui"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/p/[projectId]/settings",
+        "orkka-ui:/p/[projectId]/setup"
+      ],
+      "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "PSU-014",
+      "area": "PSU",
+      "title": "The dry run needs a saved source, and an offline runner is a state",
+      "file": "catalog/15-project-setup.md",
+      "line": 246,
+      "priority": "P2",
+      "modes": [
+        "hybrid-folder"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "automated",
+      "refs": [
+        "orkka-api:POST /api/projects/{projectId}/tracker/preview"
+      ],
+      "since": "2026-11-19",
+      "tests": [
+        "tests/api/project-setup.spec.ts"
+      ]
     },
     {
       "id": "RURL-001",
