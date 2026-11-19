@@ -62,6 +62,7 @@ Every project gets a persistent AI development team seeded on creation. Agents a
 
 **Key rules:**
 - Users can rename agents, change models, and update instructions — but not add or disable them
+- **The workspace's AI provider** (Settings → Workspace; `organizations.AiProvider`, null = Automatic — Claude when it can run, else the first signed-in CLI) decides which vendor new projects' agents are seeded on and what system work (merge fixes, utility one-shots) prefers: `PreferredProvider(chosen)` — the choice when the developer's runner can run it, else Automatic, with the blocker shown on the settings card. Copilot → every agent `copilot/auto`; QA (Scout) always stays on Claude (browser QA needs it; the Team page says so when Claude isn't signed in). `PUT /api/org/ai-provider {provider, applyToExistingProjects}` (Owner) can switch every existing project's agents too, through the same bulk write as "Set every agent's model". AGENTS.md → Default models per provider
 - Dev agents are assigned to specific repos — no frontend agent for a Go backend repo
 - Cross-repo agents (PM, QA, Reviewer, Architect) work across all repos
 - Agents are only created if the pipeline has their corresponding lane (no Reviewer if code review is skipped)

@@ -36,7 +36,7 @@ and runs the whole loop on your laptop:
 |---|---|
 | 🏠 **Local-only** | One process on `127.0.0.1`. No account, no server and no telemetry. Data lives in `~/.orkka`. |
 | 🔑 **Your credentials** | Git pushes with *your* sign-in, and PRs open with *your* `gh` / `az` / `glab`. Tracker tokens stay in your OS keychain. |
-| 🤖 **Your AI subscription** | Claude Code, Codex (ChatGPT) or Copilot CLI, on any sign-in type: a personal or team plan, an API key, Bedrock, Vertex, Azure OpenAI or a company gateway. |
+| 🤖 **Your AI subscription** | Claude Code, Codex (ChatGPT) or Copilot CLI, on any sign-in type: a personal or team plan, an API key, Bedrock, Vertex, Azure OpenAI or a company gateway. Pick one per workspace in *Settings → Workspace*: a company Copilot plan puts every agent on Copilot Auto. |
 | 🧭 **Your workflow** | Statuses are configurable per project. Pick which tracker statuses to take tickets from, and which status each step moves them to. |
 | 🧑‍💼 **One workspace per job** | Projects, tracker connections and AI sign-ins are kept apart per employer. |
 | 🛡️ **Guardrails** | Agents can't push, read your keys, reach other hosts or leave their task folder. These limits are enforced on your machine. |
