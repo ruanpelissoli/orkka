@@ -27,6 +27,8 @@ Orkka is for **developers**, especially those who work several jobs at once. The
 
 There are no accounts. A single implicit local user owns every workspace. Workspaces stay (one per job), switched with the `X-Orkka-Workspace` header / `orkka_ws` cookie. Members, invites, billing and the audit UI are gone.
 
+A workspace is a set of projects (each with its own settings, base folder and repos). The **workspace board** (`/{locale}/board`, the landing page) shows every task of the workspace across its projects, narrowed to one with `?project=` — see `.claude/docs/FRONTEND.md` → Workspace board.
+
 How the UI authenticates (contract with the Orkka.Local host):
 - The browser talks only to the host at `http://127.0.0.1:6750`. The host serves the UI's built files (`apps/local/dist`) itself: static assets, `index.html` for every other locale-prefixed path, and a redirect of `/` and unprefixed paths to `/{locale}/…` — the full contract is in `apps/local/README.md`.
 - **Browser:** httpOnly `orkka_s` session cookie, issued by `GET /launch?code=…`. Client fetches and SignalR are same-origin, `credentials: "same-origin"`, no Authorization header, and always `X-Orkka-Csrf: 1` (`packages/core` `authHeaders`; `useClientApi()` passes an empty token).
