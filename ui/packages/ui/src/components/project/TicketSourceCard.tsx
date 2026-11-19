@@ -59,6 +59,9 @@ interface TicketSourceCardProps {
   viewerUserId: string | null;
   /** Display name of the config's owner when it isn't the viewer. */
   ownerName?: string | null;
+  /** Told after a save (the saved source) or a removal (null) — the project setup page follows
+   * the source this way. */
+  onSaved?: (config: ProjectTrackerConfig | null) => void;
 }
 
 interface EpicRow {
@@ -161,6 +164,7 @@ export function TicketSourceCard({
   repos,
   viewerUserId,
   ownerName,
+  onSaved,
 }: TicketSourceCardProps) {
   const t = useTranslations("dashboard.ticketSource");
   const tTrackers = useTranslations("dashboard.trackers");
@@ -563,6 +567,7 @@ export function TicketSourceCard({
       );
       setConfig(saved);
       setNotice({ kind: "ok", text: t("saved") });
+      onSaved?.(saved);
     } catch (e) {
       setNotice({ kind: "error", text: extractErrorMessage(e, t("saveFailed")) });
     } finally {
@@ -583,6 +588,7 @@ export function TicketSourceCard({
       setPreview(null);
       setConfirmingRemove(false);
       setNotice({ kind: "ok", text: t("removed") });
+      onSaved?.(null);
     } catch (e) {
       setNotice({ kind: "error", text: extractErrorMessage(e, t("removeFailed")) });
     } finally {

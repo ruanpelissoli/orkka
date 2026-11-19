@@ -50,6 +50,7 @@ describe("route table", () => {
     ["/en/p/01ABC/roadmap", "/:locale/p/:projectId/roadmap"],
     ["/en/p/01ABC/roadmap/m1", "/:locale/p/:projectId/roadmap/:milestoneId"],
     ["/en/p/01ABC/settings", "/:locale/p/:projectId/settings"],
+    ["/en/p/01ABC/setup", "/:locale/p/:projectId/setup"],
     ["/en/p/01ABC/skills", "/:locale/p/:projectId/skills"],
     ["/en/p/01ABC/tasks", "/:locale/p/:projectId/tasks"],
     ["/en/p/01ABC/tasks/new", "/:locale/p/:projectId/tasks/new"],

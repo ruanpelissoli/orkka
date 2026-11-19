@@ -211,6 +211,43 @@ export interface MyRunnerStatus {
    * `./orkka commands approve <id>`. Absent until the host reports it.
    */
   pendingCommandApprovals?: PendingCommandApproval[] | null;
+  /**
+   * Who this workspace's commits are authored as. Absent from runners older than the field.
+   */
+  commitIdentity?: RunnerCommitIdentity | null;
+}
+
+/**
+ * The commit author for this workspace on the runner's machine: the workspace's own identity
+ * (`./orkka workspace set-identity`), else the developer's global git config, else none — then
+ * every commit fails.
+ */
+export interface RunnerCommitIdentity {
+  name: string | null;
+  email: string | null;
+  source: "workspace" | "git-config" | "none";
+}
+
+/** One repository command as the developer's machine would treat it (CommandTrust). */
+export interface RepoCommandStatus {
+  kind: "setup" | "check" | "build";
+  command: string;
+  /** It would run on that machine now. */
+  allowed: boolean;
+  /** Why: "declared" in the repo's orkka.json, or "approved" on the machine. */
+  source: "declared" | "approved" | null;
+  /** Not allowed: approve it at that machine's terminal with `./orkka commands approve <id>`. */
+  approvalId: string | null;
+  machine: string | null;
+  /** The machine could not check it (repository not prepared there yet). */
+  error: string | null;
+}
+
+export interface RepoCommandsCheck {
+  /** false = the runner is offline or too old to check commands. */
+  supported: boolean;
+  repos: { repoId: string; name: string; commands: RepoCommandStatus[] }[];
+  error?: string | null;
 }
 
 /** One repository command waiting for the developer's approval on this machine. */
@@ -306,7 +343,18 @@ export interface Project {
   baseFolder?: string | null;
   /** What that folder is: one repository, or a folder of repositories. */
   baseFolderShape?: BaseFolderShape | null;
+  /**
+   * When Start was pressed at the end of the guided setup (`/p/{slug}/setup`). Null = setup not
+   * finished: the ticket source is not polled and nothing is imported until Start. Projects that
+   * predate the setup flow count as started.
+   */
+  setupCompletedAt?: string | null;
+  /** The setup steps the developer confirmed so far, in setup order. */
+  setupSteps?: ProjectSetupStep[] | null;
 }
+
+/** The guided setup's steps, in order. "review" is finished by Start, never confirmed. */
+export type ProjectSetupStep = "folder" | "machine" | "source" | "team" | "review";
 
 /** "monorepo": the base folder is one repository. "multirepo": it holds several. */
 export type BaseFolderShape = "monorepo" | "multirepo";
@@ -2821,6 +2869,59 @@ export interface TrackerQueryResponse {
   result?: TrackerQueryResult | null;
   /** A successful `statuses` query: what a new ticket source starts from. */
   defaults?: TrackerDefaults | null;
+}
+
+/** One ticket of the setup page's dry run ("these tickets would be pulled"). */
+export interface IntakePreviewTicket {
+  key: string;
+  title: string;
+  type: string | null;
+  status: string | null;
+  url: string | null;
+  /** The developer's name in the tracker (intake only takes their tickets). */
+  assignee: string | null;
+  /** The repository the routing rules pick; null when the repo router decides at import. */
+  repoId: string | null;
+  repoName: string | null;
+  /** Several repositories (a cross-repo group); empty otherwise. */
+  spansRepos: string[];
+  /** rule:Epic / rule:Label / … / single-repo / issue-repo / default / router-at-import / none /
+   * story / tracked. */
+  route: string;
+  reason: string | null;
+}
+
+export interface IntakePreviewStory {
+  story: IntakePreviewTicket;
+  /** The one branch its members are worked on. */
+  branch: string;
+  members: IntakePreviewTicket[];
+}
+
+export interface IntakePreviewSkipped {
+  key: string;
+  title: string;
+  status: string | null;
+  url: string | null;
+  reason: "notAssignedToMe" | "notInIntake";
+}
+
+/** What the next poll would add to the board — decided by the real poll's own rules, nothing created. */
+export interface IntakePreview {
+  /** Tasks the poll would create: plain ones plus every Story member. */
+  newTaskCount: number;
+  tasks: IntakePreviewTicket[];
+  stories: IntakePreviewStory[];
+  alreadyTracked: IntakePreviewTicket[];
+  skipped: IntakePreviewSkipped[];
+}
+
+/** supported=false: the runner is offline or too old; ok=false: the tracker refused the read. */
+export interface IntakePreviewResponse {
+  supported: boolean;
+  ok: boolean;
+  error?: string | null;
+  preview?: IntakePreview | null;
 }
 
 /** The status map and intake statuses the host works out from the scope's statuses. */

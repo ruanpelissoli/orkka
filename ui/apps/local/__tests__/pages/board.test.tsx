@@ -100,4 +100,18 @@ describe("BoardPage", () => {
     const without = await renderPage(<BoardPage />);
     expect(without.container.textContent).not.toContain("TicketSourceStatusLine");
   });
+
+  it("shows Finish setup while the project's setup was left before Start", async () => {
+    mockApi.projects.get.mockResolvedValueOnce({ id: "proj-1", slug: "shop", name: "Shop", setupCompletedAt: null });
+    const unfinished = await renderPage(<BoardPage />);
+    expect(screen.getByTestId("finish-setup-banner")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "action" })).toHaveAttribute("href", "/p/shop/setup");
+    unfinished.unmount();
+
+    mockApi.projects.get.mockResolvedValueOnce({
+      id: "proj-1", slug: "shop", name: "Shop", setupCompletedAt: "2026-11-19T00:00:00Z",
+    });
+    await renderPage(<BoardPage />);
+    expect(screen.queryByTestId("finish-setup-banner")).toBeNull();
+  });
 });

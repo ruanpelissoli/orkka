@@ -1157,7 +1157,7 @@
   },
   "newProjectPage": {
     "title": "Novo projeto",
-    "subtitle": "Comece de uma pasta nesta máquina: um repositório, ou uma pasta de repositórios."
+    "subtitle": "Comece por uma pasta desta máquina: um repositório ou uma pasta de repositórios. Em seguida vem uma configuração curta — nada é puxado do seu tracker antes de você clicar em Iniciar."
   },
   "fromFolder": {
     "folderTitle": "Pasta do projeto",
@@ -1186,7 +1186,7 @@
     "creating": "Criando…",
     "createFailed": "Não foi possível criar o projeto: {detail}",
     "createdWithWarnings": "{name} está pronto. Algumas coisas a saber:",
-    "openProject": "Abrir o quadro"
+    "openProject": "Continuar para a configuração"
   },
   "baseFolder": {
     "title": "Pasta do projeto",
@@ -2588,6 +2588,204 @@
     "trackers": "Trackers",
     "mcpKeys": "Chaves MCP",
     "usage": "Uso",
-    "workspaceBoard": "Quadro do workspace"
+    "workspaceBoard": "Quadro do workspace",
+    "projectSetup": "Configuração do projeto"
+  },
+  "projectSetup": {
+    "title": "Configurar {name}",
+    "subtitle": "Cinco passos curtos e depois Iniciar. Nada é puxado do seu tracker antes de você clicar em Iniciar — saia quando quiser e continue de onde parou.",
+    "subtitleStarted": "Este projeto está em andamento. Todas as configurações aqui continuam editáveis, e as verificações podem ser executadas de novo a qualquer momento.",
+    "stepsLabel": "Passos da configuração",
+    "back": "Voltar",
+    "continue": "Tudo certo — continuar",
+    "continueAgain": "Continuar",
+    "stepFailed": "Não foi possível salvar este passo. Tente de novo.",
+    "goToStep": "Corrigir em {step}",
+    "level": {
+      "ok": "Pronto",
+      "warn": "Vale conferir",
+      "error": "Bloqueia a primeira tarefa"
+    },
+    "steps": {
+      "folder": {
+        "title": "Pasta e repositórios",
+        "description": "A pasta base e seus repositórios: o branch de onde o trabalho parte, como o trabalho concluído é entregue e os comandos que deixam a cópia de cada tarefa utilizável."
+      },
+      "machine": {
+        "title": "Verificação da máquina",
+        "description": "Tudo o que o seu runner precisa nesta máquina: o próprio runner, uma CLI de IA conectada, uma identidade de commit, acesso a cada repositório e a CLI que abre pull requests."
+      },
+      "source": {
+        "title": "Origem dos tickets",
+        "description": "De onde vêm os tickets — Jira, Azure DevOps, GitHub Projects ou nenhum — e uma simulação exata do que seria puxado."
+      },
+      "team": {
+        "title": "Equipe e modelo",
+        "description": "Em qual CLI de IA a equipe roda e o modelo que cada agente usa."
+      },
+      "review": {
+        "title": "Revisar e iniciar",
+        "description": "Tudo de uma vez. Iniciar permite que o seu runner puxe os tickets deste projeto."
+      }
+    },
+    "checks": {
+      "noRepos": "Este projeto ainda não tem repositório.",
+      "reposFound": "{count, plural, one {# repositório} other {# repositórios}} no projeto.",
+      "repoMissing": "{repo} não está mais na pasta base.",
+      "commandApproved": "{repo}: o comando {kind} está aprovado nesta máquina.",
+      "commandDeclared": "{repo}: o comando {kind} está declarado no orkka.json.",
+      "commandNeedsApproval": "{repo}: o comando {kind} aguarda sua aprovação nesta máquina — até lá ele não roda.",
+      "commandUnchecked": "{repo}: o comando {kind} não pôde ser verificado nesta máquina.",
+      "runnerOffline": "Seu runner está offline.",
+      "runnerOnline": "Seu runner está online em {machine}.",
+      "noAiCli": "Nenhuma CLI de IA está conectada nesta máquina.",
+      "aiReady": "Conectadas: {providers}.",
+      "identityMissing": "Os commits não têm autor nesta máquina — o git vai recusá-los.",
+      "identityWorkspace": "Os commits são de {name} ({email}) — a identidade deste workspace.",
+      "identityGitConfig": "Os commits são de {name} ({email}) — o seu git config.",
+      "repoReachable": "{repo} está acessível com o seu login do git.",
+      "repoUnreachable": "{repo} não está acessível com o seu login do git.",
+      "forgeReady": "{cli} está conectado para {repos}.",
+      "forgeNotSignedIn": "{cli} não está conectado — os pull requests de {repos} não podem ser abertos.",
+      "forgeMissing": "{cli} não está instalado — os pull requests de {repos} não podem ser abertos.",
+      "sourceNotChosen": "Escolha uma origem de tickets, ou nenhuma.",
+      "sourceNone": "Sem origem de tickets: você mesmo escreve as tarefas.",
+      "connectionUnhealthy": "A conexão com o tracker não está funcionando.",
+      "sourceSet": "Os tickets vêm de {scope}.",
+      "sourcePaused": "A origem de tickets está desligada — nada será puxado.",
+      "lastPollError": "A última leitura do tracker falhou.",
+      "previewed": "Você visualizou o que seria puxado.",
+      "notPreviewed": "Visualize o que seria puxado antes de iniciar.",
+      "providerBlocked": "O provedor de IA do workspace não pode rodar nesta máquina.",
+      "providerSet": "A equipe roda em {provider}.",
+      "qaNeedsClaude": "O QA no navegador precisa do Claude, que não está conectado.",
+      "stepNotConfirmed": "{step} ainda não foi confirmado."
+    },
+    "folder": {
+      "noRepos": "Este projeto ainda não tem repositório — adicione um na página Repositórios.",
+      "addRepos": "Abrir a página Repositórios",
+      "commandsOffline": "Seu runner está offline, então os comandos não puderam ser verificados nesta máquina.",
+      "runContractTitle": "Contrato de execução (orkka.json)",
+      "runContractManifest": "O orkka.json declara {count, plural, one {# alvo de execução} other {# alvos de execução}}: o botão Executar e o QA iniciam o app a partir dele.",
+      "runContractDetected": "{count, plural, one {# alvo de execução foi detectado} other {# alvos de execução foram detectados}} para o botão Executar. Os agentes de desenvolvimento adicionam um orkka.json ao repositório que não tem na primeira tarefa.",
+      "runContractNone": "Ainda não há orkka.json. Os agentes de desenvolvimento adicionam um a cada repositório na primeira tarefa; até lá o QA inicia o app pelo comando de execução acima.",
+      "saved": "Salvo.",
+      "saveFailed": "Não foi possível salvar o repositório.",
+      "saving": "Salvando…",
+      "save": "Salvar",
+      "modeRemote": "Pull request",
+      "modeLocal": "Pasta local",
+      "modeRemoteHint": "O trabalho revisado é enviado a um branch e publicado como pull request com a sua própria CLI da forja.",
+      "modeLocalHint": "Sem remoto: o trabalho revisado é mesclado (squash) nesta pasta.",
+      "defaultBranch": "Branch padrão",
+      "forge": "Forja",
+      "cliAccount": "Conta da CLI",
+      "cliAccountHint": "A conta do {cli} que abre os pull requests deste repositório. Vazio = a conta ativa.",
+      "noCliHint": "O Orkka não tem CLI para esta forja: o branch é enviado e você abre o pull request.",
+      "cliAccountPlaceholder": "Conta ativa",
+      "commandsHint": "Cada comando roda na sua máquina somente quando o orkka.json do repositório o declara ou você o aprova lá. Vazio = o orkka.json do repositório, se houver.",
+      "command": {
+        "setup": "Preparação (uma vez por cópia de tarefa)",
+        "check": "Verificação (lint, typecheck e testes após cada execução de desenvolvimento)",
+        "build": "Build (prova que um merge ainda compila)",
+        "qaRun": "Execução (como o QA inicia o app)"
+      },
+      "commandApproved": "Aprovado nesta máquina.",
+      "commandDeclared": "Declarado no orkka.json — roda sem aprovação.",
+      "commandNeedsApproval": "Aguarda sua aprovação. Num terminal desta máquina: {command}",
+      "commandUnchecked": "Não pôde ser verificado nesta máquina.",
+      "secretsHint": "Nunca coloque segredos aqui: um comando de preparação roda na sua máquina e pode copiar o seu próprio .env."
+    },
+    "machine": {
+      "title": "Esta máquina",
+      "intro": "Perguntado ao seu runner agora há pouco. Corrija o que estiver em vermelho antes da primeira tarefa e verifique de novo.",
+      "recheck": "Verificar de novo",
+      "rechecking": "Verificando…",
+      "loading": "Perguntando ao seu runner…",
+      "accessUnsupported": "Seu runner não conseguiu verificar o acesso aos repositórios — atualize o Orkka (git pull e depois ./orkka start).",
+      "aiTitle": "Login da IA",
+      "aiIntro": "A equipe roda na sua própria assinatura de IA. Cada CLI que não está pronta mostra o comando que a conecta.",
+      "doctorHint": "As mesmas verificações num terminal:",
+      "machinePage": "Página da máquina"
+    },
+    "source": {
+      "title": "De onde vêm os tickets?",
+      "intro": "O Orkka só pega tickets atribuídos a você. Seu runner lê o tracker com a sua própria conexão; o token nunca sai desta máquina.",
+      "kind": {
+        "jira": "Jira",
+        "ado": "Azure DevOps",
+        "github": "GitHub Projects",
+        "none": "Nenhum"
+      },
+      "gateNote": "Nada é puxado antes de você clicar em Iniciar no fim desta configuração — salvar a origem aqui só a prepara.",
+      "noneBody": "Sem tracker: você escreve as tarefas deste projeto no quadro. Dá para adicionar uma origem de tickets depois, nas configurações do projeto.",
+      "noneHasSource": "Este projeto ainda tem uma origem de tickets. Remova-a para trabalhar só com tarefas manuais.",
+      "removing": "Removendo…",
+      "removeSource": "Remover a origem de tickets",
+      "removeFailed": "Não foi possível remover a origem de tickets.",
+      "connectTitle": "Conectar {tracker}",
+      "connectIntro": "Ainda não há conexão nesta máquina. O token é testado e guardado no cofre de segredos desta máquina — o Orkka nunca o armazena.",
+      "connectWithCli": "Ou por um terminal",
+      "saveToPreview": "Salve a origem de tickets para visualizar o que ela puxaria."
+    },
+    "preview": {
+      "title": "O que seria puxado",
+      "intro": "Seu runner lê o tracker exatamente como a primeira leitura vai ler, e as próprias regras dessa leitura decidem o que vira tarefa. Nada é criado.",
+      "run": "Visualizar",
+      "running": "Lendo o tracker…",
+      "again": "Visualizar de novo",
+      "offline": "Seu runner está offline — inicie-o com ./orkka start para visualizar.",
+      "failed": "Não foi possível ler o tracker: {error}",
+      "failedGeneric": "Não foi possível ler o tracker.",
+      "count": "{count, plural, =0 {Nenhum ticket seria puxado.} one {# tarefa seria criada.} other {# tarefas seriam criadas.}}",
+      "tasksTitle": "{count, plural, one {# ticket vira tarefa} other {# tickets viram tarefas}}",
+      "storyTitle": "Story {key} — {count, plural, one {# subtarefa} other {# subtarefas}}, um branch, um pull request",
+      "nothing": "Confira os status de entrada, o quadro e se os tickets estão atribuídos a você.",
+      "tracked": "{count, plural, one {# ticket já está} other {# tickets já estão}} no quadro.",
+      "skippedTitle": "{count, plural, one {# ticket fica de fora} other {# tickets ficam de fora}}",
+      "skipReason": {
+        "notAssignedToMe": "não está atribuído a você",
+        "notInIntake": "não está num status de entrada (já em andamento ou concluído)"
+      },
+      "colKey": "Chave",
+      "colTitle": "Título",
+      "colStatus": "Status",
+      "colAssignee": "Responsável",
+      "colRepo": "Repositório",
+      "you": "Você",
+      "repoAtImport": "Escolhido na importação",
+      "repoAsks": "Pergunta a você"
+    },
+    "team": {
+      "title": "A equipe",
+      "intro": "Cada agente e o seu modelo. Defina todos de uma vez aqui, ou um a um na página Equipe.",
+      "teamPage": "Abrir a página Equipe"
+    },
+    "review": {
+      "title": "Prontidão",
+      "intro": "Vermelho bloqueia a primeira tarefa; amarelo vale conferir. Cada item leva ao passo que o corrige.",
+      "introStarted": "Este projeto já foi iniciado. Estas são as mesmas verificações, executadas de novo agora.",
+      "started": "Iniciado — seu runner puxa os tickets deste projeto.",
+      "blocked": "Há algo em vermelho. Corrija ou inicie mesmo assim.",
+      "ready": "Pronto. Iniciar permite que o seu runner puxe os tickets deste projeto.",
+      "start": "Iniciar",
+      "starting": "Iniciando…",
+      "startAnyway": "Iniciar mesmo assim…",
+      "anywayTitle": "{count, plural, one {# item não está pronto:} other {# itens não estão prontos:}}",
+      "anywayConfirm": "Iniciar mesmo assim",
+      "anywayCancel": "Cancelar",
+      "startFailed": "Não foi possível iniciar o projeto."
+    },
+    "banner": {
+      "text": "A configuração não foi concluída — nenhum ticket é puxado para este projeto até você clicar em Iniciar.",
+      "action": "Concluir a configuração"
+    },
+    "settingsCard": {
+      "title": "Configuração do projeto",
+      "body": "Execute de novo as verificações da configuração: esta máquina, os repositórios, a origem de tickets e a equipe.",
+      "unfinished": "A configuração não foi concluída — a origem de tickets não é lida até você clicar em Iniciar.",
+      "finish": "Concluir a configuração",
+      "rerun": "Executar as verificações de novo"
+    }
   }
 }

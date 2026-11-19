@@ -26,6 +26,9 @@ export const mockApi = {
       warnings: [],
       repos: [],
     }),
+    setSetupStep: vi.fn(),
+    startSetup: vi.fn(),
+    setupCommands: vi.fn().mockResolvedValue({ supported: false, repos: [] }),
   },
   board: {
     get: vi.fn().mockResolvedValue({ lanes: [] }),
@@ -379,6 +382,7 @@ export const mockApi = {
     getProjectConfig: vi.fn().mockResolvedValue(null),
     saveProjectConfig: vi.fn(),
     deleteProjectConfig: vi.fn().mockResolvedValue(undefined),
+    previewIntake: vi.fn().mockResolvedValue({ supported: false, ok: false }),
   },
   runConfig: {
     get: vi.fn().mockResolvedValue({

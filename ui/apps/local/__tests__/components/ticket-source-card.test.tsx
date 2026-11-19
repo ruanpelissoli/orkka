@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import "../mocks/navigation";
 import "../mocks/intl";
@@ -277,6 +277,18 @@ describe("TicketSourceCard", () => {
         merged: null,
       });
     });
+  });
+
+  it("tells the project setup page what it saved", async () => {
+    const saved = config();
+    mockApi.trackers.saveProjectConfig.mockResolvedValue(saved);
+    const onSaved = vi.fn();
+    show({ onSaved });
+
+    await waitFor(() => expect(statusSelect("prOpened")).toHaveValue("Code Review"));
+    fireEvent.click(screen.getByRole("button", { name: "save" }));
+
+    await waitFor(() => expect(onSaved).toHaveBeenCalledWith(saved));
   });
 
   it("saves the whole configuration in the server's shape", async () => {

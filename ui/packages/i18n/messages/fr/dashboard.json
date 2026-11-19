@@ -1157,7 +1157,7 @@
   },
   "newProjectPage": {
     "title": "Nouveau projet",
-    "subtitle": "Partez d'un dossier de cette machine : un dépôt, ou un dossier de dépôts."
+    "subtitle": "Partez d’un dossier de cette machine : un dépôt, ou un dossier de dépôts. Une courte configuration suit — rien n’est récupéré de votre tracker avant que vous ne cliquiez sur Démarrer."
   },
   "fromFolder": {
     "folderTitle": "Dossier du projet",
@@ -1186,7 +1186,7 @@
     "creating": "Création…",
     "createFailed": "Impossible de créer le projet : {detail}",
     "createdWithWarnings": "{name} est prêt. Quelques points à connaître :",
-    "openProject": "Ouvrir le tableau"
+    "openProject": "Continuer vers la configuration"
   },
   "baseFolder": {
     "title": "Dossier du projet",
@@ -2588,6 +2588,204 @@
     "trackers": "Trackers",
     "mcpKeys": "Clés MCP",
     "usage": "Utilisation",
-    "workspaceBoard": "Tableau de l’espace de travail"
+    "workspaceBoard": "Tableau de l’espace de travail",
+    "projectSetup": "Configuration du projet"
+  },
+  "projectSetup": {
+    "title": "Configurer {name}",
+    "subtitle": "Cinq courtes étapes, puis Démarrer. Rien n’est récupéré de votre tracker avant que vous ne cliquiez sur Démarrer — partez quand vous voulez et reprenez là où vous en étiez.",
+    "subtitleStarted": "Ce projet est en cours. Tous les réglages ici restent modifiables, et les vérifications peuvent être relancées à tout moment.",
+    "stepsLabel": "Étapes de la configuration",
+    "back": "Retour",
+    "continue": "C’est bon — continuer",
+    "continueAgain": "Continuer",
+    "stepFailed": "Impossible d’enregistrer cette étape. Réessayez.",
+    "goToStep": "Corriger dans {step}",
+    "level": {
+      "ok": "Prêt",
+      "warn": "À vérifier",
+      "error": "Bloque la première tâche"
+    },
+    "steps": {
+      "folder": {
+        "title": "Dossier et dépôts",
+        "description": "Le dossier de base et ses dépôts : la branche d’où part le travail, la façon dont le travail terminé est livré et les commandes qui rendent utilisable la copie de chaque tâche."
+      },
+      "machine": {
+        "title": "Vérification de la machine",
+        "description": "Tout ce dont votre runner a besoin sur cette machine : le runner lui-même, une CLI d’IA connectée, une identité de commit, l’accès à chaque dépôt et la CLI qui ouvre les pull requests."
+      },
+      "source": {
+        "title": "Source des tickets",
+        "description": "D’où viennent les tickets — Jira, Azure DevOps, GitHub Projects ou aucun — et une simulation exacte de ce qui serait récupéré."
+      },
+      "team": {
+        "title": "Équipe et modèle",
+        "description": "Sur quelle CLI d’IA l’équipe travaille et le modèle utilisé par chaque agent."
+      },
+      "review": {
+        "title": "Vérifier et démarrer",
+        "description": "Tout à la fois. Démarrer permet à votre runner de récupérer les tickets de ce projet."
+      }
+    },
+    "checks": {
+      "noRepos": "Ce projet n’a pas encore de dépôt.",
+      "reposFound": "{count, plural, one {# dépôt} other {# dépôts}} dans le projet.",
+      "repoMissing": "{repo} n’est plus dans le dossier de base.",
+      "commandApproved": "{repo} : la commande {kind} est approuvée sur cette machine.",
+      "commandDeclared": "{repo} : la commande {kind} est déclarée dans orkka.json.",
+      "commandNeedsApproval": "{repo} : la commande {kind} attend votre approbation sur cette machine — d’ici là, elle ne s’exécute pas.",
+      "commandUnchecked": "{repo} : la commande {kind} n’a pas pu être vérifiée sur cette machine.",
+      "runnerOffline": "Votre runner est hors ligne.",
+      "runnerOnline": "Votre runner est en ligne sur {machine}.",
+      "noAiCli": "Aucune CLI d’IA n’est connectée sur cette machine.",
+      "aiReady": "Connectées : {providers}.",
+      "identityMissing": "Les commits n’ont pas d’auteur sur cette machine — git les refusera.",
+      "identityWorkspace": "Les commits sont signés {name} ({email}) — l’identité de ce workspace.",
+      "identityGitConfig": "Les commits sont signés {name} ({email}) — votre configuration git.",
+      "repoReachable": "{repo} est accessible avec votre connexion git.",
+      "repoUnreachable": "{repo} n’est pas accessible avec votre connexion git.",
+      "forgeReady": "{cli} est connecté pour {repos}.",
+      "forgeNotSignedIn": "{cli} n’est pas connecté — les pull requests de {repos} ne peuvent pas être ouvertes.",
+      "forgeMissing": "{cli} n’est pas installé — les pull requests de {repos} ne peuvent pas être ouvertes.",
+      "sourceNotChosen": "Choisissez une source de tickets, ou aucune.",
+      "sourceNone": "Pas de source de tickets : vous écrivez les tâches vous-même.",
+      "connectionUnhealthy": "La connexion au tracker ne fonctionne pas.",
+      "sourceSet": "Les tickets viennent de {scope}.",
+      "sourcePaused": "La source de tickets est désactivée — rien ne sera récupéré.",
+      "lastPollError": "La dernière lecture du tracker a échoué.",
+      "previewed": "Vous avez prévisualisé ce qui serait récupéré.",
+      "notPreviewed": "Prévisualisez ce qui serait récupéré avant de démarrer.",
+      "providerBlocked": "Le fournisseur d’IA du workspace ne peut pas fonctionner sur cette machine.",
+      "providerSet": "L’équipe travaille avec {provider}.",
+      "qaNeedsClaude": "La QA dans le navigateur a besoin de Claude, qui n’est pas connecté.",
+      "stepNotConfirmed": "{step} n’est pas encore confirmé."
+    },
+    "folder": {
+      "noRepos": "Ce projet n’a pas encore de dépôt — ajoutez-en un sur la page Dépôts.",
+      "addRepos": "Ouvrir la page Dépôts",
+      "commandsOffline": "Votre runner est hors ligne : les commandes n’ont pas pu être vérifiées sur cette machine.",
+      "runContractTitle": "Contrat d’exécution (orkka.json)",
+      "runContractManifest": "orkka.json déclare {count, plural, one {# cible d’exécution} other {# cibles d’exécution}} : le bouton Exécuter et la QA lancent l’app à partir de là.",
+      "runContractDetected": "{count, plural, one {# cible d’exécution a été détectée} other {# cibles d’exécution ont été détectées}} pour le bouton Exécuter. Les agents de développement ajoutent un orkka.json au dépôt qui n’en a pas lors de leur première tâche.",
+      "runContractNone": "Pas encore d’orkka.json. Les agents de développement en ajoutent un à chaque dépôt lors de leur première tâche ; d’ici là, la QA lance l’app avec la commande d’exécution ci-dessus.",
+      "saved": "Enregistré.",
+      "saveFailed": "Impossible d’enregistrer le dépôt.",
+      "saving": "Enregistrement…",
+      "save": "Enregistrer",
+      "modeRemote": "Pull request",
+      "modeLocal": "Dossier local",
+      "modeRemoteHint": "Le travail revu est poussé sur une branche et publié comme pull request avec votre propre CLI de forge.",
+      "modeLocalHint": "Pas de distant : le travail revu est fusionné (squash) dans ce dossier.",
+      "defaultBranch": "Branche par défaut",
+      "forge": "Forge",
+      "cliAccount": "Compte de la CLI",
+      "cliAccountHint": "Le compte {cli} qui ouvre les pull requests de ce dépôt. Vide = le compte actif.",
+      "noCliHint": "Orkka n’a pas de CLI pour cette forge : la branche est poussée, c’est à vous d’ouvrir la pull request.",
+      "cliAccountPlaceholder": "Compte actif",
+      "commandsHint": "Chaque commande ne s’exécute sur votre machine que si l’orkka.json du dépôt la déclare ou si vous l’y approuvez. Vide = l’orkka.json du dépôt, s’il existe.",
+      "command": {
+        "setup": "Préparation (une fois par copie de tâche)",
+        "check": "Vérification (lint, typecheck et tests après chaque exécution de développement)",
+        "build": "Build (prouve qu’une fusion compile encore)",
+        "qaRun": "Exécution (comment la QA lance l’app)"
+      },
+      "commandApproved": "Approuvée sur cette machine.",
+      "commandDeclared": "Déclarée dans orkka.json — s’exécute sans approbation.",
+      "commandNeedsApproval": "Attend votre approbation. Dans un terminal de cette machine : {command}",
+      "commandUnchecked": "N’a pas pu être vérifiée sur cette machine.",
+      "secretsHint": "Ne mettez jamais de secrets ici : une commande de préparation s’exécute sur votre machine et peut copier votre propre .env."
+    },
+    "machine": {
+      "title": "Cette machine",
+      "intro": "Demandé à votre runner à l’instant. Corrigez ce qui est en rouge avant la première tâche, puis revérifiez.",
+      "recheck": "Revérifier",
+      "rechecking": "Vérification…",
+      "loading": "Interrogation de votre runner…",
+      "accessUnsupported": "Votre runner n’a pas pu vérifier l’accès aux dépôts — mettez Orkka à jour (git pull, puis ./orkka start).",
+      "aiTitle": "Connexion de l’IA",
+      "aiIntro": "L’équipe travaille avec votre propre abonnement d’IA. Chaque CLI qui n’est pas prête affiche la commande qui la connecte.",
+      "doctorHint": "Les mêmes vérifications depuis un terminal :",
+      "machinePage": "Page de la machine"
+    },
+    "source": {
+      "title": "D’où viennent les tickets ?",
+      "intro": "Orkka ne prend que les tickets qui vous sont assignés. Votre runner lit le tracker avec votre propre connexion ; le jeton ne quitte jamais cette machine.",
+      "kind": {
+        "jira": "Jira",
+        "ado": "Azure DevOps",
+        "github": "GitHub Projects",
+        "none": "Aucune"
+      },
+      "gateNote": "Rien n’est récupéré avant que vous ne cliquiez sur Démarrer à la fin de cette configuration — enregistrer la source ici ne fait que la préparer.",
+      "noneBody": "Pas de tracker : vous écrivez vous-même les tâches de ce projet sur le tableau. Vous pourrez ajouter une source de tickets plus tard dans les réglages du projet.",
+      "noneHasSource": "Ce projet a encore une source de tickets. Retirez-la pour ne travailler qu’avec des tâches manuelles.",
+      "removing": "Retrait…",
+      "removeSource": "Retirer la source de tickets",
+      "removeFailed": "Impossible de retirer la source de tickets.",
+      "connectTitle": "Connecter {tracker}",
+      "connectIntro": "Pas encore de connexion sur cette machine. Le jeton est testé et conservé dans le coffre de secrets de cette machine — Orkka ne le stocke jamais.",
+      "connectWithCli": "Ou depuis un terminal",
+      "saveToPreview": "Enregistrez la source de tickets pour prévisualiser ce qu’elle récupérerait."
+    },
+    "preview": {
+      "title": "Ce qui serait récupéré",
+      "intro": "Votre runner lit le tracker exactement comme le fera la première lecture, et ses propres règles décident de ce qui devient une tâche. Rien n’est créé.",
+      "run": "Prévisualiser",
+      "running": "Lecture du tracker…",
+      "again": "Prévisualiser à nouveau",
+      "offline": "Votre runner est hors ligne — lancez-le avec ./orkka start pour prévisualiser.",
+      "failed": "Impossible de lire le tracker : {error}",
+      "failedGeneric": "Impossible de lire le tracker.",
+      "count": "{count, plural, =0 {Aucun ticket ne serait récupéré.} one {# tâche serait créée.} other {# tâches seraient créées.}}",
+      "tasksTitle": "{count, plural, one {# ticket devient une tâche} other {# tickets deviennent des tâches}}",
+      "storyTitle": "Story {key} — {count, plural, one {# sous-tâche} other {# sous-tâches}}, une branche, une pull request",
+      "nothing": "Vérifiez les statuts d’entrée, le tableau et que les tickets vous sont bien assignés.",
+      "tracked": "{count, plural, one {# ticket est} other {# tickets sont}} déjà sur le tableau.",
+      "skippedTitle": "{count, plural, one {# ticket est laissé de côté} other {# tickets sont laissés de côté}}",
+      "skipReason": {
+        "notAssignedToMe": "ne vous est pas assigné",
+        "notInIntake": "pas dans un statut d’entrée (déjà en cours ou terminé)"
+      },
+      "colKey": "Clé",
+      "colTitle": "Titre",
+      "colStatus": "Statut",
+      "colAssignee": "Assigné à",
+      "colRepo": "Dépôt",
+      "you": "Vous",
+      "repoAtImport": "Choisi à l’import",
+      "repoAsks": "Vous le demande"
+    },
+    "team": {
+      "title": "L’équipe",
+      "intro": "Chaque agent et son modèle. Réglez-les tous d’un coup ici, ou un par un sur la page Équipe.",
+      "teamPage": "Ouvrir la page Équipe"
+    },
+    "review": {
+      "title": "État de préparation",
+      "intro": "Le rouge bloque la première tâche ; l’orange est à vérifier. Chaque élément renvoie à l’étape qui le corrige.",
+      "introStarted": "Ce projet a démarré. Ce sont les mêmes vérifications, relancées maintenant.",
+      "started": "Démarré — votre runner récupère les tickets de ce projet.",
+      "blocked": "Quelque chose est en rouge. Corrigez-le ou démarrez quand même.",
+      "ready": "Prêt. Démarrer permet à votre runner de récupérer les tickets de ce projet.",
+      "start": "Démarrer",
+      "starting": "Démarrage…",
+      "startAnyway": "Démarrer quand même…",
+      "anywayTitle": "{count, plural, one {# élément n’est pas prêt :} other {# éléments ne sont pas prêts :}}",
+      "anywayConfirm": "Démarrer quand même",
+      "anywayCancel": "Annuler",
+      "startFailed": "Impossible de démarrer le projet."
+    },
+    "banner": {
+      "text": "La configuration n’est pas terminée — aucun ticket n’est récupéré pour ce projet tant que vous n’avez pas cliqué sur Démarrer.",
+      "action": "Terminer la configuration"
+    },
+    "settingsCard": {
+      "title": "Configuration du projet",
+      "body": "Relancez les vérifications de la configuration : cette machine, les dépôts, la source de tickets et l’équipe.",
+      "unfinished": "La configuration n’est pas terminée — la source de tickets n’est pas lue tant que vous n’avez pas cliqué sur Démarrer.",
+      "finish": "Terminer la configuration",
+      "rerun": "Relancer les vérifications"
+    }
   }
 }
