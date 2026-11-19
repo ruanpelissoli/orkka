@@ -1,6 +1,6 @@
 # Catalogue coverage
 
-Generated 2026-11-19T14:42:44.913Z. 725 cases in 37 files; 34 linked to a spec.
+Generated 2026-11-19T16:00:07.618Z. 729 cases in 37 files; 34 linked to a spec.
 
 | Area | Title | Cases | P0 | Linked | P0 linked | automated | planned | manual | blocked |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -32,10 +32,10 @@ Generated 2026-11-19T14:42:44.913Z. 725 cases in 37 files; 34 linked to a spec.
 | RUN | Runner — My Runner settings, tokens, presence and the ./orkka CLI | 35 | 6 | 1 | 0 | 8 | 22 | 5 | 0 |
 | RURL | Repositories by URL — any git remote, forge detection, runner access check | 12 | 6 | 0 | 0 | 7 | 5 | 0 | 0 |
 | SES | Interactive sessions — live pair-programming on a real branch | 15 | 3 | 0 | 0 | 0 | 12 | 3 | 0 |
-| SET | Settings — account, preferences, organization, project settings | 29 | 1 | 1 | 0 | 1 | 28 | 0 | 0 |
+| SET | Settings — account, preferences, organization, project settings | 32 | 1 | 1 | 0 | 1 | 31 | 0 | 0 |
 | SKL | Skills — project skill library (SKILL.md playbooks) | 12 | 1 | 0 | 0 | 0 | 12 | 0 | 0 |
 | TCLI | Tracker CLI — `./orkka tracker add|list|test|remove` | 13 | 4 | 5 | 3 | 5 | 6 | 2 | 0 |
-| TEAM | Team — agent roster, configuration, chat | 36 | 2 | 0 | 0 | 0 | 36 | 0 | 0 |
+| TEAM | Team — agent roster, configuration, chat | 37 | 2 | 0 | 0 | 0 | 37 | 0 | 0 |
 | TING | Tracker polling and ingestion — tickets become tasks | 25 | 5 | 0 | 0 | 2 | 21 | 2 | 0 |
 | TSK | Tasks — list, create form, detail, actions, sidebar cards | 52 | 6 | 0 | 0 | 0 | 52 | 0 | 0 |
 | TSRC | Ticket source — a project's Jira / Azure DevOps configuration | 24 | 9 | 9 | 7 | 10 | 12 | 2 | 0 |
@@ -46,8 +46,8 @@ Generated 2026-11-19T14:42:44.913Z. 725 cases in 37 files; 34 linked to a spec.
 
 | Mode | Cases |
 |---|---:|
-| all | 386 |
-| hybrid-folder | 52 |
-| hybrid-repo | 226 |
+| all | 389 |
+| hybrid-folder | 53 |
+| hybrid-repo | 227 |
 | offline | 17 |
 | tracker | 75 |

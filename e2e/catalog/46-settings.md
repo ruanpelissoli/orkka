@@ -563,3 +563,74 @@ refs:
 - URL becomes `/pt/settings/preferences`; heading reads "Preferências"; `PUT /api/org/me/preferences {locale:"pt"}` → 200; step 2 `preferences.locale:"pt"`.
 - Back to `EN`: URL unprefixed again, `locale:"en"`.
 **Notes**: none.
+
+## SET-043 Choose the workspace AI provider on Settings → Workspace
+```yaml
+priority: P1
+surface: [ui]
+automation: planned
+since: 2026-11-19
+refs:
+  - orkka-ui:/settings/workspace
+  - orkka-ui:apps/local/components/settings/WorkspaceAiProviderCard.tsx
+  - orkka-api:GET /api/org/ai-provider
+  - orkka-api:PUT /api/org/ai-provider
+  - orkka-api:GET /api/me/runner
+  - i18n:workspaceSettings
+```
+**Preconditions**: runner online with Claude and Copilot signed in, Codex installed but signed out, Gemini not installed; two seeded projects in the workspace.
+**Steps**:
+1. Open `/settings/workspace`; read the "AI provider" card.
+2. Pick "Copilot"; click "Save provider"; read the dialog; leave "Also switch the agents in existing projects" checked; click "Save".
+3. Open each project's team page.
+4. Back on the card pick "Claude"; Save; uncheck "Also switch…"; confirm.
+**Expected**:
+- 1 → choices Automatic, Claude, Codex, Copilot, Gemini, Grok; Automatic selected; Claude and Copilot "Ready", Codex "Not signed in" with `codex login`, Gemini "Not installed" with `gemini`; "New projects' agents use Claude."; "Save provider" disabled.
+- 2 → nothing is written before the dialog's "Save"; while Copilot is picked the card says QA stays on Claude. After it: toast "Saved. 26 agents moved to Copilot across 2 projects. 2 QA agents stayed on Claude for browser testing."
+- 3 → every agent shows Copilot Auto except Scout (Claude).
+- 4 → toast "Saved. New projects use Claude."; the existing teams keep Copilot Auto.
+**Notes**: Owner-only (SET-045). Creating a project afterwards is SET-044.
+
+## SET-044 New projects follow the workspace AI provider (seeding, fallback, isolation)
+```yaml
+priority: P1
+surface: [api]
+automation: planned
+since: 2026-11-19
+refs:
+  - orkka-api:PUT /api/org/ai-provider
+  - orkka-api:GET /api/org/ai-provider
+  - orkka-api:POST /api/projects/from-folder
+  - orkka-api:GET /api/projects/{projectId}/agents
+```
+**Preconditions**: owner (install-secret bearer); a second workspace (WSP-002); runner with Claude and Copilot signed in.
+**Steps**:
+1. `PUT /api/org/ai-provider {provider:"copilot", applyToExistingProjects:false}`; create a project from a folder; `GET …/agents`.
+2. Sign Copilot out on the runner (`copilot logout`), wait for the next Hello; `GET /api/org/ai-provider`; create another project.
+3. In the second workspace (`X-Orkka-Workspace`) `GET /api/org/ai-provider`; create a project there.
+4. `PUT /api/org/ai-provider {provider:"ollama"}`; `{provider:"nope"}`.
+**Expected**:
+- 1 → 200 `{provider:"copilot", effectiveProvider:"copilot", blocker:null, applied:false, projectCount:0, …}`; every agent `copilot/auto` except QA on `claude-sonnet-5`.
+- 2 → `{provider:"copilot", effectiveProvider:"claude", blocker:"<the runner's reason>"}`; the new project is seeded on Claude (nothing is stranded); the card shows the blocker in amber.
+- 3 → the other workspace is still `automatic` and its project is seeded on Claude.
+- 4 → 400 each ("not an AI provider choice"); the setting is unchanged.
+**Notes**: the runner's last report decides readiness; a runner that never connected leaves the choice trusted. Merge-conflict fixes and utility one-shots (titles, plans) also prefer the chosen provider when it can run.
+
+## SET-045 Keep the workspace AI provider Owner-only
+```yaml
+priority: P2
+surface: [api]
+automation: planned
+since: 2026-11-19
+refs:
+  - orkka-api:PUT /api/org/ai-provider
+  - orkka-api:GET /api/org/ai-provider
+```
+**Preconditions**: Owner-minted key with all permissions.
+**Steps**:
+1. `GET /api/org/ai-provider` with the key.
+2. `PUT /api/org/ai-provider {provider:"copilot"}` with the key.
+**Expected**:
+- 1 → 200 with the current choice.
+- 2 → 403 (a key is never Owner); no agent changes.
+**Notes**: like the workspace name (SET-004).

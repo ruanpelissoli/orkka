@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-11-19T14:41:54.889Z",
+  "generatedAt": "2026-11-19T15:59:30.266Z",
   "sources": {
     "ui": {
-      "path": "C:\\Projects\\orkka\\orkka\\.claude\\worktrees\\agent-abdd5d29afb9b0159\\ui",
-      "sha": "fd681ae070db"
+      "path": "C:\\Projects\\orkka\\orkka\\.claude\\worktrees\\agent-a6bad14ce75c76bcc\\ui",
+      "sha": "17c47335dca0"
     },
     "api": {
-      "path": "C:\\Projects\\orkka\\orkka\\.claude\\worktrees\\agent-abdd5d29afb9b0159",
-      "sha": "fd681ae070db"
+      "path": "C:\\Projects\\orkka\\orkka\\.claude\\worktrees\\agent-a6bad14ce75c76bcc",
+      "sha": "17c47335dca0"
     }
   },
   "uiPages": [
@@ -366,6 +366,22 @@
       "path": "/api/org",
       "file": "src/Modules/Orkka.Modules.Organizations/Features/Settings/OrgProfileEndpoints.cs",
       "class": "UpdateOrgProfileEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/org/ai-provider",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Workspace/WorkspaceAiProviderEndpoints.cs",
+      "class": "GetWorkspaceAiProviderEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/org/ai-provider",
+      "file": "src/Modules/Orkka.Modules.Agents/Features/Workspace/WorkspaceAiProviderEndpoints.cs",
+      "class": "UpdateWorkspaceAiProviderEndpoint",
       "permissions": [],
       "host": "api"
     },
@@ -2637,6 +2653,7 @@
         "taskMisc",
         "tasksPage",
         "teamModel",
+        "teamProvider",
         "teamStats",
         "ticketSource",
         "ticketSourceStatus",
@@ -2650,13 +2667,13 @@
         "workspaces"
       ]
     },
-    "leafCount": 2302
+    "leafCount": 2331
   },
   "counts": {
     "uiPages": 40,
-    "apiRoutes": 256,
+    "apiRoutes": 258,
     "hubEvents": 20,
     "cliVerbs": 15,
-    "i18nNamespaces": 113
+    "i18nNamespaces": 114
   }
 }

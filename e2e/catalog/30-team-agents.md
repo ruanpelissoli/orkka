@@ -739,4 +739,29 @@ refs:
 - 3 → `{updatedCount:0, unchangedCount:13, skippedQaCount:1}`, no new audit events.
 - 4 → no QA note in the dialog; all 14 agents on Claude Sonnet 5.
 - 5 → 400 each; no agent changes.
-**Notes**: AgentsConfigure, like the per-agent update (TEAM-005). Agents' saved models never change on their own — a new Copilot default (copilot/auto on every tier) only reaches agents seeded afterwards; this control is how an existing team moves.
+**Notes**: AgentsConfigure, like the per-agent update (TEAM-005). Agents' saved models never change on their own — a new Copilot default (copilot/auto on every tier) only reaches agents seeded afterwards; this control (one project) and the workspace AI provider with “Also switch the agents in existing projects” (every project, SET-043) are how existing teams move.
+
+## TEAM-039 Say on the team page that browser QA needs Claude, and that the provider can be chosen
+```yaml
+priority: P2
+modes: [hybrid-repo, hybrid-folder]
+surface: [ui]
+automation: planned
+since: 2026-11-19
+refs:
+  - orkka-ui:/p/[projectId]/team
+  - orkka-ui:apps/local/app/[locale]/(dashboard)/p/[projectId]/team/TeamProviderNotes.tsx
+  - orkka-api:GET /api/org/ai-provider
+  - orkka-api:GET /api/me/runner
+  - i18n:teamProvider
+```
+**Preconditions**: seeded project; workspace AI provider Automatic.
+**Steps**:
+1. Runner with Claude and Copilot signed in → open `/p/{slug}/team`.
+2. Choose Copilot on Settings → Workspace; reopen the team page.
+3. Sign Claude out on the runner (Copilot stays) → reopen the team page.
+**Expected**:
+- 1 → one grey line "Both Copilot and Claude are signed in, and this workspace's teams use Claude. To use your Copilot plan instead, choose it in Settings → Workspace" (the link opens `/settings/workspace`); no QA line.
+- 2 → no hint.
+- 3 → one amber line "Automated browser QA needs Claude: Scout stays on a Claude model, and the Testing lane can't run until Claude Code is signed in on this machine. Run `claude`".
+**Notes**: nothing shows while the runner's status is unknown. QA is always seeded on Claude, whatever the workspace provider.
