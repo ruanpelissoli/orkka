@@ -26,7 +26,7 @@ whatever database that code uses — belongs to the developer's employer and sta
   statement for its 30 s command timeout.
 - Each module has its own history table, `__EFMigrationsHistory_{module}`, starting from one
   `Initial` migration (regenerated for SQLite 2026-11 — no database predates it); later schema
-  changes are migrations on top of it (Trackers: `TrackerBoard`, the ticket source's board).
+  changes are migrations on top of it (Trackers: `TrackerBoard`, the ticket source's board; Projects: `ProjectSetup`, the guided setup's Start gate — existing projects marked started; Runners: `RunnerCommitIdentity`).
   Orkka.Local applies them one module after another at startup (`ApplyModuleMigrationsAsync`).
 - Cross-module references are plain ULID columns — no cross-module foreign keys or navigations.
 - Agents never see this file's path as a credential, and there is none — see SECURITY.md.

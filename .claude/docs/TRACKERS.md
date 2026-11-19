@@ -15,7 +15,7 @@ Data Center, ADO Server or GitHub Enterprise Server). GitHub specifics are in
 | Runner CLI | `./orkka tracker add jira\|ado\|github`, `list`, `test`, `remove` (`Cli/TrackerCommand.cs`) |
 | Host module `Orkka.Modules.Trackers` (schema `trackers`) | `connections` (metadata from the runner's Hello), `project_configs` + `epic_mappings` (a project's ticket source and its routing rules), `ticket_links` (ticket ↔ task, sync state), `RepoRouter` (the runner utility that picks a repository) |
 | Runner hub `HostedRunnerHub` | `SyncTrackers`, `ReportTickets`, `AckTransitions` — each authorised against the connection's bound (org, user); project ids are never taken from the payload |
-| UI | Settings → Trackers (add / re-test / remove connections), Project settings → Ticket source |
+| UI | Settings → Trackers (add / re-test / remove connections), Project settings → Ticket source, the project setup's Ticket source step (inline connect, the same card, the dry run) |
 
 ## Connecting a tracker
 
@@ -26,7 +26,8 @@ kind, site, account id and display name, health — goes into the Hello, which t
 into `trackers.connections` per machine (a connection removed on a machine is marked missing,
 never deleted).
 
-- **Settings → Trackers** (the usual way). "Add Jira Cloud" (site, email, API token) or "Add
+- **Settings → Trackers** (the usual way; the project setup's Ticket source step shows the same
+  form inline when this machine has no connection of the chosen kind). "Add Jira Cloud" (site, email, API token) or "Add
   Azure DevOps" (organization, PAT) posts to `POST /api/trackers/connections`
   `{kind, site, email?, token}`. The host relays it over loopback
   (`/internal/runner/tracker-connections`) to the caller's own runner — `AddTrackerConnection`,
@@ -127,10 +128,40 @@ is exactly the old behaviour, the whole project.
 - The board id and name are non-secret settings; the token stays on the runner as for every
   other tracker call.
 
+### Nothing is pulled before Start; the dry run
+
+A new project goes through the guided setup (`/p/{slug}/setup`, PROJECTS.md → Guided setup) and its
+ticket source is **not polled until the developer presses Start** (`Project.SetupCompletedAt`,
+`POST /api/projects/{id}/setup/start`). Saving a source before that only prepares it.
+
+- **The gate is on the host.** `SyncAsync` asks `IProjectsApi.GetSetupPendingProjectIdsAsync` for
+  the due sources' projects and hands none of a project not started to the runner (no lease, no
+  `LastPolledAt`); `ReportAsync` refuses a report for one (`SetupPendingError`, nothing imported,
+  the poll not recorded) in case a lease was taken earlier. Projects that predate the setup were
+  migrated as started (migration `ProjectSetup`: `SetupCompletedAt = CreatedAt`), so nothing
+  changed for them.
+- **The dry run** — `POST /api/projects/{id}/tracker/preview` (the setup's "What would be pulled";
+  owner only; works before Start, which is what it is for). The host builds the assignment the next
+  poll would get (`ITrackersApi.BuildPreviewAssignmentAsync`: the same `AssignmentAsync` as
+  `SyncAsync`, its tracked keys included, read-only — no lease, no link ended) and relays a
+  `TrackerQuery` of kind `dry-run` carrying it (runner capability `tracker-dry-run`, else "update
+  Orkka"). The runner polls it with **the real poller** (`TrackerTicketPoller.PollAsync(…, dryRun:
+  true)`: the same reads and normalization, but attachments only listed, no comments fetched,
+  nothing remembered as delivered) and returns the tickets (`TrackerQueryResult.Tickets`). The host
+  then runs them through **the poll's own intake decision** (`TrackersApi.PlanIntake` — the same
+  function `ReportAsync` imports from: Stories first with their member sub-tasks
+  (`IsMemberCandidate`), then the other untracked intake tickets assigned to me) and the real
+  routing (`RouteAsync` without the repo router — "picked at import"), and answers
+  `{supported, ok, error?, preview: {newTaskCount, tasks[], stories[{story, branch, members[]}],
+  alreadyTracked[], skipped[{key, reason: notAssignedToMe | notInIntake}]}}`. Nothing is created,
+  leased or cached. `TrackerSetupGateAndPreviewTests` proves parity: for the same report the
+  preview lists exactly the tasks, Stories and members (keys, order, repositories, branch) the
+  real poll creates.
+
 ## Polling and ingestion
 
 1. Every 30 s the runner calls `SyncTrackers` with the connections it holds. The host returns
-   the owner's enabled sources that are due, each under a **poll lease**
+   the owner's enabled sources that are due — of started projects only (above) — each under a **poll lease**
    (`ProjectTrackerConfig.LeaseHolder` = the runner's instance id, a conditional update — one
    machine polls a source; the owner's ACTIVE runner connection takes over a lease held by the
    instance it replaced, so a restart does not pause intake), plus the **tracked** tickets with content hash and last comment time,

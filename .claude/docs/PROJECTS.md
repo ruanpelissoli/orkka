@@ -24,6 +24,8 @@ Jira/Azure DevOps/GitHub Projects ticket sources and workspaces per job came aft
    (`AgentSeedOnProjectCreated`) — no cross-module call from the endpoint.
 
 A blank project gets its repositories linked afterwards. The primary way in is a base folder.
+Either way a new project starts with its guided setup open (below): its ticket source is not
+polled until Start.
 
 ## Projects from a base folder
 
@@ -69,6 +71,54 @@ The developer points Orkka at ONE folder on their machine (Runners module, `Base
 The developer's checkouts are only ever read: mirrors and task folders live under
 `~/.orkka/repos` (RUNNER_GIT.md), and a remote's first mirror is seeded from the checkout.
 Agents on a folder-of-repos project may read the siblings (SECURITY.md → Sibling repositories).
+
+## Guided setup — nothing is pulled before Start
+
+Every new project — from `/projects/new` (the UI then opens it), `POST /api/projects` or
+`POST /api/projects/from-folder` (both go through `ProjectCreator`; there is no CLI create path) —
+starts with its setup open: `Project.SetupCompletedAt` null, `SetupStepsJson` `[]`. Until Start its
+ticket source is **not polled** (TRACKERS.md → Nothing is pulled before Start). Projects that
+existed before the setup were migrated as started (migration `ProjectSetup`), so nothing changed for
+them. `ProjectResponse` carries `setupCompletedAt` and `setupSteps`.
+
+`/p/{slug}/setup?step=folder|machine|source|team|review` (`components/project-setup/`), resumed at
+the first step not confirmed when no step is named. Every step reuses the settings pages' own
+pieces and endpoints, so nothing set here differs from setting it later — and everything stays
+editable in project settings afterwards. The readiness rules are one pure module
+(`ui/apps/local/lib/project-setup.ts`: green = ready, amber = worth a look, red = the first ticket
+would fail):
+
+1. **Folder & repos** — the Repos page's base-folder panel (rescan, descriptions), then per repo:
+   default branch, how work lands (a forge PR through the developer's CLI, or a squash into the
+   linked folder), forge and CLI account (remotes only), and the setup / check / build / QA run
+   commands (`PATCH …/repos/{repoId}`, which now invalidates the cached repo list). Each command is
+   vetted on this machine: `POST /api/projects/{id}/setup/commands` → runner op `VetRepoCommands`
+   (capability `command-vet`) → `CommandTrust` against the repo's mirror: `declared` (orkka.json on
+   the default branch), `approved`, or waiting with the id for `./orkka commands approve <id>` —
+   recorded as pending exactly as a task's refusal would be. Nothing runs and nothing can be
+   approved from the host (SECURITY.md). Plus the run contract: orkka.json run targets, detected
+   targets, or none yet.
+2. **Machine check** (Re-check asks again) — runner online; AI CLIs signed in with each one's fix
+   command (`signInHint`); the commit identity (the Hello's `CommitIdentity`: the workspace's
+   `set-identity`, else the global git config, else none — red; `GET /api/me/runner` →
+   `commitIdentity`); each repository reachable (`GET …/repos/access-check`); the forge CLI
+   (`gh`/`az`/`glab`) signed in for the repositories that publish PRs.
+3. **Ticket source** — Jira / Azure DevOps / GitHub Projects / None. A kind with no connection on
+   this machine gets Settings → Trackers' write-only form inline (GitHub: the gh login by default);
+   then the project's `TicketSourceCard` itself (board, statuses, status map, GitHub status field
+   and repository filter); then the dry run ("What would be pulled": tasks, Stories with their
+   members, already tracked, left out and why — `POST /api/projects/{id}/tracker/preview`). None =
+   manual tasks only (removes an existing source).
+4. **Team & model** — the workspace AI provider card, the "QA needs Claude" note, the team's models
+   and "set every agent's model".
+5. **Review & Start** — every check, each linking to its step. Start
+   (`POST /api/projects/{id}/setup/start {warnings}`, ProjectsManage, idempotent, audited
+   ProjectSettingsChanged) is disabled while anything is red; "Start anyway…" lists every red and
+   amber item and records them in the audit trail. None as the source still allows Start.
+
+Confirming a step (`PUT /api/projects/{id}/setup/steps {step, done}`) only records where to
+resume. While a project is not started its board shows "Finish setup" (`FinishSetupBanner`), and
+project settings link to the setup ("Re-run setup checks" once started — `?step=review`).
 
 ## Repositories
 

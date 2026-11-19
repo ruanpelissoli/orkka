@@ -24,14 +24,15 @@ ui/
 │   │           ├── dashboard/          # empty state → /projects/new, else → /p/{last or first project}
 │   │           ├── inbox/              # what waits on you
 │   │           ├── notifications/
-│   │           ├── projects/           # /projects → /dashboard; /projects/new = create (from a folder)
+│   │           ├── projects/           # /projects → /dashboard; /projects/new = create (from a folder), then /p/{slug}/setup
 │   │           │   └── [projectId]/…   # old URLs: redirect to /p/…
 │   │           ├── p/[projectId]/      # a project (layout.tsx)
 │   │           │   ├── page.tsx        # overview
 │   │           │   ├── board/  tasks/ (new, [taskId], [taskId]/review, [taskId]/merge)
 │   │           │   ├── roadmap/ (+ [milestoneId])  repos/  team/  architect/
 │   │           │   ├── activity/  automation/  memory/  skills/  design/  documents/
-│   │           │   └── settings/       # pipeline + project settings, ticket source
+│   │           │   ├── setup/          # the guided setup (?step=…): folder & repos, machine check, ticket source + dry run, team, Review & Start
+│   │           │   └── settings/       # pipeline + project settings, ticket source, "Re-run setup checks"
 │   │           └── settings/           # /settings → /settings/workspace
 │   │               ├── workspace/  preferences/  notifications/
 │   │               ├── machine/        # the runner, AI CLIs, forge CLIs, pending command approvals
