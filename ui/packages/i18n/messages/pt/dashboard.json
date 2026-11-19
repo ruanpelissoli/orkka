@@ -13,6 +13,11 @@
     "skippedQa": "{count, plural, one {# agente de QA manteve o modelo.} other {# agentes de QA mantiveram o modelo.}}",
     "error": "Não foi possível alterar o modelo da equipe"
   },
+  "teamProvider": {
+    "qaNeedsClaude": "O QA automatizado no navegador precisa do Claude: {name} continua em um modelo Claude, e a etapa de Testes não roda até o Claude Code estar conectado nesta máquina. Execute",
+    "chooseProvider": "Copilot e Claude estão conectados, e as equipes deste workspace usam o Claude. Para usar seu plano Copilot, escolha-o em",
+    "chooseProviderLink": "Configurações → Workspace"
+  },
   "agentConfig": {
     "updateError": "Não foi possível atualizar o agente",
     "deleteError": "Não foi possível excluir o agente",
@@ -1508,7 +1513,39 @@
     "saved": "Salvo.",
     "errorGeneric": "Não foi possível renomear o workspace. Tente novamente.",
     "gitIdentityTitle": "Identidade do git",
-    "gitIdentityBody": "Commits e pushes neste workspace usam a identidade do git definida para ele nesta máquina. Defina-a em um terminal com:"
+    "gitIdentityBody": "Commits e pushes neste workspace usam a identidade do git definida para ele nesta máquina. Defina-a em um terminal com:",
+    "aiProvider": {
+      "title": "Provedor de IA",
+      "body": "Em qual assinatura de IA as equipes de agentes deste workspace rodam. Os agentes de novos projetos são configurados nela; o trabalho do sistema (planos, títulos, correções de merge) também a prefere.",
+      "automatic": "Automático",
+      "descriptions": {
+        "automatic": "Claude quando estiver conectado nesta máquina; caso contrário, o primeiro CLI de IA que estiver.",
+        "claude": "Claude Code com seu plano Claude ou chave de API.",
+        "codex": "Codex com seu plano ChatGPT ou chave da OpenAI.",
+        "copilot": "GitHub Copilot: todos os agentes usam o Copilot Auto, cobrado como premium requests com desconto no seu plano Copilot.",
+        "gemini": "Gemini CLI. Não pode ser protegido, então só roda quando esta máquina permite provedores sem proteção.",
+        "grok": "Grok CLI. Não pode ser protegido, então só roda quando esta máquina permite provedores sem proteção."
+      },
+      "readiness": {
+        "ready": "Pronto",
+        "notSignedIn": "Não conectado",
+        "notInstalled": "Não instalado"
+      },
+      "fix": "Para entrar nesta máquina, execute",
+      "runnerUnknown": "Seu runner ainda não informou nada, então a prontidão é desconhecida. Inicie-o com ./orkka start.",
+      "effective": "Os agentes de novos projetos usam {provider}.",
+      "blocked": "{provider} não pode rodar nesta máquina: {reason} Novos projetos usam {effective} até que possa.",
+      "qaNote": "O QA continua no Claude: os testes automatizados no navegador precisam dele.",
+      "save": "Salvar provedor",
+      "confirmTitle": "Usar {provider} neste workspace?",
+      "confirmMessage": "Novos projetos deste workspace terão agentes no {provider}.",
+      "applyExisting": "Também trocar os agentes dos projetos existentes",
+      "confirm": "Salvar",
+      "saved": "Salvo. Novos projetos usam {provider}.",
+      "savedApplied": "Salvo. {count, plural, =0 {Nenhum agente precisou mudar} one {# agente passou para {provider}} other {# agentes passaram para {provider}}} em {projects, plural, one {# projeto} other {# projetos}}.",
+      "savedQa": "{count, plural, one {# agente de QA continuou no Claude para os testes no navegador.} other {# agentes de QA continuaram no Claude para os testes no navegador.}}",
+      "error": "Não foi possível salvar o provedor de IA"
+    }
   },
   "preferencesPage": {
     "title": "Preferências",

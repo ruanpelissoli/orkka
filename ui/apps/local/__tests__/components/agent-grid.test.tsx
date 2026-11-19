@@ -17,6 +17,12 @@ vi.mock(
   () => ({ TeamModelControl: () => null })
 );
 
+// Covered by workspace-ai-provider.test; it reads the runner status and the workspace setting.
+vi.mock(
+  "@/app/[locale]/(dashboard)/p/[projectId]/team/TeamProviderNotes",
+  () => ({ TeamProviderNotes: () => null })
+);
+
 import { AgentGrid } from "@/app/[locale]/(dashboard)/p/[projectId]/team/AgentGrid";
 import type { AiModel, ProjectAgent } from "@/lib/types";
 

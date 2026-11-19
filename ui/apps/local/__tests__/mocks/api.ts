@@ -227,6 +227,13 @@ export const mockApi = {
       .fn()
       .mockResolvedValue({ showTechnicalDetails: true, onboardingTourSeen: true }),
     rename: vi.fn().mockResolvedValue({ orgId: "org1", name: "Acme", slug: "acme" }),
+    aiProvider: vi.fn().mockResolvedValue({
+      provider: "automatic",
+      choices: ["automatic", "claude", "codex", "copilot", "gemini", "grok"],
+      effectiveProvider: "claude",
+      blocker: null,
+    }),
+    setAiProvider: vi.fn(),
     runners: {
       list: vi.fn().mockResolvedValue([]),
     },

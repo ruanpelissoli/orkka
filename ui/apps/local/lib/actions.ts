@@ -1,7 +1,8 @@
-import { api, ApiError, extractErrorMessage } from "@/lib/api";
+import { api, ApiError, extractErrorMessage, invalidateApiCache } from "@/lib/api";
 import { refreshData } from "@/lib/data-refresh";
 import type { PriorityKey, TaskTypeKey } from "@/lib/constants";
 import type {
+  WorkspaceAiProviderChoice,
   UpdateTaskRequest,
   ReviewPlanRequest,
   PrComment,
@@ -332,6 +333,17 @@ export async function updateAgent(projectId: string, agentId: string, formData: 
 /** Pins one model on every agent of the project; returns what changed. */
 export async function setAgentsModel(projectId: string, model: string) {
   const result = await api.agents.setModel(projectId, model, token);
+  refreshData();
+  return result;
+}
+
+/** Sets the workspace's AI provider (and, optionally, switches every project's team to it). */
+export async function setWorkspaceAiProvider(
+  provider: WorkspaceAiProviderChoice,
+  applyToExistingProjects: boolean
+) {
+  const result = await api.org.setAiProvider(provider, applyToExistingProjects, token);
+  invalidateApiCache();
   refreshData();
   return result;
 }
