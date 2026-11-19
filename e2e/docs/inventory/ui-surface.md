@@ -28,6 +28,7 @@ Shared components import `@/components/...`; each app's own file wins the tsconf
 - **(dashboard)** layout: `PermissionsProvider(me)` → `ClerkUserPreferencesProvider` → `ProjectProvider` → `ClerkSignalRProvider` → `ToastProvider` → `DashboardShell`.
   - `/dashboard`: redirect router (0 projects → `/onboarding`; `orkka-last-project` cookie; non-Ready → `/p/{slug}/setup` or `/brief`; else `/p/{slug}`).
   - `/onboarding` (684 lines): project-creation wizard (see §2).
+  - `/board` (local UI, 2026-11-19): the workspace board — every task of the workspace across its projects, `?project=` filter; `/` lands here.
   - `/inbox` (`InboxPageClient`), `/notifications`.
   - `/github/setup`: GitHub App callback bounce (reads `sessionStorage["orkka_github_return"]`, forwards `installation_id`/`setup_action` to `returnTo`).
   - `/slack/callback`: OAuth bounce → `/settings/integrations`.

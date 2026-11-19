@@ -23,7 +23,7 @@ refs:
 **Expected**:
 - "Project" label + project name (no status pill when Ready).
 - Items: Overview, Team, Activity, Skills, Automation, Memory, Roadmap, Board, Tasks, Repos, Documents, Design, Diagrams, Members, Settings.
-- Divider, then Inbox, Notifications, Account.
+- Divider, then Workspace board, Inbox, Notifications, Account.
 - Each link carries `data-tour="nav-{key}"` (`nav-overview` … `nav-account`).
 **Notes**: none.
 
@@ -111,7 +111,7 @@ refs:
 1. Open `/inbox` directly.
 2. Click "Back to Project".
 **Expected**:
-- Sidebar label "Navigation", item "Back to Project" followed by Inbox, Notifications, Account; no project items.
+- Sidebar label "Navigation", item "Back to Project" followed by Workspace board, Inbox, Notifications, Account; no project items.
 - "Back to Project" → `/dashboard` → redirects to the last project (`orkka-last-project` cookie) or `/onboarding` when none.
 **Notes**: none.
 
@@ -184,7 +184,7 @@ refs:
 2. Open `/inbox` (no project).
 **Expected**:
 - In project: Home, Board, New (raised FAB), Alerts, Settings; "New" → `/p/{slug}/tasks/new`; active tab tinted primary; "Home" exact-match only.
-- Without project: Home (`/dashboard`), Alerts (`/notifications`), Settings (`/settings`).
+- Without project: Board (`/board`, the workspace board), Alerts (`/notifications`), Settings (`/settings`).
 - A member without TasksCreate does not get the "New" FAB (`RequirePermission`).
 **Notes**: none.
 
@@ -378,7 +378,7 @@ since: 2026-09-15
 **Expected**:
 - Step 1 → `/p/{lastSlug}`; step 2 → `/p/{firstSlug}` (there is no brief or setup stage any more).
 - Step 3: stays on `/dashboard` with "No projects yet" / "Point Orkka at the folder that holds your code — one repository or several. Its AI team works them on this machine." and "Create a project" (→ `/projects/new`).
-- Step 4: both land on `/en/dashboard` (the root has no landing page; an unprefixed path is redirected to its locale first).
+- Step 4: both land on `/en/board`, the workspace board (the root has no landing page of its own; an unprefixed path is redirected to its locale first). `/dashboard` itself still opens a project (steps 1–3).
 
 ## NAV-027 Project overview page
 ```yaml

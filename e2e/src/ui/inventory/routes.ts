@@ -16,6 +16,8 @@ export interface RouteCheck {
 export const WEB_ROUTES: RouteCheck[] = [
   // Dashboard-level
   { path: "/en/dashboard", expectText: /./, caseIds: ["ONB-001"] },
+  // The workspace board (BRD-039…047, planned) — here only "it renders".
+  { path: "/en/board", expectText: /workspace board|no projects yet/i, caseIds: [] },
   { path: "/en/inbox", expectText: /inbox/i, caseIds: ["NTF-001"] },
   { path: "/en/notifications", expectText: /notifications/i, caseIds: ["NTF-003"] },
   { path: "/en/projects", expectText: /project/i, caseIds: [] },

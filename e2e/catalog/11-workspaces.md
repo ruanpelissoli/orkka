@@ -137,7 +137,7 @@ priority: P1
 surface: [ui]
 automation: planned
 refs:
-  - orkka-ui:/dashboard
+  - orkka-ui:/board
   - orkka-ui:apps/local/components/workspace/WorkspaceSwitcher.tsx
   - orkka-api:POST /api/me/active-workspace
   - i18n:workspaces
@@ -149,7 +149,7 @@ since: 2026-10-26
 2. Read the list; click B.
 **Expected**:
 - The menu lists both with their role ("Owner"/"Member") and a runner dot ("Runner online"/"Runner offline") per workspace.
-- Clicking B shows "Switching…", sets the `orkka_ws` cookie to B, calls `POST /api/me/active-workspace`, and hard-navigates to `/dashboard`, which lands in B's project; every later request carries `X-Orkka-Workspace: B`.
+- Clicking B shows "Switching…", sets the `orkka_ws` cookie to B, calls `POST /api/me/active-workspace`, and hard-navigates to `/board`, B's workspace board (every project of B); every later request carries `X-Orkka-Workspace: B`.
 
 ## WSP-009 Create a workspace from the switcher and land on its first-run page
 ```yaml
@@ -157,7 +157,7 @@ priority: P1
 surface: [ui, api]
 automation: planned
 refs:
-  - orkka-ui:/dashboard
+  - orkka-ui:/board
   - orkka-api:POST /api/workspaces
   - orkka-api:POST /api/me/active-workspace
   - i18n:workspaces
@@ -170,7 +170,7 @@ since: 2026-10-26
 2. Read the hint; type `e2e-ws-<stamp>`; click "Create and set up".
 **Expected**:
 - Hint "One workspace per job or client — its own projects, runner token and tracker connections."; the button is disabled while the name is blank and reads "Creating…" while pending.
-- `POST /api/workspaces` → 200; the `orkka_ws` cookie switches to it, `POST /api/me/active-workspace` is sent and the browser reloads `/dashboard`, which (no projects) shows "No projects yet" with "Create a project".
+- `POST /api/workspaces` → 200; the `orkka_ws` cookie switches to it, `POST /api/me/active-workspace` is sent and the browser reloads `/board`, which (no projects) shows "No projects yet" with "Create a project".
 - Within a minute the running `./orkka start` writes the new workspace's runner profile (`./orkka workspace list` lists it).
 
 ## WSP-011 A stale workspace cookie is replaced and the page reloads
@@ -179,15 +179,15 @@ priority: P2
 surface: [ui]
 automation: planned
 refs:
-  - orkka-ui:/dashboard
+  - orkka-ui:/board
   - orkka-ui:apps/local/components/workspace/WorkspaceProvider.tsx
 since: 2026-10-26
 ```
 **Preconditions**: Signed in; set cookie `orkka_ws=<ULID of an org the caller is not in>`.
 **Steps**:
-1. Open `/dashboard`.
+1. Open `/board`.
 **Expected**:
-- The layout re-points the cookie to the caller's active workspace and hard-reloads `/dashboard`; no 403 page is shown to the user.
+- The layout re-points the cookie to the caller's active workspace and hard-reloads `/board`; no 403 page is shown to the user.
 
 ## WSP-012 Runner tokens, projects and tracker connections are per workspace
 ```yaml

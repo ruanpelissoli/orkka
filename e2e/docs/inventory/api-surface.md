@@ -211,6 +211,7 @@ Below, **"—"** = authenticated org member, no extra permission.
 | Method | Path | Permission |
 |---|---|---|
 | GET | `/api/projects/{projectId}/board` · `/board/search` · `/board-metrics` | — |
+| GET | `/api/board` · `/api/board/search` (the workspace board: every project of the workspace, `?projectId=` narrows; 404 for another workspace's project) | — |
 | GET | `/api/projects/{projectId}/tasks` · `/tasks/number/{number}` | — |
 | POST | `/api/projects/{projectId}/tasks` | TasksCreate |
 | POST | `/api/projects/{projectId}/tasks/forecast` | — |
