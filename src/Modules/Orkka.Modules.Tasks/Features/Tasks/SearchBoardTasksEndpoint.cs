@@ -1,6 +1,5 @@
 namespace Orkka.Modules.Tasks.Features.Tasks;
 
-using Orkka.Modules.Tasks.Contracts;
 using Orkka.Modules.Tasks.Infrastructure;
 using Orkka.SharedKernel.Security;
 using Orkka.Modules.Projects.Contracts;
@@ -8,6 +7,7 @@ using Orkka.Modules.Projects.Contracts;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
+/// <summary>Searches one project's board (title, optionally messages).</summary>
 public sealed class SearchBoardTasksEndpoint(TasksDbContext db, IProjectsApi projectsApi, ICurrentUser currentUser, IProjectResolver projectResolver)
     : Endpoint<SearchBoardTasksRequest, List<TaskSummaryResponse>>
 {
@@ -32,17 +32,52 @@ public sealed class SearchBoardTasksEndpoint(TasksDbContext db, IProjectsApi pro
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(req.Q))
+        await Send.OkAsync(await BoardSearch.SearchAsync(db, projectsApi, currentUser.OrgId, [project], req, ct), ct);
+    }
+}
+
+/// <summary>
+/// Searches the workspace board — every project of the current workspace, or <c>?projectId=</c>
+/// (404 when not the workspace's). Same parameters and cards as the project board search.
+/// </summary>
+public sealed class SearchWorkspaceBoardTasksEndpoint(TasksDbContext db, IProjectsApi projectsApi, ICurrentUser currentUser, IProjectResolver projectResolver)
+    : Endpoint<SearchWorkspaceBoardTasksRequest, List<TaskSummaryResponse>>
+{
+    public override void Configure()
+    {
+        Get("/api/board/search");
+    }
+
+    public override async Task HandleAsync(SearchWorkspaceBoardTasksRequest req, CancellationToken ct)
+    {
+        var projects = await WorkspaceBoardProjects.ResolveAsync(projectsApi, projectResolver, currentUser.OrgId, req.ProjectId, ct);
+        if (projects is null)
         {
-            await Send.OkAsync([], ct);
+            await Send.NotFoundAsync(ct);
             return;
         }
 
+        await Send.OkAsync(await BoardSearch.SearchAsync(db, projectsApi, currentUser.OrgId, projects,
+            new SearchBoardTasksRequest { Q = req.Q, IncludeMessages = req.IncludeMessages, IncludeArchived = req.IncludeArchived }, ct), ct);
+    }
+}
+
+internal static class BoardSearch
+{
+    /// <summary>The newest 100 matches (title, or title and messages) over the projects, as board cards.</summary>
+    public static async Task<List<TaskSummaryResponse>> SearchAsync(
+        TasksDbContext db, IProjectsApi projectsApi, Ulid orgId, IReadOnlyCollection<ProjectSummary> projects,
+        SearchBoardTasksRequest req, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(req.Q) || projects.Count == 0)
+            return [];
+
         var pattern = LikeSearch.ContainsPattern(req.Q);
+        var projectIds = projects.Select(p => p.Id).ToList();
 
         var query = db.Tasks
             .AsNoTracking()
-            .Where(t => t.OrgId == currentUser.OrgId && t.ProjectId == projectId);
+            .Where(t => t.OrgId == orgId && projectIds.Contains(t.ProjectId));
 
         if (!req.IncludeArchived)
             query = query.Where(t => !t.IsArchived);
@@ -54,32 +89,13 @@ public sealed class SearchBoardTasksEndpoint(TasksDbContext db, IProjectsApi pro
                 || t.Messages.Any(m => EF.Functions.Like(m.Content, pattern, @"\")))
             : query.Where(t => EF.Functions.Like(t.Title, pattern, @"\"));
 
-        var tasks = await query
+        var rows = await query
             .OrderByDescending(TaskOrderingQueries.PriorityRank)
             .ThenByDescending(t => t.CreatedAt)
             .Take(100)
             .SelectBoardRows()
             .ToListAsync(ct);
 
-        var taskIds = tasks.Select(t => t.Id).ToList();
-        var blockedByTaskId = (await db.TaskDependencies
-                .AsNoTracking()
-                .Where(d => taskIds.Contains(d.TaskId))
-                .Where(TaskDependencyQueries.IsUnmet)
-                .Select(d => new { d.TaskId, d.DependsOnTaskId, d.DependsOnTask.Number, d.DependsOnTask.Status, d.DependsOnTask.IsMerged })
-                .ToListAsync(ct))
-            .GroupBy(d => d.TaskId)
-            .ToDictionary(
-                g => g.Key,
-                g => g.Select(d => new BlockingTaskRef(d.DependsOnTaskId, $"{project.Key}-{d.Number}", d.Status.ToString(), d.IsMerged)).ToList());
-
-        var repoById = (await projectsApi.ListReposAsync(projectId, ct)).ToDictionary(r => r.Id);
-        var lastAgentMessageByTaskId = await BoardQueries.GetLastAgentMessagesAsync(db, taskIds, ct);
-
-        await Send.OkAsync(tasks.Select(t => t.ToSummary(
-            project.Key,
-            t.RepoId is { } rid ? repoById.GetValueOrDefault(rid) : null,
-            blockedByTaskId.GetValueOrDefault(t.Id),
-            lastAgentMessageByTaskId.GetValueOrDefault(t.Id))).ToList(), ct);
+        return await BoardBuilder.ToCardsAsync(db, projectsApi, rows, projects, ct);
     }
 }

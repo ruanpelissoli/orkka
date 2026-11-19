@@ -14,6 +14,8 @@ using TaskStatus = Orkka.Modules.Tasks.Contracts.TaskStatus;
 /// </summary>
 internal sealed record BoardTaskRow(
     Ulid Id,
+    // The workspace board spans projects: each card is keyed and badged by its own project.
+    Ulid ProjectId,
     int Number,
     string Title,
     Priority Priority,
@@ -53,6 +55,7 @@ internal static class BoardQueries
     public static IQueryable<BoardTaskRow> SelectBoardRows(this IQueryable<TaskEntity> query)
         => query.Select(t => new BoardTaskRow(
             t.Id,
+            t.ProjectId,
             t.Number,
             t.Title,
             t.Priority,

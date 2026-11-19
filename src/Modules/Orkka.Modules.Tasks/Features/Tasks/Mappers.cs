@@ -144,7 +144,7 @@ internal static class Mappers
     /// </summary>
     public static TaskSummaryResponse ToSummary(
         this BoardTaskRow row, string projectKey, RepoSummary? repo = null, List<BlockingTaskRef>? blockedBy = null,
-        TaskLastAgentMessageResponse? lastAgentMessage = null)
+        TaskLastAgentMessageResponse? lastAgentMessage = null, BoardProjectRef? project = null)
     {
         return new TaskSummaryResponse(
             row.Id,
@@ -180,7 +180,8 @@ internal static class Mappers
             row.ExternalSyncError,
             row.StoryOrder,
             row.StoryKey,
-            row.StoryCount);
+            row.StoryCount,
+            project);
     }
 
     /// <summary>

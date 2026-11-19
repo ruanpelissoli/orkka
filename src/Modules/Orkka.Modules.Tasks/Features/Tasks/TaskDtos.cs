@@ -176,7 +176,17 @@ public sealed record TaskSummaryResponse(
     // number of sub-tasks — the card's story chip.
     int? StoryOrder = null,
     string? StoryKey = null,
-    int? StoryCount = null);
+    int? StoryCount = null,
+    // The card's project. Set on every board card (project and workspace board, board search) so
+    // the workspace board can badge a card and link it to /p/{slug}/tasks/{n}.
+    BoardProjectRef? Project = null);
+
+/// <summary>
+/// The project a board card belongs to. <see cref="HasTesting"/> says whether that project has
+/// the Testing lane (QA or manual verification on) — the workspace board shows the lane when any
+/// project has it, and refuses a drop into it for a card whose project does not.
+/// </summary>
+public sealed record BoardProjectRef(Ulid Id, string Key, string Name, string Slug, bool HasTesting);
 
 /// <summary>Newest agent message on a task, truncated for the board card preview.</summary>
 public sealed record TaskLastAgentMessageResponse(
@@ -233,6 +243,16 @@ public sealed record TaskFilterRequest
 public sealed record SearchBoardTasksRequest
 {
     public string? Q { get; init; }
+    public bool IncludeMessages { get; init; }
+    public bool IncludeArchived { get; init; }
+}
+
+/// <summary>The workspace board search: the project board search's parameters plus an optional
+/// project (id or slug) to narrow it to.</summary>
+public sealed record SearchWorkspaceBoardTasksRequest
+{
+    public string? Q { get; init; }
+    public string? ProjectId { get; init; }
     public bool IncludeMessages { get; init; }
     public bool IncludeArchived { get; init; }
 }
