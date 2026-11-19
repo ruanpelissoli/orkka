@@ -16,6 +16,9 @@ using Orkka.LocalRunner.Contracts;
 /// <item>intake = "To Do" when the scope has it (Azure DevOps: its Proposed states), else the
 /// to-do-category statuses.</item>
 /// </list>
+/// GitHub Projects follow the default project template's names instead: intake = Todo / Ready,
+/// Developing = In Progress, In review = In Review, Merged = Done (each when the status field has
+/// such an option); the rest unmapped.
 /// </summary>
 public static partial class TrackerStatusDefaults
 {
@@ -23,6 +26,9 @@ public static partial class TrackerStatusDefaults
 
     public static Defaults Compute(string kind, IReadOnlyList<TrackerStatus> statuses)
     {
+        if (kind == TrackerKinds.GitHub)
+            return ComputeGitHub(statuses);
+
         var started = statuses.FirstOrDefault(s => StartedName().IsMatch(s.Name))?.Name
             ?? statuses.FirstOrDefault(s => s.Category == "inprogress"
                 && !string.Equals(s.TrackerCategory, "Resolved", StringComparison.OrdinalIgnoreCase))?.Name;
@@ -49,6 +55,28 @@ public static partial class TrackerStatusDefaults
 
         return new Defaults(new TrackerStatusMap(Planning: started, PrOpened: prOpened), intake);
     }
+
+    private static Defaults ComputeGitHub(IReadOnlyList<TrackerStatus> statuses)
+    {
+        string? Named(Regex pattern) => statuses.FirstOrDefault(s => pattern.IsMatch(s.Name.Trim()))?.Name;
+
+        string[] intake = [.. statuses.Where(s => GitHubPickupName().IsMatch(s.Name.Trim())).Select(s => s.Name)];
+        if (intake.Length == 0)
+            intake = [.. statuses.Where(s => s.Category == "todo").Select(s => s.Name)];
+        if (intake.Length == 0)
+            intake = ["Todo"];
+
+        return new Defaults(new TrackerStatusMap(
+            Developing: Named(StartedName()),
+            InReview: Named(ReviewName()),
+            Merged: Named(GitHubDoneName())), intake);
+    }
+
+    [GeneratedRegex(@"^(to\s*do|ready)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex GitHubPickupName();
+
+    [GeneratedRegex(@"^(done|closed|complete|completed)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex GitHubDoneName();
 
     [GeneratedRegex(@"in\s*progress|doing|active|committed", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex StartedName();

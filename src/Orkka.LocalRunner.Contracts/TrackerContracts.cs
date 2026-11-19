@@ -8,6 +8,23 @@ public static class TrackerKinds
 
     /// <summary>Azure DevOps Services (<c>https://dev.azure.com/{org}</c>), personal access token.</summary>
     public const string AzureDevOps = "ado";
+
+    /// <summary>GitHub Projects (v2) on github.com or GHE.com data residency
+    /// (<c>https://{sub}.ghe.com</c>): the developer's <c>gh</c> login or a token.</summary>
+    public const string GitHub = "github";
+}
+
+/// <summary>How a connection authenticates (<see cref="RunnerTrackerConnection.AuthMode"/>).</summary>
+public static class TrackerAuthModes
+{
+    /// <summary>A token stored in the OS secret store (every Jira and Azure DevOps connection).</summary>
+    public const string Token = "token";
+
+    /// <summary>GitHub only: the developer's own GitHub CLI login, read with
+    /// <c>gh auth token --hostname {host}</c> at call time. Orkka stores nothing.</summary>
+    public const string GhCli = "gh";
+
+    public static bool IsGhCli(string? mode) => string.Equals(mode, GhCli, StringComparison.OrdinalIgnoreCase);
 }
 
 /// <summary>
@@ -21,6 +38,7 @@ public static class TrackerKinds
 /// <param name="AccountId">The tracker's id for the signed-in user (Jira accountId, ADO identity id).</param>
 /// <param name="Healthy">Whether the last check with the stored token succeeded.</param>
 /// <param name="HealthDetail">Why not, in words the settings page can show.</param>
+/// <param name="AuthMode">A <see cref="TrackerAuthModes"/> value; null = a stored token.</param>
 public sealed record RunnerTrackerConnection(
     string Id,
     string Kind,
@@ -29,7 +47,8 @@ public sealed record RunnerTrackerConnection(
     string? DisplayName,
     bool Healthy,
     string? HealthDetail,
-    DateTimeOffset? CheckedAt);
+    DateTimeOffset? CheckedAt,
+    string? AuthMode = null);
 
 /// <summary>What a <see cref="TrackerQueryRequest"/> asks.</summary>
 public static class TrackerQueryKinds
@@ -52,6 +71,14 @@ public static class TrackerQueryKinds
     /// <summary>The boards of a scope — Jira agile boards of the project, Azure DevOps teams (a
     /// team's board is its area paths); answers <see cref="TrackerQueryResult.Boards"/>.</summary>
     public const string Boards = "boards";
+
+    /// <summary>GitHub: the single-select fields of a project (<see cref="TrackerQueryRequest.BoardId"/>)
+    /// — which one carries the status; answers <see cref="TrackerQueryResult.Fields"/>.</summary>
+    public const string Fields = "fields";
+
+    /// <summary>GitHub: the repositories whose issues are on a project — what the repository
+    /// filter picks from; answers <see cref="TrackerQueryResult.Repositories"/>.</summary>
+    public const string Repos = "repos";
 }
 
 /// <param name="ConnectionId">A <see cref="RunnerTrackerConnection.Id"/> on this runner.</param>
@@ -70,6 +97,10 @@ public static class TrackerQueryKinds
 /// <param name="BoardId">Preview: the board intake is limited to (a Jira board id, an Azure
 /// DevOps team id); null = every board in the scope.</param>
 /// <param name="BoardName">Preview: the board's name, for the error when it is gone.</param>
+/// <param name="StatusField">GitHub: the single-select field holding the status (null = "Status")
+/// — for statuses and preview.</param>
+/// <param name="RepoFilter">GitHub preview: only issues from these repositories
+/// (<c>owner/name</c>); empty = every repository on the project.</param>
 public sealed record TrackerQueryRequest(
     string ConnectionId,
     string Kind,
@@ -81,7 +112,9 @@ public sealed record TrackerQueryRequest(
     string[]? IntakeStatuses = null,
     string? ScopeMode = null,
     string? BoardId = null,
-    string? BoardName = null);
+    string? BoardName = null,
+    string? StatusField = null,
+    string[]? RepoFilter = null);
 
 /// <summary>Which tickets of a scope a source picks up.</summary>
 public static class TrackerScopeModes
@@ -108,15 +141,22 @@ public sealed record TrackerQueryResult(
     TrackerTicketPreview[]? Sample = null,
     // The query the preview actually ran (JQL / WIQL), so the settings page can show it.
     string? EffectiveQuery = null,
-    TrackerBoard[]? Boards = null);
+    TrackerBoard[]? Boards = null,
+    TrackerField[]? Fields = null,
+    string[]? Repositories = null);
 
 public sealed record TrackerScope(string Key, string Name);
 
 /// <summary>A board a ticket source can be limited to.</summary>
 /// <param name="Id">Jira: the agile board id. Azure DevOps: the team id.</param>
 /// <param name="Name">Jira: the board's name. Azure DevOps: the team's name.</param>
-/// <param name="Type">Jira: "scrum" / "kanban" / "simple"; Azure DevOps: null.</param>
-public sealed record TrackerBoard(string Id, string Name, string? Type = null);
+/// <param name="Type">Jira: "scrum" / "kanban" / "simple"; Azure DevOps and GitHub: null.</param>
+/// <param name="Number">GitHub: the project's number (<c>github.com/orgs/acme/projects/5</c>).</param>
+/// <param name="Url">GitHub: the project's page.</param>
+public sealed record TrackerBoard(string Id, string Name, string? Type = null, int? Number = null, string? Url = null);
+
+/// <summary>A GitHub project's single-select field and its option names.</summary>
+public sealed record TrackerField(string Id, string Name, string[] Options);
 
 public sealed record TrackerEpic(string Key, string Title, string? Status, string? Url);
 
@@ -150,6 +190,10 @@ public static class TrackerSyncFeatures
 {
     /// <summary>Honours <see cref="TrackerPollAssignment.BoardId"/>: intake limited to one board.</summary>
     public const string Boards = "boards";
+
+    /// <summary>Polls GitHub Projects sources (<see cref="TrackerKinds.GitHub"/>), honouring
+    /// <see cref="TrackerPollAssignment.StatusField"/> and <see cref="TrackerPollAssignment.RepoFilter"/>.</summary>
+    public const string GitHub = "github";
 }
 
 /// <param name="Transitions">Ticket status moves due on this runner's connections — the only
@@ -169,13 +213,17 @@ public sealed record TrackerSyncResponse(
 /// </summary>
 /// <param name="TransitionId">Echoed on the ack.</param>
 /// <param name="Phase">"Started", "PrOpened" or "Merged" — informational, for the runner's log.</param>
+/// <param name="BoardId">GitHub: the project (node id) whose status field is set.</param>
+/// <param name="StatusField">GitHub: the single-select field holding the status (null = "Status").</param>
 public sealed record TrackerTransition(
     string TransitionId,
     string ConnectionId,
     string TicketKey,
     string TicketId,
     string TargetStatus,
-    string Phase);
+    string Phase,
+    string? BoardId = null,
+    string? StatusField = null);
 
 /// <summary>A published pull request to look up with the developer's forge CLI.</summary>
 /// <param name="ForgeKind">"github", "azuredevops", "gitlab" (ForgeKind, lower case).</param>
@@ -231,7 +279,11 @@ public sealed record TrackerPollAssignment(
     // team id: its area paths, read live each poll). Null = every board in the scope.
     string? BoardId = null,
     // The board's name, for the error when it is gone.
-    string? BoardName = null);
+    string? BoardName = null,
+    // GitHub: the single-select field holding the status (null = "Status").
+    string? StatusField = null,
+    // GitHub: intake only from these repositories ("owner/name"); empty = every repository.
+    string[]? RepoFilter = null);
 
 public sealed record TrackerKnownTicket(string Key, string? ContentHash, DateTimeOffset? LastCommentAt);
 
@@ -298,7 +350,10 @@ public sealed record TrackerTicketBody(
     // Jira components — what a "component" routing rule matches. Not part of the content hash.
     string[]? Components = null,
     // Azure DevOps area path (Shop\Backend) — what an "areaPath" routing rule matches.
-    string? AreaPath = null);
+    string? AreaPath = null,
+    // GitHub: the issue's repository (https://github.com/acme/shop) — matched against the
+    // project's repositories by remote URL. Not part of the content hash.
+    string? Repository = null);
 
 public sealed record TrackerTicketComment(
     string Id, string Author, DateTimeOffset CreatedAt, string Body);
@@ -327,10 +382,13 @@ public sealed record TrackerTicketRef(string ConnectionId, string TicketKey);
 /// <param name="Site">Jira: the site (<c>acme.atlassian.net</c>). Azure DevOps: the organization
 /// (<c>acme</c> or <c>https://dev.azure.com/acme</c>).</param>
 /// <param name="Email">Jira only: the Atlassian account email the API token belongs to.</param>
-public sealed record AddTrackerConnectionRequest(string Kind, string Site, string? Email, string Token)
+/// <param name="Token">The token; empty for a GitHub connection that uses the gh login.</param>
+/// <param name="AuthMode">GitHub: a <see cref="TrackerAuthModes"/> value — the developer's gh
+/// login (the default) or the token given. Null for Jira and Azure DevOps.</param>
+public sealed record AddTrackerConnectionRequest(string Kind, string Site, string? Email, string Token, string? AuthMode = null)
 {
     // A record's generated ToString prints every property; this one must never print the token.
-    public override string ToString() => $"AddTrackerConnectionRequest {{ Kind = {Kind}, Site = {Site}, Token = *** }}";
+    public override string ToString() => $"AddTrackerConnectionRequest {{ Kind = {Kind}, Site = {Site}, AuthMode = {AuthMode}, Token = *** }}";
 }
 
 /// <summary>Metadata only — never the token.</summary>

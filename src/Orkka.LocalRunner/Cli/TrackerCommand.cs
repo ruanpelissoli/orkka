@@ -21,6 +21,11 @@ public static class TrackerCommand
         ./orkka tracker add ado --org <https://dev.azure.com/acme | acme>
                               connect a Jira Cloud site / Azure DevOps organization; you are
                               asked for the token (hidden), or pipe it on stdin
+        ./orkka tracker add github [--host <acme.ghe.com>] [--token]
+                              connect GitHub Projects (github.com unless --host names your
+                              GHE.com host) with your gh login — nothing is stored; it needs
+                              the project scope: gh auth refresh -h <host> -s project — or,
+                              with --token, a token you are asked for (hidden) or pipe in
         ./orkka tracker list            the connections on this machine
         ./orkka tracker test [id]       check the stored token(s) now
         ./orkka tracker remove <id>     delete a connection and its token
@@ -32,6 +37,10 @@ public static class TrackerCommand
     // The workspace the current command works in; set once per invocation by RunAsync.
     private static string _workspace = TrackerPaths.DefaultProfile;
     private static string _root = RunnerEnvFile.OrkkaDir;
+
+    public const string GitHubTokenHelp =
+        "Create a token at https://github.com/settings/tokens (on GHE.com: your enterprise's host): classic with the project and repo scopes,\n"
+        + "or fine-grained with Projects (organization) and Issues read & write. If the organization enforces SAML SSO, authorize the token for it.";
 
     public static async Task<int> RunAsync(string[] args, string? orkkaRoot = null)
     {
@@ -183,7 +192,9 @@ public static class TrackerCommand
     {
         var kind = TrackerConnectionManager.NormalizeKind(args.FirstOrDefault());
         if (kind is null)
-            return Fail($"Say which tracker to add: jira or ado.\n\n{Usage}");
+            return Fail($"Say which tracker to add: jira, ado or github.\n\n{Usage}");
+        if (kind == TrackerKinds.GitHub)
+            return await AddGitHubAsync(args.Skip(1).ToArray());
 
         var options = ParseOptions(args.Skip(1));
         string siteUrl;
@@ -235,6 +246,54 @@ public static class TrackerCommand
         return 0;
     }
 
+    /// <summary>`tracker add github`: the gh login by default (nothing stored), or --token.</summary>
+    private static async Task<int> AddGitHubAsync(string[] args)
+    {
+        var options = ParseOptions(args);
+        var useToken = args.Any(a => string.Equals(a, "--token", StringComparison.OrdinalIgnoreCase));
+        if (TrackerSites.NormalizeGitHubHost(options.GetValueOrDefault("host") ?? options.GetValueOrDefault("site")) is not { } siteUrl)
+            return Fail(TrackerConnectionManager.GitHubServerNotSupported);
+        var host = TrackerSites.GitHubCliHost(siteUrl);
+
+        var service = CreateService();
+        var interactive = !Console.IsInputRedirected;
+        string token = "";
+        if (useToken)
+        {
+            if (interactive)
+            {
+                Console.WriteLine(GitHubTokenHelp);
+                Console.WriteLine("The token stays on this machine — Orkka's servers never see it.");
+            }
+            token = ReadToken("GitHub token: ", interactive) ?? "";
+            if (string.IsNullOrWhiteSpace(token))
+                return Fail("No token given — nothing was saved.");
+            Console.WriteLine($"Checking the token against {siteUrl} ...");
+        }
+        else
+        {
+            Console.WriteLine($"Using your GitHub CLI login for {host} (`gh auth token -h {host}`) — Orkka stores nothing.");
+        }
+
+        var existing = service.Store.FindSame(TrackerKinds.GitHub, siteUrl, null);
+        var result = await new TrackerConnectionManager(service).AddAsync(
+            new AddTrackerConnectionRequest(TrackerKinds.GitHub, siteUrl, null, token,
+                useToken ? TrackerAuthModes.Token : TrackerAuthModes.GhCli), CancellationToken.None);
+        if (!result.Ok || result.Connection is not { } added)
+            return Fail(result.Error ?? "Nothing was saved.");
+
+        Console.WriteLine();
+        Console.WriteLine(existing is null
+            ? $"Added {added.Id} — signed in as {added.DisplayName ?? "(unknown)"}."
+            : $"Updated {added.Id} — signed in as {added.DisplayName ?? "(unknown)"}.");
+        Console.WriteLine(useToken
+            ? $"The token is stored in {service.Secrets.Description}, for the workspace '{_workspace}'."
+            : $"Orkka asks gh for the token at each call; `gh auth logout -h {host}` stops it.");
+        Console.WriteLine("Next: in Orkka, pick it in your project's Ticket source settings (an owner, then one of its projects). "
+            + "A running `./orkka start` reports it within a minute.");
+        return 0;
+    }
+
     private static int List()
     {
         var service = CreateService();
@@ -244,6 +303,7 @@ public static class TrackerCommand
             Console.WriteLine("No tracker connections on this machine yet. Add one with:");
             Console.WriteLine("  ./orkka tracker add jira --site acme.atlassian.net --email you@acme.com");
             Console.WriteLine("  ./orkka tracker add ado --org https://dev.azure.com/acme");
+            Console.WriteLine("  ./orkka tracker add github             (your gh login; --host acme.ghe.com, --token)");
             return 0;
         }
         PrintTable(entries);
@@ -297,7 +357,7 @@ public static class TrackerCommand
         var rows = entries.Select(e => new[]
         {
             e.Id,
-            e.Kind == TrackerKinds.Jira ? "jira" : "ado",
+            e.UsesGhCli ? $"{e.Kind} (gh login)" : e.Kind,
             e.SiteUrl,
             e.DisplayName ?? e.Email ?? "-",
             e.CheckedAt is null ? "unchecked" : e.Healthy ? "ok" : $"failing: {e.HealthDetail}",

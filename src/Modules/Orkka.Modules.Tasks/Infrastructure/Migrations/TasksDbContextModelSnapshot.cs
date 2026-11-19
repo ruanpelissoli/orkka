@@ -641,7 +641,7 @@ namespace Orkka.Modules.Tasks.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ExternalKey")
-                        .HasMaxLength(64)
+                        .HasMaxLength(160)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ExternalRef")
@@ -1067,7 +1067,7 @@ namespace Orkka.Modules.Tasks.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ExternalKey")
-                        .HasMaxLength(100)
+                        .HasMaxLength(160)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ExternalUrl")

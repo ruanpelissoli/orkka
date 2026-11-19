@@ -71,7 +71,9 @@ public static class RepoUrl
         if (host is null)
             return ForgeKind.Other;
 
-        if (host is "github.com" || host.EndsWith(".github.com", StringComparison.Ordinal))
+        // GHE.com data residency (acme.ghe.com) is GitHub too: gh and the API work the same.
+        if (host is "github.com" || host.EndsWith(".github.com", StringComparison.Ordinal)
+            || host.EndsWith(".ghe.com", StringComparison.Ordinal))
             return ForgeKind.GitHub;
         if (host is "dev.azure.com" or "ssh.dev.azure.com" or "vs-ssh.visualstudio.com"
             || host.EndsWith(".visualstudio.com", StringComparison.Ordinal))

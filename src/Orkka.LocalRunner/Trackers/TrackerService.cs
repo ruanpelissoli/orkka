@@ -14,7 +14,9 @@ public sealed class TrackerService(
     JiraCloudClient jira,
     AzureDevOpsClient ado,
     ILogger<TrackerService> logger,
-    TimeProvider? timeProvider = null)
+    TimeProvider? timeProvider = null,
+    GitHubProjectsClient? github = null,
+    TrackerCredentialResolver? credentials = null)
 {
     /// <summary>The Hello goes out every 60s; the trackers do not need to hear from every one.</summary>
     public static readonly TimeSpan HealthRefreshInterval = TimeSpan.FromMinutes(15);
@@ -22,14 +24,19 @@ public sealed class TrackerService(
 
     private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
     private readonly SemaphoreSlim _healthGate = new(1, 1);
+    private readonly GitHubProjectsClient _github = github ?? new GitHubProjectsClient(TrackerHttp.CreateDefault());
 
     public TrackerStore Store => store;
     public IWorkspaceSecretStore Secrets => secrets;
+
+    /// <summary>Where every call's credential comes from: the secret store, or the gh login.</summary>
+    public TrackerCredentialResolver Credentials { get; } = credentials ?? new TrackerCredentialResolver(secrets);
 
     public ITrackerClient ClientFor(string kind) => kind switch
     {
         TrackerKinds.Jira => jira,
         TrackerKinds.AzureDevOps => ado,
+        TrackerKinds.GitHub => _github,
         _ => throw new TrackerException($"Unknown tracker kind '{kind}'."),
     };
 
@@ -38,6 +45,7 @@ public sealed class TrackerService(
     {
         TrackerKinds.Jira => jira,
         TrackerKinds.AzureDevOps => ado,
+        TrackerKinds.GitHub => _github,
         _ => throw new TrackerException($"Unknown tracker kind '{kind}' — update Orkka (`git pull`, then `./orkka start`)."),
     };
 
@@ -46,6 +54,7 @@ public sealed class TrackerService(
     {
         TrackerKinds.Jira => jira,
         TrackerKinds.AzureDevOps => ado,
+        TrackerKinds.GitHub => _github,
         _ => throw new TrackerException($"Unknown tracker kind '{kind}' — update Orkka (`git pull`, then `./orkka start`)."),
     };
 
@@ -130,12 +139,20 @@ public sealed class TrackerService(
             return new TrackerQueryResult(checkedEntry.Healthy, checkedEntry.HealthDetail, Connection: checkedEntry.ToMetadata());
         }
 
-        if (CredentialFor(entry) is not { } credential)
-            return new TrackerQueryResult(false, MissingSecret(entry));
+        TrackerCredential credential;
+        try
+        {
+            credential = await Credentials.ResolveAsync(entry, ct);
+        }
+        catch (TrackerException ex)
+        {
+            return new TrackerQueryResult(false, ex.Message);
+        }
 
         try
         {
             var client = ClientFor(entry.Kind);
+            var board = TrackerBoardRef.From(request.BoardId, request.BoardName);
             switch (request.Kind)
             {
                 case TrackerQueryKinds.Scopes:
@@ -143,13 +160,18 @@ public sealed class TrackerService(
                 case TrackerQueryKinds.Epics:
                     return new TrackerQueryResult(true, Epics: await client.EpicsAsync(credential, RequireScope(request), request.Search, ct));
                 case TrackerQueryKinds.Statuses:
-                    return new TrackerQueryResult(true, Statuses: await client.StatusesAsync(credential, RequireScope(request), ct));
+                    return new TrackerQueryResult(true, Statuses: await client.StatusesAsync(credential, RequireScope(request), ct,
+                        board, request.StatusField));
+                case TrackerQueryKinds.Fields:
+                    return new TrackerQueryResult(true, Fields: await GitHubOnly(entry).FieldsAsync(credential, request.Scope ?? "", board, ct));
+                case TrackerQueryKinds.Repos:
+                    return new TrackerQueryResult(true, Repositories: await GitHubOnly(entry).RepositoriesAsync(credential, request.Scope ?? "", board, ct));
                 case TrackerQueryKinds.Boards:
                     return new TrackerQueryResult(true, Boards: await client.BoardsAsync(credential, RequireScope(request), ct));
                 case TrackerQueryKinds.Preview:
                     var preview = await client.PreviewAsync(credential, RequireScope(request), request.EpicKeys ?? [],
                         request.ExtraClause, request.IncludeDescendants, request.IntakeStatuses, request.ScopeMode, ct,
-                        TrackerBoardRef.From(request.BoardId, request.BoardName));
+                        board, request.StatusField, request.RepoFilter);
                     return new TrackerQueryResult(true, MatchCount: preview.MatchCount, Sample: preview.Sample,
                         EffectiveQuery: preview.EffectiveQuery);
                 default:
@@ -185,30 +207,30 @@ public sealed class TrackerService(
         }
     }
 
-    internal TrackerCredential? CredentialFor(TrackerConnectionEntry entry)
-    {
-        var secret = secrets.Get(entry.Id);
-        return string.IsNullOrEmpty(secret) ? null : new TrackerCredential(entry.SiteUrl, CredentialEmail(entry), secret);
-    }
-
     /// <summary>Jira authenticates as <c>email:token</c>; Azure DevOps as <c>:pat</c>.</summary>
-    internal static string? CredentialEmail(TrackerConnectionEntry entry)
-        => entry.Kind == TrackerKinds.Jira ? entry.Email : "";
+    internal static string? CredentialEmail(TrackerConnectionEntry entry) => TrackerCredentialResolver.Email(entry);
+
+    private GitHubProjectsClient GitHubOnly(TrackerConnectionEntry entry)
+        => entry.Kind == TrackerKinds.GitHub
+            ? _github
+            : throw new TrackerException("That question is only for GitHub Projects connections.");
 
     private async Task<(bool Ok, string? Error, TrackerIdentity? Identity)> TestCredentialAsync(
         TrackerConnectionEntry entry, CancellationToken ct)
     {
-        TrackerCredential? credential;
+        TrackerCredential credential;
         try
         {
-            credential = CredentialFor(entry);
+            credential = await Credentials.ResolveAsync(entry, ct);
         }
-        catch (Exception ex)
+        catch (TrackerException ex)
+        {
+            return (false, ex.Message, null);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             return (false, $"Could not read the token from {secrets.Description}: {ex.Message}", null);
         }
-        if (credential is null)
-            return (false, MissingSecret(entry), null);
         return await TestAsync(entry.Kind, credential, ct);
     }
 
@@ -217,10 +239,4 @@ public sealed class TrackerService(
             ? throw new TrackerException("Pick a project first.")
             : request.Scope.Trim();
 
-    private string MissingSecret(TrackerConnectionEntry entry) =>
-        $"The token for '{entry.Id}' is missing from {secrets.Description} on this machine — run "
-        + (entry.Kind == TrackerKinds.Jira
-            ? $"`./orkka tracker add jira --site {entry.SiteUrl} --email {entry.Email}`"
-            : $"`./orkka tracker add ado --org {entry.SiteUrl}`")
-        + " again.";
 }

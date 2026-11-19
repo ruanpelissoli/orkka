@@ -43,9 +43,19 @@ public sealed record RawTicket(
 
     /// <summary>Azure DevOps area path (routing rules match it).</summary>
     public string? AreaPath { get; init; }
+
+    /// <summary>GitHub: the issue's repository URL (repo routing matches it).</summary>
+    public string? Repository { get; init; }
+
+    /// <summary>The text fields are already markdown (GitHub), not HTML.</summary>
+    public bool Markdown { get; init; }
 }
 
-public sealed record RawComment(string Id, string Author, DateTimeOffset CreatedAt, string BodyHtml);
+/// <param name="BodyHtml">HTML, or markdown when <see cref="Markdown"/> is set (GitHub).</param>
+public sealed record RawComment(string Id, string Author, DateTimeOffset CreatedAt, string BodyHtml)
+{
+    public bool Markdown { get; init; }
+}
 
 /// <summary>What the poller needs from a tracker: the complete ticket set of an assignment,
 /// and a ticket's recent comments.</summary>
@@ -71,4 +81,8 @@ public interface ITrackerStatusWriter
     /// already there (nothing written), true when it moved; throws <see cref="TrackerException"/>
     /// with words the user can act on when it cannot.</summary>
     Task<bool> TransitionAsync(TrackerCredential credential, string ticketKey, string ticketId, string targetStatus, CancellationToken ct);
+
+    /// <summary>The move as the host handed it — GitHub needs its project and status field too.</summary>
+    Task<bool> TransitionAsync(TrackerCredential credential, TrackerTransition transition, CancellationToken ct)
+        => TransitionAsync(credential, transition.TicketKey, transition.TicketId, transition.TargetStatus, ct);
 }

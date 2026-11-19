@@ -244,6 +244,7 @@ public static class RunnerHost
         };
         builder.Services.AddSingleton(new Trackers.JiraCloudClient(trackerHttp));
         builder.Services.AddSingleton(new Trackers.AzureDevOpsClient(trackerHttp));
+        builder.Services.AddSingleton(new Trackers.GitHubProjectsClient(trackerHttp));
         builder.Services.AddSingleton<Apps.AppRunManager>();
         builder.Services.AddSingleton(new ConsoleStatus(enabled: options.ConsoleStatus && !options.Debug));
         // Agent runs at once across EVERY workspace: two jobs must not overload one laptop.
@@ -266,7 +267,8 @@ public static class RunnerHost
             sp.GetRequiredService<Trackers.AzureDevOpsClient>(),
             attachmentHttp,
             Trackers.WorkspaceSecretStores.CreateDefault,
-            sp.GetRequiredService<Commands.CommandTrust>()));
+            sp.GetRequiredService<Commands.CommandTrust>(),
+            sp.GetRequiredService<Trackers.GitHubProjectsClient>()));
         // One session per workspace profile (one per job), each with its own hub connection.
         // New profiles (a workspace created in the UI, bootstrapped by `./orkka start`) are
         // picked up while the runner runs.

@@ -65,6 +65,7 @@ internal sealed partial class TrackersApi(
             }
 
             row.Kind = c.Kind;
+            row.AuthMode = c.AuthMode;
             row.SiteUrl = c.SiteUrl;
             row.AccountId = c.AccountId;
             row.DisplayName = c.DisplayName;
@@ -98,6 +99,9 @@ internal sealed partial class TrackersApi(
     internal const string OldRunnerBoardError =
         "This ticket source is limited to a board, and the Orkka polling it is too old to know boards — update Orkka on that machine (`git pull`, then `./orkka start`).";
 
+    internal const string OldRunnerGitHubError =
+        "This ticket source is a GitHub project, and the Orkka polling it is too old to know GitHub — update Orkka on that machine (`git pull`, then `./orkka start`).";
+
     public async Task<TrackerSyncResponse> SyncAsync(
         Ulid orgId, string userId, TrackerSyncRequest request, CancellationToken ct = default,
         bool supersedesOtherInstances = false)
@@ -121,6 +125,7 @@ internal sealed partial class TrackersApi(
 
         var assignments = new List<TrackerPollAssignment>();
         var knowsBoards = request.Features?.Contains(TrackerSyncFeatures.Boards, StringComparer.Ordinal) is true;
+        var knowsGitHub = request.Features?.Contains(TrackerSyncFeatures.GitHub, StringComparer.Ordinal) is true;
         foreach (var config in candidates)
         {
             var due = config.LastPolledAt is not { } last
@@ -132,12 +137,18 @@ internal sealed partial class TrackersApi(
 
             // A runner that predates boards would ignore the board and pick up the whole project.
             // It gets nothing; the settings page says why.
-            if (config.BoardId is not null && !knowsBoards)
+            // Likewise a runner that predates GitHub would ignore the status field and the
+            // repository filter (and could not read the project at all).
+            var connectionKind = byId[config.TrackerConnectionId].Kind;
+            var tooOld = connectionKind == TrackerKinds.GitHub && !knowsGitHub ? OldRunnerGitHubError
+                : config.BoardId is not null && !knowsBoards ? OldRunnerBoardError
+                : null;
+            if (tooOld is not null)
             {
                 await db.ProjectConfigs.IgnoreQueryFilters()
                     .Where(c => c.Id == config.Id)
                     .ExecuteUpdateAsync(s => s
-                        .SetProperty(c => c.LastPollError, OldRunnerBoardError)
+                        .SetProperty(c => c.LastPollError, tooOld)
                         .SetProperty(c => c.LastPolledAt, now), ct);
                 continue;
             }
@@ -178,7 +189,11 @@ internal sealed partial class TrackersApi(
                 config.ScopeMode == TrackerScopeMode.Epics ? TrackerScopeModes.Epics : TrackerScopeModes.All,
                 Features.ProjectConfig.ProjectTrackerMappers.ParseIntakeStatuses(config.IntakeStatusesJson),
                 config.BoardId,
-                config.BoardId is null ? null : config.BoardName));
+                config.BoardId is null ? null : config.BoardName,
+                connection.Kind == TrackerKinds.GitHub ? config.StatusField : null,
+                connection.Kind == TrackerKinds.GitHub
+                    ? Features.ProjectConfig.ProjectTrackerMappers.ParseRepoFilter(config.RepoFilterJson)
+                    : null));
         }
 
         var (transitions, prChecks) = await PlanWriteBackAsync(orgId, userId, connections, ct);
@@ -545,6 +560,10 @@ internal sealed partial class TrackersApi(
         if (repos.Count == 1)
             return new TicketRoute(repos[0].Id, null, [], "single-repo", null);
 
+        // A GitHub issue lives in a repository: the project's repository with the same remote.
+        if (MatchRepository(repos, body.Repository) is { } sameRepo)
+            return new TicketRoute(sameRepo, null, [], "issue-repo", null);
+
         if (config.DefaultRepoId is { } defaultRepo && repoIds.Contains(defaultRepo))
             return new TicketRoute(defaultRepo, null, [], "default", null);
 
@@ -565,6 +584,25 @@ internal sealed partial class TrackersApi(
             return new TicketRoute(picked[0], null, [], "router", decision.Reason);
         return new TicketRoute(null, null, [], "router-unsure",
             decision.Reason is { } why ? $"The best guess was not certain: {why}" : null);
+    }
+
+    /// <summary>The project's repository whose remote is <paramref name="issueRepository"/> (a GitHub
+    /// issue's repository URL): same owner and name, on the same host — or on an ssh host alias
+    /// (<c>git@github-work:acme/shop.git</c>), which names no real host. Null when none, or when
+    /// several match.</summary>
+    internal static Ulid? MatchRepository(IReadOnlyList<RepoSummary> repos, string? issueRepository)
+    {
+        if (Orkka.SharedKernel.Utilities.RepoUrl.ParseRef(issueRepository, Orkka.SharedKernel.Utilities.ForgeKind.GitHub) is not { } issue)
+            return null;
+        var matches = repos.Where(r =>
+                Orkka.SharedKernel.Utilities.RepoUrl.ParseRef(r.GitUrl, Orkka.SharedKernel.Utilities.ForgeKind.GitHub) is { } repo
+                && string.Equals(repo.Owner, issue.Owner, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(repo.Name, issue.Name, StringComparison.OrdinalIgnoreCase)
+                && (string.Equals(repo.Host, issue.Host, StringComparison.OrdinalIgnoreCase) || !repo.Host.Contains('.')))
+            .Select(r => r.Id)
+            .Distinct()
+            .ToList();
+        return matches.Count == 1 ? matches[0] : null;
     }
 
     /// <summary>The first rule the ticket matches: epic rules (its epic, or its direct parent),
@@ -693,7 +731,8 @@ internal sealed partial class TrackersApi(
         _ => Priority.Medium,
     };
 
-    /// <summary><c>jira:acme.atlassian.net:SHOP-12</c> / <c>ado:dev.azure.com/acme:4567</c> —
+    /// <summary><c>jira:acme.atlassian.net:SHOP-12</c> / <c>ado:dev.azure.com/acme:4567</c> /
+    /// <c>github:github.com:acme/shop#12</c> —
     /// stable per ticket, so a re-reported ticket never becomes a second task.</summary>
     internal static string ExternalRef(TrackerConnection connection, string key)
     {
@@ -704,7 +743,12 @@ internal sealed partial class TrackersApi(
         return $"{connection.Kind}:{site.TrimEnd('/').ToLowerInvariant()}:{key}";
     }
 
-    private static string TrackerName(string kind) => kind == TrackerKinds.AzureDevOps ? "Azure DevOps" : "Jira";
+    internal static string TrackerName(string kind) => kind switch
+    {
+        TrackerKinds.AzureDevOps => "Azure DevOps",
+        TrackerKinds.GitHub => "GitHub",
+        _ => "Jira",
+    };
 
     private static string? Truncate(string? value, int max)
         => value is null || value.Length <= max ? value : value[..max] + "…";

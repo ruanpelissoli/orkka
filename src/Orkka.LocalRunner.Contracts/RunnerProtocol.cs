@@ -416,6 +416,12 @@ public static class RunnerCapabilities
     /// says to update Orkka instead of offering boards.</summary>
     public const string TrackerBoards = "tracker-boards";
 
+    /// <summary>The runner knows GitHub Projects (v2) as a tracker: it adds GitHub connections
+    /// (the developer's gh login or a token), answers the <c>fields</c> and <c>repos</c> queries
+    /// and polls GitHub sources (<see cref="TrackerSyncFeatures.GitHub"/>). Without it the host
+    /// neither relays a GitHub connection or query to it nor hands it a GitHub source.</summary>
+    public const string TrackerGitHub = "tracker-github";
+
     /// <summary>Stories: <c>OpenPullRequestRequest.Draft</c> (<c>gh pr create --draft</c>, <c>az repos
     /// pr create --draft true</c>, <c>glab mr create --draft</c>), <c>MarkPullRequestReady</c>
     /// (and its undo), <c>UpdatePullRequestBody</c>, <c>ResolveReviewBase</c> and

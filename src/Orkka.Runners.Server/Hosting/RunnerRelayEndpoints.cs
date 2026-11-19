@@ -151,6 +151,39 @@ public static class RunnerRelayEndpoints
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
+    /// <summary>What a runner without <see cref="RunnerCapabilities.TrackerGitHub"/> is told.</summary>
+    public const string OldRunnerGitHub =
+        "Your runner does not know GitHub Projects yet — update Orkka (`git pull`, then `./orkka start`).";
+
+    public const string OldRunnerBoards =
+        "Your runner does not know boards yet — update Orkka (`git pull`, then `./orkka start`).";
+
+    /// <summary>
+    /// Why a tracker question is not relayed to a runner with these capabilities, or null when it
+    /// is. An older runner would answer "unknown query", preview the whole project while the page
+    /// says one board (<see cref="RunnerCapabilities.TrackerBoards"/>), or ignore a GitHub source's
+    /// status field and repository filter (<see cref="RunnerCapabilities.TrackerGitHub"/>).
+    /// </summary>
+    public static string? TrackerQueryRefusal(TrackerQueryRequest query, IReadOnlyCollection<string>? capabilities)
+    {
+        var caps = capabilities ?? [];
+        if ((query.Kind == TrackerQueryKinds.Boards || !string.IsNullOrWhiteSpace(query.BoardId))
+            && !caps.Contains(RunnerCapabilities.TrackerBoards))
+            return OldRunnerBoards;
+        if ((query.Kind is TrackerQueryKinds.Fields or TrackerQueryKinds.Repos
+                || !string.IsNullOrWhiteSpace(query.StatusField) || query.RepoFilter is { Length: > 0 })
+            && !caps.Contains(RunnerCapabilities.TrackerGitHub))
+            return OldRunnerGitHub;
+        return null;
+    }
+
+    /// <summary>Why a connection is not relayed: a GitHub one to a runner that would answer "pick
+    /// Jira or Azure DevOps".</summary>
+    public static string? TrackerConnectionRefusal(AddTrackerConnectionRequest connection, IReadOnlyCollection<string>? capabilities)
+        => connection.Kind == TrackerKinds.GitHub && !(capabilities ?? []).Contains(RunnerCapabilities.TrackerGitHub)
+            ? OldRunnerGitHub
+            : null;
+
     /// <summary>
     /// This turn's tool server, or null when the API did not enable tools (an older pod, a
     /// non-Anthropic provider, a runner that cannot forward calls) or the identity it sent is
@@ -262,14 +295,8 @@ public static class RunnerRelayEndpoints
             var (connected, hello) = link.Status;
             if (!connected || hello?.Capabilities?.Contains(RunnerCapabilities.TrackerConfig) is not true)
                 return Results.Json(new RelayTrackerQueryResponse(false, null), Json);
-            // An older runner would answer "unknown query", or preview the whole project while
-            // the page says one board.
-            if ((req.Query.Kind == TrackerQueryKinds.Boards || !string.IsNullOrWhiteSpace(req.Query.BoardId))
-                && hello.Capabilities.Contains(RunnerCapabilities.TrackerBoards) is not true)
-            {
-                return Results.Json(new RelayTrackerQueryResponse(true, new TrackerQueryResult(false,
-                    "Your runner does not know boards yet — update Orkka (`git pull`, then `./orkka start`).")), Json);
-            }
+            if (TrackerQueryRefusal(req.Query, hello.Capabilities) is { } refusal)
+                return Results.Json(new RelayTrackerQueryResponse(true, new TrackerQueryResult(false, refusal)), Json);
 
             try
             {
@@ -308,6 +335,11 @@ public static class RunnerRelayEndpoints
             var (connected, hello) = link.Status;
             if (!connected || hello?.Capabilities?.Contains(RunnerCapabilities.TrackerConnect) is not true)
                 return Results.Json(new RelayAddTrackerConnectionResponse(false, null), Json);
+            if (TrackerConnectionRefusal(req.Connection, hello.Capabilities) is { } connectRefusal)
+            {
+                return Results.Json(new RelayAddTrackerConnectionResponse(true,
+                    new AddTrackerConnectionResult(false, connectRefusal), hello.MachineName), Json);
+            }
 
             try
             {

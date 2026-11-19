@@ -20,18 +20,27 @@ public sealed class ProjectTrackerConfig : TenantEntity
 
     public Ulid TrackerConnectionId { get; set; }
 
-    /// <summary>Jira project key / Azure DevOps project name.</summary>
+    /// <summary>Jira project key / Azure DevOps project name / GitHub owner (user or
+    /// organization login).</summary>
     public required string Scope { get; set; }
 
     /// <summary>The board intake is limited to — a Jira board id (its filter's JQL is AND-ed onto
     /// the intake query) or an Azure DevOps team id (the team's area paths). Null = every board in
     /// <see cref="Scope"/>. Resolved by the runner on every poll; a board that is gone fails the
-    /// poll rather than widening it. Intake only, like <see cref="ExtraClause"/>.</summary>
+    /// poll rather than widening it. Intake only, like <see cref="ExtraClause"/>. GitHub: the
+    /// project's node id (<c>PVT_…</c>) — required, the project IS the source.</summary>
     public string? BoardId { get; set; }
 
-    /// <summary>The board's name when it was picked (the team's name in Azure DevOps) — what the
-    /// settings page and a "board not found" error show.</summary>
+    /// <summary>The board's name when it was picked (the team's name in Azure DevOps, the
+    /// project's title on GitHub) — what the settings page and a "board not found" error show.</summary>
     public string? BoardName { get; set; }
+
+    /// <summary>GitHub: the project's single-select field that holds the status; null = "Status".</summary>
+    public string? StatusField { get; set; }
+
+    /// <summary>GitHub: JSON array of repositories (<c>owner/name</c>) intake is limited to; empty
+    /// = every repository on the project. Intake only: a tracked issue keeps syncing.</summary>
+    public string RepoFilterJson { get; set; } = "[]";
 
     /// <summary>Optional JQL (Jira) or WIQL condition (Azure DevOps) AND-ed onto the generated
     /// query — "labels = backend", "[System.Tags] CONTAINS 'api'".</summary>

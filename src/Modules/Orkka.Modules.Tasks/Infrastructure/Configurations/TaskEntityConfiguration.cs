@@ -40,7 +40,8 @@ public sealed class TaskEntityConfiguration : IEntityTypeConfiguration<TaskEntit
         builder.Property(x => x.QueuedMergeGuidance).HasMaxLength(2000);
         builder.Property(x => x.LeaseOwner).HasMaxLength(200);
         builder.Property(x => x.ExternalRef).HasMaxLength(300);
-        builder.Property(x => x.ExternalKey).HasMaxLength(64);
+        // owner/repo#n for a GitHub issue.
+        builder.Property(x => x.ExternalKey).HasMaxLength(160);
         builder.Property(x => x.ExternalUrl).HasMaxLength(2048);
         builder.Property(x => x.ExternalEpic).HasMaxLength(600);
         builder.Property(x => x.WorkingSubpath).HasMaxLength(500);

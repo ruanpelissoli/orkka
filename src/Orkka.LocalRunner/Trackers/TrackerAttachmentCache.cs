@@ -350,7 +350,7 @@ public sealed class TrackerAttachmentCache(
         {
             var request = new HttpRequestMessage(HttpMethod.Get, current);
             if (IsOnSite(credential, current))
-                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credential.BasicValue);
+                request.Headers.Authorization = credential.Authorization();
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
             request.Headers.UserAgent.ParseAdd("orkka");
             HttpResponseMessage response;

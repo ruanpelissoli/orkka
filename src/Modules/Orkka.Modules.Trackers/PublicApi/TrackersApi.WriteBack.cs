@@ -85,9 +85,11 @@ internal sealed partial class TrackersApi
                 }
                 link.PendingPhase = move.Phase;
                 link.PendingSince = now;
+                var github = link.Kind == TrackerKinds.GitHub;
                 transitions.Add(new TrackerTransition(
                     TransitionId(link.Id, move.Phase), connById[config.TrackerConnectionId].ConnectionKey,
-                    link.TicketKey, link.TicketId, move.Status, move.Phase.ToString()));
+                    link.TicketKey, link.TicketId, move.Status, move.Phase.ToString(),
+                    github ? config.BoardId : null, github ? config.StatusField : null));
             }
 
             if (group is not null)
@@ -171,7 +173,7 @@ internal sealed partial class TrackersApi
 
             var map = ProjectTrackerMappers.ParseStatusMap(configs[link.ConfigId].StatusMapJson);
             var status = StatusFor(map, id.Phase) ?? id.Phase.ToString();
-            var tracker = link.Kind == TrackerKinds.AzureDevOps ? "Azure DevOps" : "Jira";
+            var tracker = TrackerName(link.Kind);
 
             if (ack.Ok)
             {

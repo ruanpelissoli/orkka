@@ -15,7 +15,7 @@ public sealed class TicketLink : TenantEntity
 
     public Ulid TaskId { get; set; }
 
-    /// <summary>"jira" or "ado".</summary>
+    /// <summary>"jira", "ado" or "github".</summary>
     public required string Kind { get; set; }
 
     public required string SiteUrl { get; set; }

@@ -63,7 +63,7 @@ public sealed class StoryLandingService(
         {
             var opened = await gitOps.OpenDraftPullRequestAsync(
                 pr.OrgId, pr.RepoId, runnerUserId, story.BranchName, pr.BaseBranch,
-                StoryTitle(story), Body(story, member.TaskId, null),
+                StoryTitle(story), Body(story, member.TaskId, null, repo.GitUrl),
                 repo.ForgeKind, repo.CliAccount, ct);
             if (opened.IsFailure)
             {
@@ -248,7 +248,7 @@ public sealed class StoryLandingService(
             if (repo is null)
                 continue;
             var updated = await gitOps.UpdatePullRequestBodyAsync(
-                story.OrgId, row.RepoId, runnerUserId, row.ForgePrUrl!, Body(story, landingTaskId, row.RepoId),
+                story.OrgId, row.RepoId, runnerUserId, row.ForgePrUrl!, Body(story, landingTaskId, row.RepoId, repo.GitUrl),
                 repo.ForgeKind, repo.CliAccount, ct);
             if (updated.IsFailure)
                 logger.LogInformation("[PR] Could not update the body of {Url}: {Error}", row.ForgePrUrl, updated.Error);
@@ -260,9 +260,11 @@ public sealed class StoryLandingService(
     /// <summary>
     /// The forge pull request's description: the Story, its sub-tasks in order (ticked as they
     /// land), the ticket links, and — for a story spanning repositories — the sibling pull
-    /// requests. Ticket text itself stays out: the tracker has it.
+    /// requests. Ticket text itself stays out: the tracker has it. For GitHub issues in the pull
+    /// request's own repository (<paramref name="repoGitUrl"/>), the Story and its sub-issues get a
+    /// <c>Closes owner/repo#n</c> line each, so GitHub links them and closes them on merge.
     /// </summary>
-    internal static string Body(StoryContext story, Ulid landingTaskId, Ulid? forRepo)
+    internal static string Body(StoryContext story, Ulid landingTaskId, Ulid? forRepo, string? repoGitUrl = null)
     {
         var sb = new StringBuilder();
         sb.Append("Story: ");
@@ -287,6 +289,10 @@ public sealed class StoryLandingService(
 
         sb.Append("\nOne branch, one pull request: each sub-task was built, reviewed and committed in order on `")
           .Append(story.BranchName).Append("` by Orkka.");
-        return sb.ToString();
+
+        var closing = GitHubIssueLinks.ClosingReferences(
+            [story.StoryUrl, .. story.Members.Where(m => !m.IsArchived).OrderBy(m => m.StoryOrder).Select(m => m.ExternalUrl)],
+            repoGitUrl);
+        return GitHubIssueLinks.AppendClosing(sb.ToString(), closing);
     }
 }

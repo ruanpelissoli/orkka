@@ -11,14 +11,25 @@ using Orkka.LocalRunner.Contracts;
 /// ToString prints every property, and one interpolated into a log line or an exception
 /// would carry the token with it.
 /// </summary>
-public sealed class TrackerCredential(string siteUrl, string? email, string secret)
+public sealed class TrackerCredential(string siteUrl, string? email, string secret, bool bearer = false)
 {
     public string SiteUrl { get; } = siteUrl.TrimEnd('/');
     public string? Email { get; } = email;
     internal string Secret { get; } = secret;
 
+    /// <summary>GitHub: the token goes as <c>Authorization: Bearer</c>, not Basic.</summary>
+    public bool Bearer { get; } = bearer;
+
+    /// <summary>GitHub: set when the token is the developer's gh login for this host (read with
+    /// <c>gh auth token</c> just now) — error messages then say what to run in gh.</summary>
+    public string? GhCliHost { get; init; }
+
     /// <summary>The Basic header value: <c>email:token</c> for Jira, <c>:pat</c> for ADO.</summary>
     internal string BasicValue => Convert.ToBase64String(Encoding.UTF8.GetBytes($"{Email}:{Secret}"));
+
+    /// <summary>The Authorization header this credential sends.</summary>
+    internal AuthenticationHeaderValue Authorization()
+        => Bearer ? new AuthenticationHeaderValue("Bearer", Secret) : new AuthenticationHeaderValue("Basic", BasicValue);
 
     /// <summary>Removes the token — and the Basic header built from it — from any text that
     /// is about to leave this machine or reach a terminal.</summary>
@@ -64,13 +75,17 @@ public interface ITrackerClient
     Task<TrackerIdentity> TestAsync(TrackerCredential credential, CancellationToken ct);
     Task<TrackerScope[]> ScopesAsync(TrackerCredential credential, CancellationToken ct);
     Task<TrackerEpic[]> EpicsAsync(TrackerCredential credential, string scope, string? search, CancellationToken ct);
-    Task<TrackerStatus[]> StatusesAsync(TrackerCredential credential, string scope, CancellationToken ct);
+    /// <summary>The statuses tickets in the scope can be in. GitHub: the options of the project's
+    /// (<paramref name="board"/>) single-select <paramref name="statusField"/>.</summary>
+    Task<TrackerStatus[]> StatusesAsync(TrackerCredential credential, string scope, CancellationToken ct,
+        TrackerBoardRef? board = null, string? statusField = null);
     /// <summary>The boards of the scope: Jira agile boards of the project, Azure DevOps teams.</summary>
     Task<TrackerBoard[]> BoardsAsync(TrackerCredential credential, string scope, CancellationToken ct);
     /// <summary>What the intake query would pick up now — on <paramref name="board"/> only, when set.</summary>
+    /// <remarks>GitHub also takes the status field and the repository filter.</remarks>
     Task<TrackerPreview> PreviewAsync(TrackerCredential credential, string scope, string[] epicKeys,
         string? extraClause, bool includeDescendants, string[]? intakeStatuses, string? scopeMode, CancellationToken ct,
-        TrackerBoardRef? board = null);
+        TrackerBoardRef? board = null, string? statusField = null, string[]? repoFilter = null);
 }
 
 /// <summary>Shared HTTP plumbing for the tracker clients.</summary>
@@ -90,7 +105,7 @@ internal static class TrackerHttp
     public static HttpRequestMessage Request(HttpMethod method, string url, TrackerCredential credential, object? body = null)
     {
         var request = new HttpRequestMessage(method, url);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credential.BasicValue);
+        request.Headers.Authorization = credential.Authorization();
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         request.Headers.UserAgent.ParseAdd("orkka");
         if (body is not null)

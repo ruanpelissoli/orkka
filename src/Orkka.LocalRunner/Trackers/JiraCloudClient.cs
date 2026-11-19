@@ -263,7 +263,8 @@ public sealed partial class JiraCloudClient(HttpClient http) : ITrackerClient, I
             $"{c.SiteUrl}/browse/{i.Str("key")}"))];
     }
 
-    public async Task<TrackerStatus[]> StatusesAsync(TrackerCredential c, string scope, CancellationToken ct)
+    public async Task<TrackerStatus[]> StatusesAsync(TrackerCredential c, string scope, CancellationToken ct,
+        TrackerBoardRef? board = null, string? statusField = null)
     {
         var doc = await GetAsync(c, $"/rest/api/3/project/{Uri.EscapeDataString(scope)}/statuses", $"project {scope}", ct);
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -334,7 +335,7 @@ public sealed partial class JiraCloudClient(HttpClient http) : ITrackerClient, I
 
     public async Task<TrackerPreview> PreviewAsync(TrackerCredential c, string scope, string[] epicKeys,
         string? extraClause, bool includeDescendants, string[]? intakeStatuses, string? scopeMode, CancellationToken ct,
-        TrackerBoardRef? board = null)
+        TrackerBoardRef? board = null, string? statusField = null, string[]? repoFilter = null)
     {
         var epicsMode = TrackerScopeModes.IsEpics(scopeMode);
         var epics = epicsMode ? ValidEpics(scope, epicKeys, "preview") : [];

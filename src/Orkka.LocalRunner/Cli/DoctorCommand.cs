@@ -21,6 +21,7 @@ public static class DoctorCommand
         Console.WriteLine("Orkka runner doctor — tracing one agent run through the runner's spawn path.");
         Console.WriteLine($"OS: {Environment.OSVersion}  Machine: {Environment.MachineName}  PID: {Environment.ProcessId}");
         PrintWorkspaces(Console.Out, RunnerEnvFile.OrkkaDir);
+        await PrintTrackerChecksAsync(Console.Out, RunnerEnvFile.OrkkaDir);
         PrintLegacyInstall(Console.Out, RunnerEnvFile.OrkkaDir);
         Console.WriteLine();
 
@@ -214,6 +215,31 @@ public static class DoctorCommand
             Environment.GetEnvironmentVariable("PATH"), OperatingSystem.IsWindows());
         foreach (var finding in findings)
             output.WriteLine($"Old install: {finding}");
+    }
+
+    /// <summary>
+    /// The tracker connections that need something on this machine besides a stored token: a
+    /// GitHub connection that uses the gh login needs gh signed in to its host. Only whether gh
+    /// answers — never the token; `./orkka tracker test` asks the tracker itself.
+    /// </summary>
+    internal static async Task PrintTrackerChecksAsync(TextWriter output, string orkkaRoot,
+        Func<string, CancellationToken, Task<GhCliCredentials.TokenResult>>? ghToken = null)
+    {
+        ghToken ??= (host, ct) => GhCliCredentials.TokenAsync(host, ct);
+        foreach (var p in WorkspaceProfiles.List(orkkaRoot))
+        {
+            IReadOnlyList<Trackers.TrackerConnectionEntry> entries;
+            try { entries = new Trackers.TrackerStore(orkkaRoot, p.Name).List(); }
+            catch { continue; /* unreadable trackers.json — PrintWorkspaces showed 0 */ }
+            foreach (var entry in entries.Where(e => e.UsesGhCli))
+            {
+                var host = Trackers.TrackerSites.GitHubCliHost(entry.SiteUrl);
+                var result = await ghToken(host, CancellationToken.None);
+                output.WriteLine(result.Ok
+                    ? $"Tracker {entry.Id} ({p.Name}): uses your gh login for {host} — gh is signed in. `./orkka tracker test {entry.Id}` checks the project scope."
+                    : $"Tracker {entry.Id} ({p.Name}): uses your gh login for {host} — {result.Error}");
+            }
+        }
     }
 
     internal static void PrintWorkspaces(TextWriter output, string orkkaRoot)

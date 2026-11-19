@@ -25,7 +25,7 @@ public sealed class TaskGroupConfiguration : IEntityTypeConfiguration<TaskGroup>
         // A number, not a string: CrossRepo = 0 is the default every existing row already has.
         builder.Property(x => x.Kind).HasDefaultValue(Orkka.Modules.Tasks.Contracts.TaskGroupKind.CrossRepo);
         builder.Property(x => x.BranchName).HasMaxLength(200);
-        builder.Property(x => x.ExternalKey).HasMaxLength(100);
+        builder.Property(x => x.ExternalKey).HasMaxLength(160);
         builder.Property(x => x.ExternalUrl).HasMaxLength(1000);
 
         builder.HasMany(x => x.Branches)
