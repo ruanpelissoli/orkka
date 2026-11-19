@@ -41,6 +41,7 @@ public sealed class TrackerIngestionEndToEndTests(OrkkaApiFactory factory)
         var projectResp = await _client.PostAsJsonAsync("/api/projects",
             new CreateProjectRequest("Polled Project", "desc"));
         var project = await projectResp.Content.ReadFromJsonAsync<ProjectResponse>(TestJsonOptions.Default);
+        await _client.StartSetupAsync(project!.Id);
         var repoIds = new List<Ulid>();
         foreach (var name in repoNames)
         {

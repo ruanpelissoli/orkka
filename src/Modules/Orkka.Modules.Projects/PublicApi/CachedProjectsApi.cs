@@ -78,6 +78,11 @@ internal sealed class CachedProjectsApi(
     public Task SetRepoStackAsync(Ulid repoId, string stack, CancellationToken ct = default)
         => inner.SetRepoStackAsync(repoId, stack, ct);
 
+    // Never cached: Start must open intake on the very next poll.
+    public Task<IReadOnlySet<Ulid>> GetSetupPendingProjectIdsAsync(
+        IReadOnlyCollection<Ulid> projectIds, CancellationToken ct = default)
+        => inner.GetSetupPendingProjectIdsAsync(projectIds, ct);
+
     public Task<IReadOnlyDictionary<Ulid, ProjectSummary>> GetProjectSummariesAsync(
         IReadOnlyCollection<Ulid> projectIds, CancellationToken ct = default)
         => inner.GetProjectSummariesAsync(projectIds, ct);

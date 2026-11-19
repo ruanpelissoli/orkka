@@ -45,6 +45,12 @@ public sealed record RelayRepoAccessResponse(
 
 public sealed record RelayRepoAccessResult(string RepoId, bool Ok, string? Error);
 
+/// <summary>Would these repository commands run on the caller's machine? Supported=false: the
+/// runner is offline or too old to say.</summary>
+public sealed record RelayVetCommandsRequest(string OrgId, string UserId, RepoCommandToVet[] Commands);
+
+public sealed record RelayVetCommandsResponse(bool Supported, VettedRepoCommand[] Results, string? Error = null);
+
 /// <summary>Mirror of the Agents module's own record (see HybridChatAgentInvoker) — the
 /// Worker cannot reference that module's internals, so the contract is duplicated by design.
 /// Everything after ResumeSessionId is additive: an API pod that predates chat tools sends
@@ -158,6 +164,9 @@ public static class RunnerRelayEndpoints
     public const string OldRunnerBoards =
         "Your runner does not know boards yet — update Orkka (`git pull`, then `./orkka start`).";
 
+    public const string OldRunnerDryRun =
+        "Your runner cannot preview a ticket source yet — update Orkka (`git pull`, then `./orkka start`).";
+
     /// <summary>
     /// Why a tracker question is not relayed to a runner with these capabilities, or null when it
     /// is. An older runner would answer "unknown query", preview the whole project while the page
@@ -174,6 +183,8 @@ public static class RunnerRelayEndpoints
                 || !string.IsNullOrWhiteSpace(query.StatusField) || query.RepoFilter is { Length: > 0 })
             && !caps.Contains(RunnerCapabilities.TrackerGitHub))
             return OldRunnerGitHub;
+        if (query.Kind == TrackerQueryKinds.DryRun && !caps.Contains(RunnerCapabilities.TrackerDryRun))
+            return OldRunnerDryRun;
         return null;
     }
 
@@ -436,6 +447,42 @@ public static class RunnerRelayEndpoints
             catch (Exception ex)
             {
                 return Results.Json(new RelayRepoAccessResponse(true, [], ex.Message), Json);
+            }
+        });
+
+        // The setup page's command check: CommandTrust on the developer's machine says whether
+        // each repository command would run, and records the refused ones as pending for
+        // `./orkka commands approve` there. Approving is never possible from here.
+        app.MapPost("/internal/runner/repo-commands/vet", async (
+            HttpContext http,
+            MultiTenantRunnerLinkProvider links,
+            CancellationToken ct) =>
+        {
+            if (!IsAuthorized(http, app.Configuration))
+                return Results.Unauthorized();
+
+            var req = await http.Request.ReadFromJsonAsync<RelayVetCommandsRequest>(Json, ct);
+            if (req is null || !Ulid.TryParse(req.OrgId, out var orgId))
+                return Results.BadRequest();
+
+            var link = links.GetLink(orgId, req.UserId);
+            var (connected, hello) = link.Status;
+            if (!connected || hello?.Capabilities?.Contains(RunnerCapabilities.CommandVet) is not true)
+                return Results.Json(new RelayVetCommandsResponse(false, []), Json);
+
+            try
+            {
+                var result = await link.InvokeAsync<VetRepoCommandsResponse>(
+                    RunnerProtocol.VetRepoCommands, [new VetRepoCommandsRequest(req.OrgId, req.Commands)], ct);
+                return Results.Json(new RelayVetCommandsResponse(true, result.Results), Json);
+            }
+            catch (RunnerUnavailableException)
+            {
+                return Results.Json(new RelayVetCommandsResponse(false, []), Json);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+            {
+                return Results.Json(new RelayVetCommandsResponse(true, [], ex.Message), Json);
             }
         });
 

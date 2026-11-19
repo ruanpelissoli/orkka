@@ -22,6 +22,7 @@ public sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
         builder.Property(x => x.Description).HasMaxLength(2000);
         builder.Property(x => x.CreatedByUserId).HasMaxLength(200);
         builder.Property(x => x.BaseFolder).HasMaxLength(1024);
+        builder.Property(x => x.SetupStepsJson).HasMaxLength(500).IsRequired().HasDefaultValue("[]");
         builder.HasIndex(x => x.OrgId);
         builder.HasIndex(x => new { x.OrgId, x.Slug }).IsUnique();
         builder.HasIndex(x => new { x.OrgId, x.Key }).IsUnique();

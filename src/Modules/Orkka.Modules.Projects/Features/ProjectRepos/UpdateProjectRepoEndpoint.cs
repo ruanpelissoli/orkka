@@ -12,7 +12,8 @@ using Microsoft.EntityFrameworkCore;
 public sealed class UpdateProjectRepoEndpoint(
     ProjectsDbContext db,
     ICurrentUser currentUser,
-    IProjectResolver projectResolver)
+    IProjectResolver projectResolver,
+    Orkka.SharedKernel.Caching.ICacheInvalidator cacheInvalidator)
     : Endpoint<UpdateProjectRepoRequest, ProjectRepoResponse>
 {
     public override void Configure()
@@ -88,6 +89,9 @@ public sealed class UpdateProjectRepoEndpoint(
         }
 
         await db.SaveChangesAsync(ct);
+        // The cached repo list (CachedProjectsApi) carries the commands and the branch: a
+        // command saved on the setup page is re-checked at once, not 30 seconds later.
+        await cacheInvalidator.RemoveAsync(Orkka.SharedKernel.Caching.CacheKeys.ProjectRepos(currentUser.OrgId, projectId), ct);
 
         await Send.OkAsync(repo.ToResponse(), ct);
     }

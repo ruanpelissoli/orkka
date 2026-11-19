@@ -26,6 +26,16 @@ public sealed class Project : TenantEntity
 
     public BaseFolderShape? BaseFolderShape { get; set; }
 
+    /// <summary>When the developer pressed Start at the end of the project's guided setup. Null =
+    /// setup not finished: the project's ticket source is never polled and nothing is imported
+    /// (<see cref="Contracts.IProjectsApi.GetSetupPendingProjectIdsAsync"/>). Projects that
+    /// predate the setup flow were migrated as started.</summary>
+    public DateTimeOffset? SetupCompletedAt { get; set; }
+
+    /// <summary>JSON array of the setup steps the developer confirmed (<see cref="Contracts.ProjectSetupSteps"/>)
+    /// — where the setup page resumes.</summary>
+    public string SetupStepsJson { get; set; } = "[]";
+
     // Navigation (org lives in the Organizations module; OrgId comes from TenantEntity)
     public ICollection<ProjectRepo> Repos { get; set; } = [];
 }

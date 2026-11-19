@@ -68,6 +68,9 @@ public sealed class RunnerPresenceWriter(RunnersDbContext db)
         row.PendingCommandApprovalsJson = hello.PendingCommandApprovals is null
             ? null
             : JsonSerializer.Serialize(hello.PendingCommandApprovals, ApprovalJson);
+        row.CommitIdentityJson = hello.CommitIdentity is null
+            ? null
+            : JsonSerializer.Serialize(hello.CommitIdentity);
 
         // The durable twin of ProvidersJson: survives RemoveAsync so the execution-target
         // decision still knows which CLIs this machine had while the runner is offline.

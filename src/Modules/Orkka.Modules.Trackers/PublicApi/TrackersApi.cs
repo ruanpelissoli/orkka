@@ -99,6 +99,9 @@ internal sealed partial class TrackersApi(
     internal const string OldRunnerBoardError =
         "This ticket source is limited to a board, and the Orkka polling it is too old to know boards — update Orkka on that machine (`git pull`, then `./orkka start`).";
 
+    internal const string SetupPendingError =
+        "This project's setup is not finished — open the project and press Start before its tickets are pulled.";
+
     internal const string OldRunnerGitHubError =
         "This ticket source is a GitHub project, and the Orkka polling it is too old to know GitHub — update Orkka on that machine (`git pull`, then `./orkka start`).";
 
@@ -123,11 +126,20 @@ internal sealed partial class TrackersApi(
                 && byId.Keys.Contains(c.TrackerConnectionId))
             .ToListAsync(ct);
 
+        // A project whose guided setup was not finished (Start not pressed) is not polled at all:
+        // nothing is imported before the developer saw the preview and chose to start.
+        var setupPending = candidates.Count == 0
+            ? null
+            : await projectsApi.GetSetupPendingProjectIdsAsync([.. candidates.Select(c => c.ProjectId).Distinct()], ct);
+
         var assignments = new List<TrackerPollAssignment>();
         var knowsBoards = request.Features?.Contains(TrackerSyncFeatures.Boards, StringComparer.Ordinal) is true;
         var knowsGitHub = request.Features?.Contains(TrackerSyncFeatures.GitHub, StringComparer.Ordinal) is true;
         foreach (var config in candidates)
         {
+            if (setupPending?.Contains(config.ProjectId) is true)
+                continue;
+
             var due = config.LastPolledAt is not { } last
                 || now - last >= TimeSpan.FromSeconds(config.PollIntervalSeconds);
             var epicRules = config.Epics.Where(e => e.Kind == TrackerRuleKind.Epic).ToList();
@@ -171,33 +183,41 @@ internal sealed partial class TrackersApi(
                 continue;
 
             var trackedLinks = await TrackedLinksAsync(config.Id, now, ct);
-            var known = trackedLinks
-                .Select(l => new TrackerKnownTicket(l.TicketKey, l.ContentHash, l.LastCommentAt))
-                // Keys Orkka needs read but does not track: a Story's new sub-tasks (so they can
-                // join the story) and the parent Story of a sub-task worked on its own (for its
-                // context). No hash, so their text travels.
-                .Concat((await ExtraKnownKeysAsync(config.Id, ct))
-                    .Where(k => !trackedLinks.Any(l => string.Equals(l.TicketKey, k, StringComparison.OrdinalIgnoreCase)))
-                    .Select(k => new TrackerKnownTicket(k, null, null)))
-                .ToArray();
-
-            var connection = byId[config.TrackerConnectionId];
-            assignments.Add(new TrackerPollAssignment(
-                config.Id.ToString(), connection.ConnectionKey, connection.Kind, config.Scope,
-                [.. epicRules.OrderBy(e => e.Position).Select(e => e.EpicKey)], config.ExtraClause, config.IncludeDescendants,
-                known,
-                config.ScopeMode == TrackerScopeMode.Epics ? TrackerScopeModes.Epics : TrackerScopeModes.All,
-                Features.ProjectConfig.ProjectTrackerMappers.ParseIntakeStatuses(config.IntakeStatusesJson),
-                config.BoardId,
-                config.BoardId is null ? null : config.BoardName,
-                connection.Kind == TrackerKinds.GitHub ? config.StatusField : null,
-                connection.Kind == TrackerKinds.GitHub
-                    ? Features.ProjectConfig.ProjectTrackerMappers.ParseRepoFilter(config.RepoFilterJson)
-                    : null));
+            assignments.Add(await AssignmentAsync(config, byId[config.TrackerConnectionId], trackedLinks, ct));
         }
 
         var (transitions, prChecks) = await PlanWriteBackAsync(orgId, userId, connections, ct);
         return new TrackerSyncResponse([.. assignments], transitions, prChecks);
+    }
+
+    /// <summary>One source's poll, as the runner is handed it — by the real poll and by the setup
+    /// page's dry run alike.</summary>
+    private async Task<TrackerPollAssignment> AssignmentAsync(
+        ProjectTrackerConfig config, TrackerConnection connection, IReadOnlyList<TicketLink> trackedLinks, CancellationToken ct)
+    {
+        var known = trackedLinks
+            .Select(l => new TrackerKnownTicket(l.TicketKey, l.ContentHash, l.LastCommentAt))
+            // Keys Orkka needs read but does not track: a Story's new sub-tasks (so they can
+            // join the story) and the parent Story of a sub-task worked on its own (for its
+            // context). No hash, so their text travels.
+            .Concat((await ExtraKnownKeysAsync(config.Id, ct))
+                .Where(k => !trackedLinks.Any(l => string.Equals(l.TicketKey, k, StringComparison.OrdinalIgnoreCase)))
+                .Select(k => new TrackerKnownTicket(k, null, null)))
+            .ToArray();
+
+        var epicRules = config.Epics.Where(e => e.Kind == TrackerRuleKind.Epic);
+        return new TrackerPollAssignment(
+            config.Id.ToString(), connection.ConnectionKey, connection.Kind, config.Scope,
+            [.. epicRules.OrderBy(e => e.Position).Select(e => e.EpicKey)], config.ExtraClause, config.IncludeDescendants,
+            known,
+            config.ScopeMode == TrackerScopeMode.Epics ? TrackerScopeModes.Epics : TrackerScopeModes.All,
+            Features.ProjectConfig.ProjectTrackerMappers.ParseIntakeStatuses(config.IntakeStatusesJson),
+            config.BoardId,
+            config.BoardId is null ? null : config.BoardName,
+            connection.Kind == TrackerKinds.GitHub ? config.StatusField : null,
+            connection.Kind == TrackerKinds.GitHub
+                ? Features.ProjectConfig.ProjectTrackerMappers.ParseRepoFilter(config.RepoFilterJson)
+                : null);
     }
 
     /// <summary>
@@ -206,11 +226,12 @@ internal sealed partial class TrackersApi(
     /// their pull request opening — regardless of who they are assigned to now. Links that just
     /// dropped out get <see cref="TicketLink.TrackingEndedAt"/>.
     /// </summary>
-    internal async Task<List<TicketLink>> TrackedLinksAsync(Ulid configId, DateTimeOffset now, CancellationToken ct)
+    /// <param name="persist">False for the dry run: the same answer, but nothing is ended.</param>
+    internal async Task<List<TicketLink>> TrackedLinksAsync(Ulid configId, DateTimeOffset now, CancellationToken ct, bool persist = true)
     {
-        var links = await db.TicketLinks.IgnoreQueryFilters()
-            .Where(l => l.ConfigId == configId && l.TrackingEndedAt == null)
-            .ToListAsync(ct);
+        var query = db.TicketLinks.IgnoreQueryFilters()
+            .Where(l => l.ConfigId == configId && l.TrackingEndedAt == null);
+        var links = await (persist ? query : query.AsNoTracking()).ToListAsync(ct);
         if (links.Count == 0)
             return links;
 
@@ -234,7 +255,7 @@ internal sealed partial class TrackersApi(
             }
             tracked.Add(link);
         }
-        if (ended)
+        if (ended && persist)
             await db.SaveChangesAsync(ct);
         return tracked;
     }
@@ -252,6 +273,10 @@ internal sealed partial class TrackersApi(
             return new TrackerReportAck(false, "Unknown ticket source.");
         if (config.LeaseHolder != report.InstanceId)
             return new TrackerReportAck(false, "Another machine is polling this ticket source now.");
+        // Belt and braces with SyncAsync: a lease taken before Start was taken back (a project
+        // set up again) still imports nothing.
+        if ((await projectsApi.GetSetupPendingProjectIdsAsync([config.ProjectId], ct))?.Contains(config.ProjectId) is true)
+            return new TrackerReportAck(false, SetupPendingError);
 
         config.LastPolledAt = report.PolledAt;
         if (!report.Ok)
@@ -284,12 +309,14 @@ internal sealed partial class TrackersApi(
         var router = new ImportContext(config, connection, null);
         var created = 0;
 
-        // Stories first: a Story and its sub-tasks arrive in one report in any order, and a
-        // sub-task must become a member of its Story rather than a task of its own.
-        var stories = new StoryReport(report.Tickets, links,
-            Features.ProjectConfig.ProjectTrackerMappers.ParseIntakeStatuses(config.IntakeStatusesJson));
+        // What is new work in this report — the same decision the setup page's dry run shows
+        // (PlanIntake). Stories first: a Story and its sub-tasks arrive in one report in any
+        // order, and a sub-task must become a member of its Story rather than a task of its own.
+        var intakeStatuses = Features.ProjectConfig.ProjectTrackerMappers.ParseIntakeStatuses(config.IntakeStatusesJson);
+        var plan = PlanIntake(report.Tickets, links.Keys, intakeStatuses, config.StoryMode != 0);
+        var stories = new StoryReport(report.Tickets, links, intakeStatuses);
         if (config.StoryMode != 0)
-            created += await IngestStoriesAsync(router, stories, tracker, ct);
+            created += await IngestStoriesAsync(router, stories, plan.Stories, tracker, ct);
 
         foreach (var ticket in report.Tickets)
         {
@@ -324,9 +351,9 @@ internal sealed partial class TrackersApi(
                         await ApplyToTrackedTicketAsync(link, ticket, tracker, false, ct);
                     }
                 }
-                else if (ticket.InIntake && ticket.AssignedToMe)
+                else if (IsNewTaskCandidate(ticket))
                 {
-                    router.Repos ??= await projectsApi.ListReposAsync(config.ProjectId, ct);
+                    router.Repos ??=await projectsApi.ListReposAsync(config.ProjectId, ct);
                     if (await ImportAsync(router, ticket, ct) is { } newLink)
                     {
                         db.TicketLinks.Add(newLink);
@@ -542,6 +569,9 @@ internal sealed partial class TrackersApi(
     }
 
     /// <summary>Where a new ticket is worked, and how that was decided.</summary>
+    /// <summary>The dry run's route source where the poll would ask the repo router.</summary>
+    internal const string RouteDecidedAtImport = "router-at-import";
+
     internal sealed record TicketRoute(Ulid? RepoId, string? Subpath, IReadOnlyList<Ulid> SpansRepoIds, string Source, string? Reason);
 
     /// <summary>
@@ -550,8 +580,12 @@ internal sealed partial class TrackersApi(
     /// repo router on the owner's runner (one repository it is sure of, or several = a cross-repo
     /// group). Otherwise no repository, and the reason the task will give when it asks.
     /// </summary>
+    /// <param name="askRouter">False for the dry run: where the repo router would be asked, the
+    /// answer is "decided at import" (<see cref="RouteDecidedAtImport"/>) — the router is a model
+    /// call on the developer's AI CLI per ticket.</param>
     internal async Task<TicketRoute> RouteAsync(
-        ProjectTrackerConfig config, IReadOnlyList<RepoSummary> repos, TrackerTicket ticket, TrackerTicketBody body, CancellationToken ct)
+        ProjectTrackerConfig config, IReadOnlyList<RepoSummary> repos, TrackerTicket ticket, TrackerTicketBody body, CancellationToken ct,
+        bool askRouter = true)
     {
         var repoIds = repos.Select(r => r.Id).ToHashSet();
         if (MatchRule(config.Epics, ticket, body) is { } rule && rule.RepoId is { } ruleRepo && repoIds.Contains(ruleRepo))
@@ -569,6 +603,10 @@ internal sealed partial class TrackersApi(
 
         if (repos.Count == 0)
             return new TicketRoute(null, null, [], "none", "This project has no repository yet — add one first.");
+
+        if (!askRouter)
+            return new TicketRoute(null, null, [], RouteDecidedAtImport,
+                "No rule or default repository matches it: the repo router on your runner picks one when it is imported (or the task asks you).");
 
         var decision = await repoRouter.RouteAsync(config.OrgId, config.OwnerUserId,
             new RepoRouteTicket(ticket.Key, body.Title, TaskDescription(body), body.Components ?? [], body.Labels, body.AreaPath),

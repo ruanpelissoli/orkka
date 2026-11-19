@@ -51,4 +51,8 @@ public sealed class RunnerPresence : TenantEntity
     /// machine refused and nobody has approved there yet (newest first, at most 20). Approval
     /// itself is only ever `./orkka commands approve` on that machine.</summary>
     public string? PendingCommandApprovalsJson { get; set; }
+
+    /// <summary>JSON snapshot of RunnerCommitIdentity from the last Hello — who this workspace's
+    /// commits are authored as (name, email, where it comes from). Null from older runners.</summary>
+    public string? CommitIdentityJson { get; set; }
 }

@@ -25,6 +25,9 @@ namespace Orkka.Modules.Runners.Infrastructure.Migrations
                     b.Property<string>("CapabilitiesJson")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("CommitIdentityJson")
+                        .HasColumnType("TEXT");
+
                     b.Property<long>("ConnectedAt")
                         .HasColumnType("INTEGER");
 

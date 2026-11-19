@@ -95,6 +95,8 @@ public sealed class RunnerSessionFactory(
 
         var poller = new TrackerTicketPoller(trackerStore, secrets, trackers.SourceFor, cache,
             loggers.CreateLogger<TrackerTicketPoller>(), credentials: credentials);
+        // The setup page's dry run reads tickets through the very poller that imports them.
+        trackers.Poller = poller;
         var writeBack = new TrackerWriteBack(trackerStore, secrets, trackers.WriterFor, TrackerWriteBack.ViaForgeCli(forgeCli),
             loggers.CreateLogger<TrackerWriteBack>(), credentials);
         var pollerService = new TrackerPollerService(new RunnerTrackerHub(hostLink, instanceId), trackerStore, poller,

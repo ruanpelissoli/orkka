@@ -79,6 +79,13 @@ public static class TrackerQueryKinds
     /// <summary>GitHub: the repositories whose issues are on a project — what the repository
     /// filter picks from; answers <see cref="TrackerQueryResult.Repositories"/>.</summary>
     public const string Repos = "repos";
+
+    /// <summary>The setup page's dry run: the poll of <see cref="TrackerQueryRequest.Assignment"/>
+    /// exactly as the real one reads it (intake + tracking + the children of intake tickets),
+    /// answering <see cref="TrackerQueryResult.Tickets"/> — without downloading attachments,
+    /// fetching comments or remembering anything as delivered. The host decides what would be
+    /// imported with the real poll's rules and creates nothing. Capability <c>tracker-dry-run</c>.</summary>
+    public const string DryRun = "dry-run";
 }
 
 /// <param name="ConnectionId">A <see cref="RunnerTrackerConnection.Id"/> on this runner.</param>
@@ -101,6 +108,8 @@ public static class TrackerQueryKinds
 /// — for statuses and preview.</param>
 /// <param name="RepoFilter">GitHub preview: only issues from these repositories
 /// (<c>owner/name</c>); empty = every repository on the project.</param>
+/// <param name="Assignment">Dry run: the poll to read (the host builds it from the stored ticket
+/// source, the way it hands one out on <c>SyncTrackers</c>).</param>
 public sealed record TrackerQueryRequest(
     string ConnectionId,
     string Kind,
@@ -114,7 +123,8 @@ public sealed record TrackerQueryRequest(
     string? BoardId = null,
     string? BoardName = null,
     string? StatusField = null,
-    string[]? RepoFilter = null);
+    string[]? RepoFilter = null,
+    TrackerPollAssignment? Assignment = null);
 
 /// <summary>Which tickets of a scope a source picks up.</summary>
 public static class TrackerScopeModes
@@ -143,7 +153,10 @@ public sealed record TrackerQueryResult(
     string? EffectiveQuery = null,
     TrackerBoard[]? Boards = null,
     TrackerField[]? Fields = null,
-    string[]? Repositories = null);
+    string[]? Repositories = null,
+    // Dry run: every ticket the poll read, normalized as a report carries it (no comments,
+    // attachments listed but not downloaded).
+    TrackerTicket[]? Tickets = null);
 
 public sealed record TrackerScope(string Key, string Name);
 

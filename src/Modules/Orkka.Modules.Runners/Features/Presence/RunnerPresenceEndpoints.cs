@@ -42,7 +42,12 @@ public sealed record MyRunnerResponse(
     RunnerForgeCliDto[]? ForgeClis = null,
     // Repository commands this runner refused and that wait for `./orkka commands approve
     // <id>` on that machine — never approvable from here. Empty when there are none.
-    PendingCommandApprovalDto[]? PendingCommandApprovals = null);
+    PendingCommandApprovalDto[]? PendingCommandApprovals = null,
+    // Who this workspace's commits are authored as. Null from older runners.
+    RunnerCommitIdentityDto? CommitIdentity = null);
+
+/// <summary>Mirrors RunnerCommitIdentity. Source: "workspace" | "git-config" | "none".</summary>
+public sealed record RunnerCommitIdentityDto(string? Name, string? Email, string Source);
 
 /// <summary>Mirrors CommandApproval; Kind is the CommandKind name.</summary>
 public sealed record PendingCommandApprovalDto(string Id, string Repo, string Command, string Kind, string Machine);
@@ -147,6 +152,21 @@ internal static class ProviderJson
         }
     }
 
+    public static RunnerCommitIdentityDto? ParseCommitIdentity(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+            return null;
+
+        try
+        {
+            return JsonSerializer.Deserialize<RunnerCommitIdentityDto>(json, Options);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
     public static string[]? ParseCapabilities(string? json)
     {
         if (string.IsNullOrWhiteSpace(json))
@@ -210,7 +230,8 @@ public sealed class GetMyRunnerEndpoint(
             lastKnownAt,
             lastKnownMachine,
             ProviderJson.ParseForgeClis(presence?.ForgeClisJson),
-            ProviderJson.ParsePendingApprovals(presence?.PendingCommandApprovalsJson)), ct);
+            ProviderJson.ParsePendingApprovals(presence?.PendingCommandApprovalsJson),
+            ProviderJson.ParseCommitIdentity(presence?.CommitIdentityJson)), ct);
     }
 }
 

@@ -224,4 +224,13 @@ public interface IProjectsApi
     /// <summary>Records the repo's toolchain (normalized to a <see cref="RepoStacks"/> value).</summary>
     Task SetRepoStackAsync(Ulid repoId, string stack, CancellationToken ct = default);
 
+    /// <summary>
+    /// Of <paramref name="projectIds"/>, the projects whose guided setup has not been started yet
+    /// (no <c>SetupCompletedAt</c>) — their ticket sources are not polled and nothing is imported
+    /// for them until the developer presses Start. Cross-org by design (the runner hub has no
+    /// signed-in user; the ids come from configurations already scoped to the caller).
+    /// </summary>
+    Task<IReadOnlySet<Ulid>> GetSetupPendingProjectIdsAsync(
+        IReadOnlyCollection<Ulid> projectIds, CancellationToken ct = default);
+
 }
