@@ -6,11 +6,22 @@ import { trackerAddCommand } from "@/lib/runner-commands";
 import { useOptionalWorkspaces } from "@/components/workspace/WorkspaceProvider";
 import { useClientApi } from "@/hooks/use-client-api";
 import { api, ApiError } from "@/lib/api";
-import type { TrackerConnection, TrackerKind } from "@/lib/types";
+import { GITHUB_DEFAULT_HOST, normalizeGitHubHost } from "@/lib/tracker";
+import type { AddTrackerConnectionRequest, TrackerAuthMode, TrackerConnection, TrackerKind } from "@/lib/types";
 import { cn, formatRelativeTime } from "@/lib/utils";
 
 /** Where an Atlassian account creates the API token the Jira form asks for. */
 export const JIRA_API_TOKEN_URL = "https://id.atlassian.com/manage-profile/security/api-tokens";
+
+/** Where a GitHub account creates a token (the host's own settings page for GHE.com). */
+export function gitHubTokenUrl(host: string): string {
+  return `https://${normalizeGitHubHost(host) ?? GITHUB_DEFAULT_HOST}/settings/tokens`;
+}
+
+/** The connection's kind as the UI names it ("Jira", "Azure DevOps", "GitHub"). */
+function kindKey(kind: string): TrackerKind {
+  return kind === "ado" ? "ado" : kind === "github" ? "github" : "jira";
+}
 
 /** "https://acme.atlassian.net" → "acme.atlassian.net"; anything unparseable as typed. */
 export function trackerSiteLabel(siteUrl: string): string {
@@ -65,6 +76,14 @@ export function TrackerAddCommands() {
         </p>
         <CopyableCommand command={trackerAddCommand("ado", workspace)} />
       </div>
+      <div className="space-y-1.5">
+        <p className="flex items-center gap-1.5 text-xs text-gray-300">
+          <TrackerKindIcon kind="github" className="text-gray-400" />
+          {t("kind.github")}
+        </p>
+        <CopyableCommand command={trackerAddCommand("github", workspace)} />
+        <p className="text-xs text-gray-400">{t("githubCliNote")}</p>
+      </div>
       <p className="text-xs text-gray-400">{t("tokenNote")}</p>
     </div>
   );
@@ -91,7 +110,9 @@ function OutcomeLine({ outcome, testId }: { outcome: Outcome; testId: string }) 
 }
 
 /**
- * "Add Jira Cloud" / "Add Azure DevOps". The token lives in this component's state only: it is
+ * "Add Jira Cloud" / "Add Azure DevOps" / "Add GitHub". GitHub offers two ways in: the
+ * developer's own GitHub CLI login (the default — the runner reads `gh auth token` when it needs
+ * one and stores nothing), or a pasted token. The token lives in this component's state only: it is
  * posted once, in a request body, to the host — which relays it to the developer's own runner
  * and stores nothing — and is cleared after every attempt, whatever the outcome. Never a server
  * action, a URL, browser storage or a query key. Deliberately not a `<form>`: a form submitted
@@ -106,14 +127,37 @@ export function AddTrackerConnectionForm({
 }) {
   const t = useTranslations("dashboard.trackers.add");
   const withToken = useClientApi();
-  const [site, setSite] = useState("");
+  const isJira = kind === "jira";
+  const isGitHub = kind === "github";
+  const [site, setSite] = useState(isGitHub ? GITHUB_DEFAULT_HOST : "");
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
+  const [authMode, setAuthMode] = useState<TrackerAuthMode>("gh");
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState<Outcome>(null);
 
-  const isJira = kind === "jira";
-  const ready = site.trim() !== "" && token !== "" && (!isJira || email.trim() !== "") && !busy;
+  const usesGh = isGitHub && authMode === "gh";
+  const gitHubHost = isGitHub ? normalizeGitHubHost(site) : null;
+  const hostError = isGitHub && site.trim() !== "" && gitHubHost === null;
+  const ready =
+    (isGitHub ? gitHubHost !== null : site.trim() !== "") &&
+    (usesGh || token !== "") &&
+    (!isJira || email.trim() !== "") &&
+    !busy;
+
+  function buildRequest(secret: string): AddTrackerConnectionRequest {
+    if (isGitHub) {
+      return {
+        kind,
+        site: gitHubHost ?? GITHUB_DEFAULT_HOST,
+        token: usesGh ? "" : secret,
+        authMode,
+      };
+    }
+    return isJira
+      ? { kind, site: site.trim(), email: email.trim(), token: secret }
+      : { kind, site: site.trim(), token: secret };
+  }
 
   async function submit() {
     if (!ready) return;
@@ -123,12 +167,7 @@ export function AddTrackerConnectionForm({
     setToken("");
     try {
       const response = await withToken((authToken) =>
-        api.trackers.addConnection(
-          isJira
-            ? { kind, site: site.trim(), email: email.trim(), token: secret }
-            : { kind, site: site.trim(), token: secret },
-          authToken
-        )
+        api.trackers.addConnection(buildRequest(secret), authToken)
       );
       if (!response.supported) {
         setOutcome({ tone: "warn", text: t("runnerUnsupported") });
@@ -139,7 +178,7 @@ export function AddTrackerConnectionForm({
         });
       } else {
         onAdded(response.connection);
-        setSite("");
+        setSite(isGitHub ? GITHUB_DEFAULT_HOST : "");
         setEmail("");
         setOutcome({ tone: "ok", text: t("added", { site: trackerSiteLabel(response.connection.siteUrl) }) });
       }
@@ -167,18 +206,57 @@ export function AddTrackerConnectionForm({
     >
       <h4 className="flex items-center gap-2 font-display text-sm font-semibold text-white">
         <TrackerKindIcon kind={kind} className="text-gray-300" />
-        {isJira ? t("jiraTitle") : t("adoTitle")}
+        {isJira ? t("jiraTitle") : isGitHub ? t("githubTitle") : t("adoTitle")}
       </h4>
       <Input
         id={id("site")}
-        label={isJira ? t("siteLabel") : t("orgLabel")}
-        placeholder={isJira ? t("sitePlaceholder") : t("orgPlaceholder")}
+        label={isJira ? t("siteLabel") : isGitHub ? t("hostLabel") : t("orgLabel")}
+        placeholder={isJira ? t("sitePlaceholder") : isGitHub ? t("hostPlaceholder") : t("orgPlaceholder")}
+        hint={isGitHub ? t("hostHint") : undefined}
+        error={hostError ? t("hostInvalid") : undefined}
         value={site}
         onChange={(e) => setSite(e.target.value)}
         onKeyDown={onEnter}
         autoComplete="off"
         spellCheck={false}
       />
+      {isGitHub && (
+        <fieldset className="space-y-2" data-testid="tracker-add-github-auth">
+          <legend className="text-xs text-gray-300">{t("authLabel")}</legend>
+          <label className="flex items-start gap-2 text-sm text-gray-200">
+            <input
+              type="radio"
+              name={id("auth")}
+              value="gh"
+              checked={authMode === "gh"}
+              onChange={() => setAuthMode("gh")}
+              className="mt-1"
+              data-testid="tracker-add-github-auth-gh"
+            />
+            <span>
+              {t("authGh")}
+              <span className="block text-xs text-gray-400">
+                {t("authGhHint", { host: gitHubHost ?? GITHUB_DEFAULT_HOST })}
+              </span>
+            </span>
+          </label>
+          <label className="flex items-start gap-2 text-sm text-gray-200">
+            <input
+              type="radio"
+              name={id("auth")}
+              value="token"
+              checked={authMode === "token"}
+              onChange={() => setAuthMode("token")}
+              className="mt-1"
+              data-testid="tracker-add-github-auth-token"
+            />
+            <span>
+              {t("authToken")}
+              <span className="block text-xs text-gray-400">{t("authTokenHint")}</span>
+            </span>
+          </label>
+        </fieldset>
+      )}
       {isJira && (
         <Input
           id={id("email")}
@@ -192,10 +270,11 @@ export function AddTrackerConnectionForm({
           spellCheck={false}
         />
       )}
+      {!usesGh && (
       <div className="space-y-1.5">
         <Input
           id={id("token")}
-          label={isJira ? t("tokenLabel") : t("patLabel")}
+          label={isJira ? t("tokenLabel") : isGitHub ? t("githubTokenLabel") : t("patLabel")}
           type="password"
           autoComplete="off"
           spellCheck={false}
@@ -213,13 +292,26 @@ export function AddTrackerConnectionForm({
           >
             {t("tokenLink")}
           </a>
+        ) : isGitHub ? (
+          <p className="text-xs text-gray-400" data-testid="tracker-add-github-scopes">
+            {t("githubScopes")}{" "}
+            <a
+              href={gitHubTokenUrl(site)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-cyan-400 hover:text-cyan-300"
+            >
+              {t("githubTokenLink")}
+            </a>
+          </p>
         ) : (
           <p className="text-xs text-gray-400" data-testid="tracker-add-ado-scopes">
             {t("adoScopes")}
           </p>
         )}
       </div>
-      <p className="text-xs text-gray-400">{t("tokenStays")}</p>
+      )}
+      <p className="text-xs text-gray-400">{usesGh ? t("ghStays") : t("tokenStays")}</p>
       <div className="flex flex-wrap items-center gap-3">
         <Button type="button" size="sm" disabled={!ready} onClick={() => void submit()}>
           {busy ? t("submitting") : t("submit")}
@@ -315,7 +407,12 @@ function TrackerConnectionRow({
       <div className="flex flex-wrap items-center gap-2">
         <TrackerKindIcon kind={c.kind} className="shrink-0 text-gray-300" />
         <span className="text-sm text-gray-100">{trackerSiteLabel(c.siteUrl)}</span>
-        <span className="text-xs text-gray-400">{c.kind === "ado" ? t("kind.ado") : t("kind.jira")}</span>
+        <span className="text-xs text-gray-400">{t(`kind.${kindKey(c.kind)}`)}</span>
+        {c.kind === "github" && (
+          <span className="text-xs text-gray-400" data-testid={`tracker-connection-${c.key}-auth`}>
+            · {c.authMode === "gh" ? t("authModeGh") : t("authModeToken")}
+          </span>
+        )}
         <Badge variant={c.healthy ? "success" : "warning"} size="sm" dot className="ml-auto">
           {c.healthy ? t("healthy") : t("unhealthy")}
         </Badge>
@@ -409,6 +506,7 @@ export function TrackerConnectionsList({ connections: initial }: { connections: 
       <div className="grid gap-4 lg:grid-cols-2">
         <AddTrackerConnectionForm kind="jira" onAdded={upsert} />
         <AddTrackerConnectionForm kind="ado" onAdded={upsert} />
+        <AddTrackerConnectionForm kind="github" onAdded={upsert} />
       </div>
 
       <details className="text-xs text-gray-400">

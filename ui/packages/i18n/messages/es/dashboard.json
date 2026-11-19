@@ -244,20 +244,38 @@
       "runnerUnsupported": "Tu runner no respondió: está desconectado o es demasiado antiguo para esto. Inícialo con `./orkka start` (o actualízalo con `git pull` + `./orkka start`) y vuelve a intentarlo.",
       "failed": "El tracker rechazó la conexión: {error}",
       "failedGeneric": "El tracker rechazó la conexión.",
-      "requestFailed": "No se pudo añadir la conexión."
+      "requestFailed": "No se pudo añadir la conexión.",
+      "githubTitle": "Añadir GitHub Projects",
+      "hostLabel": "Host de GitHub",
+      "hostPlaceholder": "github.com",
+      "hostHint": "github.com, o tu host de GHE.com (acme.ghe.com). GitHub Enterprise Server no es compatible.",
+      "hostInvalid": "Usa github.com o un host de GHE.com como acme.ghe.com.",
+      "authLabel": "Iniciar sesión con",
+      "authGh": "Mi sesión de GitHub CLI (recomendado)",
+      "authGhHint": "Tu runner pide `gh auth token` cuando lo necesita y no guarda nada. La sesión necesita el permiso project: `gh auth refresh -h {host} -s project`.",
+      "authToken": "Un token",
+      "authTokenHint": "Un token clásico, o uno de grano fino, guardado en el almacén de secretos de esta máquina.",
+      "githubTokenLabel": "Token de GitHub",
+      "githubScopes": "Token clásico: los permisos project y repo. De grano fino: Projects (lectura y escritura) e Issues (lectura y escritura) en la organización. Con SAML single sign-on, autoriza el token para la organización.",
+      "githubTokenLink": "Crear un token en GitHub",
+      "ghStays": "Tu runner comprueba ahora la sesión de gh en esta máquina y la vuelve a leer en cada llamada. Orkka no guarda ningún token para esta conexión."
     },
     "sectionTitle": "Gestores de tickets",
-    "sectionIntro": "Tus conexiones de Jira y Azure DevOps. Cada una vive en la máquina que la añadió: el token nunca sale de esa máquina y solo tu runner habla con el gestor.",
+    "sectionIntro": "Tus conexiones de Jira, Azure DevOps y GitHub. Cada una vive en la máquina que la añadió: el token nunca sale de esa máquina y solo tu runner habla con el gestor.",
     "kind": {
       "jira": "Jira",
-      "ado": "Azure DevOps"
+      "ado": "Azure DevOps",
+      "github": "GitHub"
     },
-    "tokenNote": "El comando te pide tu token de API (Jira) o tu token de acceso personal (Azure DevOps) y lo guarda en el almacén de secretos de esa máquina. El token se queda en tu máquina; Orkka nunca lo ve.",
+    "tokenNote": "El comando te pide tu token de API (Jira) o tu token de acceso personal (Azure DevOps) y lo guarda en el almacén de secretos de esa máquina; GitHub usa tu sesión de gh salvo que pases --token. El token se queda en tu máquina; Orkka nunca lo ve.",
     "healthy": "Conectada",
     "unhealthy": "No funciona",
     "account": "como {account}",
     "machine": "en {machine}",
-    "lastSeen": "vista {when}"
+    "lastSeen": "vista {when}",
+    "githubCliNote": "Usa el inicio de sesión de tu GitHub CLI (gh). Añade --host acme.ghe.com para GHE.com, o --token para pegar un token.",
+    "authModeGh": "usa tu sesión de gh",
+    "authModeToken": "token"
   },
   "workspaces": {
     "label": "Espacio de trabajo",
@@ -277,7 +295,7 @@
     "runnerOffline": "Runner desconectado"
   },
   "ticketSource": {
-    "intro": "Recoge los tickets que tienes asignados en Jira o Azure DevOps. Tu runner consulta el tracker con tu propia conexión.",
+    "intro": "Recoge los tickets que tienes asignados en Jira, Azure DevOps o GitHub Projects. Tu runner consulta el tracker con tu propia conexión.",
     "noConnections": "Todavía no tienes conexiones con trackers. Añade una en Ajustes → Trackers y vuelve aquí.",
     "addConnectionLink": "Añadir una conexión con un tracker",
     "runnerOffline": "Tu runner no respondió, así que no se puede explorar el tracker. Inícialo con `./orkka start`, o actualízalo con `git pull` + `./orkka start` si es demasiado antiguo.",
@@ -344,7 +362,8 @@
       "rule": "Da un valor y un repositorio a cada regla de enrutamiento.",
       "subpath": "Una subcarpeta es una ruta relativa dentro del repositorio, como packages/api: sin «..», sin letras de unidad, sin barra inicial.",
       "poll": "Entre {min} y {max} segundos.",
-      "branch": "Debe contener {key}: así el tracker vincula la rama con su ticket."
+      "branch": "Debe contener {key}: así el tracker vincula la rama con su ticket.",
+      "project": "Elige el proyecto de GitHub en el que están las issues."
     },
     "title": "Origen de tickets",
     "readOnly": "Necesitas el permiso Gestionar proyectos para cambiar el origen de tickets.",
@@ -362,7 +381,8 @@
     "queryFailedGeneric": "El gestor no respondió.",
     "scopeLabel": {
       "jira": "Proyecto de Jira",
-      "ado": "Proyecto de Azure DevOps"
+      "ado": "Proyecto de Azure DevOps",
+      "github": "Propietario (organización o usuario)"
     },
     "scopePlaceholder": "Elige un proyecto",
     "boardLabel": "Tablero",
@@ -405,7 +425,19 @@
     "removeConfirm": "¿Quitar este origen de tickets? Los tickets ya tomados siguen en el tablero.",
     "removed": "Origen de tickets quitado.",
     "removeFailed": "No se pudo quitar el origen de tickets.",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "projectLabel": "Proyecto de GitHub",
+    "projectHint": "Se recogen las issues de este proyecto. Los borradores de issue y los pull requests se omiten.",
+    "projectPlaceholder": "Elige un proyecto",
+    "projectOption": "#{number} {title}",
+    "statusFieldLabel": "Campo de estado",
+    "statusFieldHint": "El campo de selección única donde tu proyecto guarda el estado — normalmente Status.",
+    "statusFieldOption": "{name} ({count, plural, one {# opción} other {# opciones}})",
+    "repoFilterLabel": "Repositorios",
+    "repoFilterAll": "Se recogen issues de todos los repositorios del proyecto. Elige algunos para limitarlo.",
+    "repoFilterSome": "Solo se recogen issues de {count, plural, one {este repositorio} other {estos # repositorios}}.",
+    "githubIntakeHint": "Cada issue del proyecto asignada a ti, en uno de los estados de abajo. Una issue con sub-issues asignadas a ti se trabaja como una Story.",
+    "routingHintGithub": "Una issue va al repositorio del proyecto con el mismo remoto que su propio repositorio. Si no, estas reglas se comprueban de arriba abajo y gana la primera que coincida; una issue que no coincide con ninguna la enruta la IA, o se te pregunta."
   },
   "ticketSourceStatus": {
     "checked": "Tickets desde {tracker} · última consulta {when} en {machine}",

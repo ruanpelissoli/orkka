@@ -24,16 +24,41 @@ export const TRACKER_STATUS_STEPS: TrackerStatusStep[] = [
   "merged",
 ];
 
-/** Routing-rule kinds each tracker has: Jira components and labels; Azure DevOps area paths and tags. */
-export function routingRuleKindsFor(kind: "jira" | "ado"): TrackerRoutingRuleKind[] {
+/** Routing-rule kinds each tracker has: Jira components and labels; Azure DevOps area paths and
+ * tags; GitHub labels (an issue's repository is matched to the project's repos first). */
+export function routingRuleKindsFor(kind: "jira" | "ado" | "github"): TrackerRoutingRuleKind[] {
+  if (kind === "github") return ["label"];
   return kind === "ado" ? ["areaPath", "label"] : ["component", "label"];
 }
 
-/** What a developer runs on their own machine to add a connection; the token stays there. */
+/** What a developer runs on their own machine to add a connection; the token stays there.
+ * GitHub uses the developer's `gh` login by default (`--token` asks for a token instead). */
 export const TRACKER_ADD_COMMANDS = {
   jira: "./orkka tracker add jira --site acme.atlassian.net --email you@acme.com",
   ado: "./orkka tracker add ado --org https://dev.azure.com/acme",
+  github: "./orkka tracker add github",
 } as const;
+
+/** The GitHub host a new connection talks to unless the developer names a GHE.com one. */
+export const GITHUB_DEFAULT_HOST = "github.com";
+
+/** The single-select field a GitHub project keeps its status in, unless the source names another. */
+export const GITHUB_DEFAULT_STATUS_FIELD = "Status";
+
+/**
+ * A GitHub host the connection can use: github.com, or a GHE.com data-residency host
+ * (`acme.ghe.com`). A URL is reduced to its host. GitHub Enterprise Server (any other host) is
+ * not supported. Null when the input is not one of those.
+ */
+export function normalizeGitHubHost(value: string | null | undefined): string | null {
+  let text = (value ?? "").trim().toLowerCase();
+  if (!text) return GITHUB_DEFAULT_HOST;
+  text = text.replace(/^https?:\/\//, "").split("/")[0];
+  if (text.startsWith("api.")) text = text.slice(4);
+  if (text === "github.com" || text === "www.github.com") return GITHUB_DEFAULT_HOST;
+  if (/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.ghe\.com$/.test(text)) return text;
+  return null;
+}
 
 /**
  * A folder inside a repository, as the epic mapping stores it: forward slashes, no leading or

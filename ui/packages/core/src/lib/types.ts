@@ -2648,10 +2648,15 @@ export interface RepoRequest {
   requestedAt: string;
 }
 
-// ── Ticket trackers (Jira / Azure DevOps) ─────────────────────────────────────
+// ── Ticket trackers (Jira / Azure DevOps / GitHub Projects) ───────────────────
 
-/** "jira" = Jira Cloud (email + API token); "ado" = Azure DevOps Services (PAT). */
-export type TrackerKind = "jira" | "ado";
+/** "jira" = Jira Cloud (email + API token); "ado" = Azure DevOps Services (PAT);
+ * "github" = GitHub Projects (v2) on github.com or a GHE.com host (gh login or a token). */
+export type TrackerKind = "jira" | "ado" | "github";
+
+/** How a connection authenticates: "gh" = the developer's GitHub CLI login (nothing stored);
+ * "token" = a token in the OS secret store (every Jira and Azure DevOps connection). */
+export type TrackerAuthMode = "gh" | "token";
 
 /**
  * GET /api/trackers/connections — one of the caller's own tracker connections. Metadata only:
@@ -2673,9 +2678,19 @@ export interface TrackerConnection {
   machineName: string;
   lastSeenAt: string;
   checkedAt: string | null;
+  /** "gh" = uses the GitHub CLI login; "token" / null = a stored token. */
+  authMode?: TrackerAuthMode | string | null;
 }
 
-export type TrackerQueryKind = "test" | "scopes" | "boards" | "epics" | "statuses" | "preview";
+export type TrackerQueryKind =
+  | "test"
+  | "scopes"
+  | "boards"
+  | "epics"
+  | "statuses"
+  | "preview"
+  | "fields"
+  | "repos";
 
 /** POST /api/trackers/connections/{id}/query */
 export interface TrackerQueryRequest {
@@ -2698,6 +2713,10 @@ export interface TrackerQueryRequest {
   boardId?: string;
   /** Preview: the board's name, for the error when it is gone. */
   boardName?: string;
+  /** GitHub: the single-select field holding the status (default "Status"). */
+  statusField?: string;
+  /** GitHub preview: only issues from these repositories ("owner/name"). */
+  repoFilter?: string[];
 }
 
 export interface TrackerScope {
@@ -2711,8 +2730,19 @@ export interface TrackerBoard {
   id: string;
   /** Jira board name / Azure DevOps team name. */
   name: string;
-  /** Jira: "scrum" | "kanban" | "simple"; Azure DevOps: null. */
+  /** Jira: "scrum" | "kanban" | "simple"; Azure DevOps and GitHub: null. */
   type?: string | null;
+  /** GitHub: the project's number. */
+  number?: number | null;
+  /** GitHub: the project's page. */
+  url?: string | null;
+}
+
+/** GitHub: a single-select field of a project and its option names. */
+export interface TrackerField {
+  id: string;
+  name: string;
+  options: string[];
 }
 
 export interface TrackerEpic {
@@ -2752,6 +2782,10 @@ export interface TrackerQueryResult {
   sample?: TrackerTicketPreview[] | null;
   /** The JQL / WIQL the preview actually ran. */
   effectiveQuery?: string | null;
+  /** GitHub: the project's single-select fields. */
+  fields?: TrackerField[] | null;
+  /** GitHub: the repositories ("owner/name") whose issues are on the project. */
+  repositories?: string[] | null;
 }
 
 /** supported=false = the caller's runner could not answer (offline or too old) — not an error. */
@@ -2779,7 +2813,10 @@ export interface AddTrackerConnectionRequest {
   site: string;
   /** Jira only: the Atlassian account email. */
   email?: string;
+  /** Empty for a GitHub connection that uses the gh login. */
   token: string;
+  /** GitHub only: "gh" (default) or "token". */
+  authMode?: TrackerAuthMode;
 }
 
 /** supported=false: the runner is offline or too old. ok=false: the tracker refused (error says why). */
@@ -2873,6 +2910,10 @@ export interface ProjectTrackerConfig {
   boardId?: string | null;
   /** The board's name (the team's name in Azure DevOps). */
   boardName?: string | null;
+  /** GitHub: the single-select field holding the status; null = "Status". */
+  statusField?: string | null;
+  /** GitHub: only issues from these repositories ("owner/name"); empty = every repository. */
+  repoFilter?: string[];
 }
 
 /** PUT /api/projects/{id}/tracker — the caller becomes the owner and must own the connection. */
@@ -2886,9 +2927,13 @@ export interface SaveProjectTrackerRequest {
   intakeStatuses?: string[];
   defaultRepoId?: string | null;
   storyMode?: number;
-  /** Null / empty = every board in the scope. */
+  /** Null / empty = every board in the scope. Required for GitHub (the project). */
   boardId?: string | null;
   boardName?: string | null;
+  /** GitHub: the single-select field holding the status; null = "Status". */
+  statusField?: string | null;
+  /** GitHub: only issues from these repositories ("owner/name"); empty = every repository. */
+  repoFilter?: string[];
   extraClause?: string | null;
   includeDescendants?: boolean;
   autoSubmit?: boolean;

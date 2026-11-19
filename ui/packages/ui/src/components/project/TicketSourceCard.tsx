@@ -16,6 +16,7 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { useClientApi } from "@/hooks/use-client-api";
 import { api, extractErrorMessage } from "@/lib/api";
 import {
+  GITHUB_DEFAULT_STATUS_FIELD,
   TRACKER_DEFAULT_BRANCH_TEMPLATE,
   TRACKER_DEFAULT_INTAKE_STATUSES,
   TRACKER_DEFAULT_POLL_SECONDS,
@@ -37,6 +38,7 @@ import type {
   TrackerConnection,
   TrackerDefaults,
   TrackerEpic,
+  TrackerField,
   TrackerQueryRequest,
   TrackerQueryResult,
   TrackerRoutingRuleKind,
@@ -134,8 +136,16 @@ function ToggleRow({
   );
 }
 
+/** The tracker a connection talks to; anything unknown reads as Jira, the first one. */
+function trackerKindOf(kind: string | null | undefined): "jira" | "ado" | "github" {
+  return kind === "ado" ? "ado" : kind === "github" ? "github" : "jira";
+}
+
 /**
- * A project's "Ticket source": which of the viewer's Jira / Azure DevOps connections feeds it,
+ * A project's "Ticket source": which of the viewer's Jira / Azure DevOps / GitHub connections
+ * feeds it. For GitHub the scope is an owner (an organization or the viewer) and the board is
+ * one of its Projects — required, with the single-select field that holds the status and an
+ * optional repository filter;
  * which tickets are picked up (everything assigned to the viewer in an intake status, or only
  * some epics'), and which repository each ticket is worked in. Everything browsable here
  * (projects, epics, statuses, the preview) is answered by the viewer's own runner — the token
@@ -169,13 +179,19 @@ export function TicketSourceCard({
     return connections[0]?.id ?? "";
   });
   const connection = connections.find((c) => c.id === connectionId) ?? null;
-  const kind = connection?.kind === "ado" ? "ado" : "jira";
+  const kind = trackerKindOf(connection?.kind);
+  const isGitHub = kind === "github";
   const ruleKinds = routingRuleKindsFor(kind);
 
   const [scope, setScope] = useState(initialConfig?.scope ?? "");
   // "" = the whole project (every board).
   const [boardId, setBoardId] = useState(initialConfig?.boardId ?? "");
   const [boardName, setBoardName] = useState(initialConfig?.boardName ?? "");
+  // GitHub: the single-select field the status lives in, and the repositories intake keeps.
+  const [statusField, setStatusField] = useState(
+    initialConfig?.statusField || GITHUB_DEFAULT_STATUS_FIELD
+  );
+  const [repoFilter, setRepoFilter] = useState<string[]>(() => [...(initialConfig?.repoFilter ?? [])]);
   const [scopeMode, setScopeMode] = useState<TrackerScopeMode>(initialConfig?.scopeMode ?? "All");
   const [intakeStatuses, setIntakeStatuses] = useState<string[]>(
     initialConfig?.intakeStatuses?.length ? initialConfig.intakeStatuses : [...TRACKER_DEFAULT_INTAKE_STATUSES]
@@ -206,6 +222,8 @@ export function TicketSourceCard({
   const [scopes, setScopes] = useState<TrackerScope[]>([]);
   const [boards, setBoards] = useState<TrackerBoard[]>([]);
   const [statuses, setStatuses] = useState<TrackerStatus[]>([]);
+  const [fields, setFields] = useState<TrackerField[]>([]);
+  const [projectRepos, setProjectRepos] = useState<string[]>([]);
   const [epicSearch, setEpicSearch] = useState("");
   const [epicResults, setEpicResults] = useState<TrackerEpic[] | null>(null);
   const [preview, setPreview] = useState<TrackerQueryResult | null>(null);
@@ -273,13 +291,34 @@ export function TicketSourceCard({
     };
   }, [connectionId, scope, query]);
 
-  // Statuses (intake + status sync) follow the scope, and bring the defaults with them: a new
-  // source takes them whole; a saved one only fills a Developing / PR-opened step left empty
-  // (the steps the first version of the status map already moved).
+  // GitHub: the project's single-select fields and the repositories on it follow the project.
   useEffect(() => {
-    if (!connectionId || !scope) return;
+    if (!connectionId || !isGitHub || !scope || !boardId) return;
     let cancelled = false;
-    void query({ kind: "statuses", scope }).then((answer) => {
+    void query({ kind: "fields", scope, boardId, boardName: boardName || undefined }).then((answer) => {
+      if (!cancelled && answer?.result.ok) setFields(answer.result.fields ?? []);
+    });
+    void query({ kind: "repos", scope, boardId, boardName: boardName || undefined }).then((answer) => {
+      if (!cancelled && answer?.result.ok) setProjectRepos(answer.result.repositories ?? []);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [connectionId, isGitHub, scope, boardId, boardName, query]);
+
+  // Statuses (intake + status sync) follow the scope — for GitHub the project's status field —
+  // and bring the defaults with them: a new source takes them whole; a saved one only fills a
+  // Developing / PR-opened step left empty (the steps the first version of the map moved).
+  // Only GitHub's statuses depend on the project and the field; Jira / ADO ask once per scope.
+  const statusesBoard = isGitHub ? boardId : "";
+  const statusesField = isGitHub ? statusField || GITHUB_DEFAULT_STATUS_FIELD : "";
+  useEffect(() => {
+    if (!connectionId || !scope || (isGitHub && !statusesBoard)) return;
+    let cancelled = false;
+    const request: TrackerQueryRequest = isGitHub
+      ? { kind: "statuses", scope, boardId: statusesBoard, statusField: statusesField }
+      : { kind: "statuses", scope };
+    void query(request).then((answer) => {
       if (cancelled || !answer?.result.ok) return;
       setStatuses(answer.result.statuses ?? []);
       const defaults = answer.defaults;
@@ -298,12 +337,12 @@ export function TicketSourceCard({
     return () => {
       cancelled = true;
     };
-  }, [connectionId, scope, query, startedNew]);
+  }, [connectionId, scope, isGitHub, statusesBoard, statusesField, query, startedNew]);
 
-  // Epic search, debounced on the typed text.
+  // Epic search, debounced on the typed text. GitHub has no epics.
   useEffect(() => {
     const text = epicSearch.trim();
-    if (!connectionId || !scope || !text) return;
+    if (!connectionId || !scope || !text || isGitHub) return;
     let cancelled = false;
     const timer = setTimeout(() => {
       void query({ kind: "epics", scope, search: text }).then((answer) => {
@@ -314,7 +353,7 @@ export function TicketSourceCard({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [connectionId, scope, epicSearch, query]);
+  }, [connectionId, scope, epicSearch, isGitHub, query]);
 
   // ── Validation (mirrors the server's SaveProjectTrackerValidator) ──
   const pollSeconds = Number(pollText);
@@ -325,6 +364,7 @@ export function TicketSourceCard({
     const list: string[] = [];
     if (!connection) list.push(t("errors.connection"));
     if (!scope.trim()) list.push(t("errors.scope"));
+    if (isGitHub && !boardId) list.push(t("errors.project"));
     if (intakeStatuses.length === 0) list.push(t("errors.intake"));
     if (scopeMode === "Epics" && rows.length === 0) list.push(t("errors.noEpics"));
     if (duplicates.length > 0) list.push(t("errors.duplicateEpic"));
@@ -337,6 +377,8 @@ export function TicketSourceCard({
   }, [
     connection,
     scope,
+    isGitHub,
+    boardId,
     intakeStatuses.length,
     scopeMode,
     rows.length,
@@ -375,11 +417,28 @@ export function TicketSourceCard({
     setRules((prev) => prev.map((r, i) => (i === index ? { ...r, ...patch } : r)));
   }
 
-  /** A board belongs to one scope (and one connection): changing either forgets it. */
+  /** A board belongs to one scope (and one connection): changing either forgets it — and with
+   * a GitHub project, its fields, repositories and the repository filter. */
   function clearBoard() {
     setBoards([]);
     setBoardId("");
     setBoardName("");
+    clearProjectDetails();
+  }
+
+  function clearProjectDetails() {
+    setFields([]);
+    setProjectRepos([]);
+    setRepoFilter([]);
+  }
+
+  function toggleRepoFilter(name: string) {
+    setRepoFilter((prev) =>
+      prev.some((r) => r.toLowerCase() === name.toLowerCase())
+        ? prev.filter((r) => r.toLowerCase() !== name.toLowerCase())
+        : [...prev, name]
+    );
+    setPreview(null);
   }
 
   function toggleIntake(name: string) {
@@ -402,22 +461,65 @@ export function TicketSourceCard({
   async function runPreview() {
     setBusy("preview");
     setPreview(null);
-    const answer = await query({
-      kind: "preview",
-      scope,
-      scopeMode,
-      intakeStatuses,
-      epicKeys: scopeMode === "Epics" ? rows.map((r) => r.epicKey) : undefined,
-      extraClause: extraClause.trim() || undefined,
-      includeDescendants,
-      boardId: boardId || undefined,
-      boardName: boardId ? boardName || undefined : undefined,
-    });
+    const answer = await query(
+      isGitHub
+        ? {
+            kind: "preview",
+            scope,
+            scopeMode: "All",
+            intakeStatuses,
+            boardId: boardId || undefined,
+            boardName: boardId ? boardName || undefined : undefined,
+            statusField: statusField || GITHUB_DEFAULT_STATUS_FIELD,
+            repoFilter,
+          }
+        : {
+            kind: "preview",
+            scope,
+            scopeMode,
+            intakeStatuses,
+            epicKeys: scopeMode === "Epics" ? rows.map((r) => r.epicKey) : undefined,
+            extraClause: extraClause.trim() || undefined,
+            includeDescendants,
+            boardId: boardId || undefined,
+            boardName: boardId ? boardName || undefined : undefined,
+          }
+    );
     setPreview(answer?.result.ok ? answer.result : null);
     setBusy(null);
   }
 
   function buildRequest(): SaveProjectTrackerRequest {
+    if (isGitHub) {
+      return {
+        trackerConnectionId: connectionId,
+        scope: scope.trim(),
+        scopeMode: "All",
+        epics: [],
+        routingRules: rules.map((r) => ({
+          kind: r.kind,
+          value: r.value.trim(),
+          repoId: r.repoId,
+          subpath: normalizeTrackerSubpath(r.subpath).normalized,
+        })),
+        intakeStatuses,
+        defaultRepoId: defaultRepoId || null,
+        storyMode: storyMode ? 1 : 0,
+        boardId: boardId || null,
+        boardName: boardId ? boardName || null : null,
+        statusField: statusField.trim() || null,
+        repoFilter,
+        extraClause: null,
+        includeDescendants: false,
+        autoSubmit,
+        pollIntervalSeconds: pollSeconds,
+        statusMap: Object.fromEntries(
+          TRACKER_STATUS_STEPS.map((step) => [step, statusMap[step] || null])
+        ) as TrackerStatusMap,
+        branchTemplate: branchTemplate.trim() || null,
+        enabled,
+      };
+    }
     return {
       trackerConnectionId: connectionId,
       scope: scope.trim(),
@@ -505,6 +607,15 @@ export function TicketSourceCard({
     if (!intakeOptions.some((o) => o.toLowerCase() === value.toLowerCase())) intakeOptions.push(value);
   }
   const repoName = (id: string) => repos.find((r) => r.id === id)?.name ?? id;
+  const kindLabel = (k: string) => tTrackers(`kind.${trackerKindOf(k)}`);
+  const fieldOptions: TrackerField[] =
+    statusField && !fields.some((f) => f.name === statusField)
+      ? [{ id: statusField, name: statusField, options: [] }, ...fields]
+      : fields;
+  const repoFilterOptions = [...projectRepos];
+  for (const value of repoFilter) {
+    if (!repoFilterOptions.some((o) => o.toLowerCase() === value.toLowerCase())) repoFilterOptions.push(value);
+  }
 
   return (
     <GlassCard padding="lg" id="ticket-source" data-testid="ticket-source-card">
@@ -574,7 +685,7 @@ export function TicketSourceCard({
               {connections.map((c) => (
                 <option key={c.id} value={c.id}>
                   {t("connectionOption", {
-                    kind: c.kind === "ado" ? tTrackers("kind.ado") : tTrackers("kind.jira"),
+                    kind: kindLabel(c.kind),
                     site: trackerSiteLabel(c.siteUrl),
                     machine: c.machineName,
                   })}
@@ -653,43 +764,113 @@ export function TicketSourceCard({
             ))}
           </Select>
 
-          {/* Board — narrows intake to one board of the scope (a Jira board, an ADO team) */}
+          {/* Board — narrows intake to one board of the scope (a Jira board, an ADO team); for
+              GitHub it is the Project the tickets come from, and required */}
           <Select
-            label={t("boardLabel")}
-            hint={t("boardHint")}
+            label={isGitHub ? t("projectLabel") : t("boardLabel")}
+            hint={isGitHub ? t("projectHint") : t("boardHint")}
             value={boardId}
             disabled={!scope}
             onChange={(e) => {
               const picked = boardOptions.find((b) => b.id === e.target.value);
               setBoardId(picked?.id ?? "");
               setBoardName(picked?.name ?? "");
+              clearProjectDetails();
+              setStatuses([]);
               setPreview(null);
             }}
             data-testid="ticket-source-board"
           >
-            <option value="">{t("boardWhole")}</option>
+            <option value="">{isGitHub ? t("projectPlaceholder") : t("boardWhole")}</option>
             {boardOptions.map((b) => (
               <option key={b.id} value={b.id}>
-                {kind === "ado" ? t("boardOptionAdo", { team: b.name }) : b.name}
+                {kind === "ado"
+                  ? t("boardOptionAdo", { team: b.name })
+                  : isGitHub && b.number != null
+                    ? t("projectOption", { number: b.number, title: b.name })
+                    : b.name}
               </option>
             ))}
           </Select>
 
+          {isGitHub && (
+            <div className="space-y-4" data-testid="ticket-source-github">
+              <Select
+                label={t("statusFieldLabel")}
+                hint={t("statusFieldHint")}
+                value={statusField}
+                disabled={!boardId}
+                onChange={(e) => {
+                  setStatusField(e.target.value || GITHUB_DEFAULT_STATUS_FIELD);
+                  setStatuses([]);
+                  setPreview(null);
+                }}
+                data-testid="ticket-source-status-field"
+              >
+                {fieldOptions.length === 0 && (
+                  <option value={GITHUB_DEFAULT_STATUS_FIELD}>{GITHUB_DEFAULT_STATUS_FIELD}</option>
+                )}
+                {fieldOptions.map((f) => (
+                  <option key={f.id} value={f.name}>
+                    {f.options.length > 0
+                      ? t("statusFieldOption", { name: f.name, count: f.options.length })
+                      : f.name}
+                  </option>
+                ))}
+              </Select>
+              <div className="space-y-1.5" data-testid="ticket-source-repo-filter">
+                <p className="text-xs text-gray-300">{t("repoFilterLabel")}</p>
+                {repoFilterOptions.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {repoFilterOptions.map((name) => {
+                      const selected = repoFilter.some((r) => r.toLowerCase() === name.toLowerCase());
+                      return (
+                        <button
+                          key={name}
+                          type="button"
+                          aria-pressed={selected}
+                          onClick={() => toggleRepoFilter(name)}
+                          className={cn(
+                            "rounded-full border px-2.5 py-1 font-mono text-xs transition-colors",
+                            selected
+                              ? "border-primary-500/50 bg-primary-500/15 text-primary-200"
+                              : "border-white/[0.08] bg-white/[0.02] text-gray-400 hover:text-gray-200"
+                          )}
+                        >
+                          {name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+                <p className="text-xs text-gray-400">
+                  {repoFilter.length === 0 ? t("repoFilterAll") : t("repoFilterSome", { count: repoFilter.length })}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Which tickets */}
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-gray-100">{t("whichTickets")}</h3>
-            <SegmentedControl<TrackerScopeMode>
-              aria-label={t("whichTickets")}
-              value={scopeMode}
-              onChange={(mode) => {
-                setScopeMode(mode);
-                setPreview(null);
-              }}
-              options={[
-                { value: "All", label: t("scopeMode.All"), testId: "ticket-source-mode-all" },
-                { value: "Epics", label: t("scopeMode.Epics"), testId: "ticket-source-mode-epics" },
-              ]}
-            />
+            {isGitHub ? (
+              <p className="text-xs text-gray-400" data-testid="ticket-source-github-intake-hint">
+                {t("githubIntakeHint")}
+              </p>
+            ) : (
+              <SegmentedControl<TrackerScopeMode>
+                aria-label={t("whichTickets")}
+                value={scopeMode}
+                onChange={(mode) => {
+                  setScopeMode(mode);
+                  setPreview(null);
+                }}
+                options={[
+                  { value: "All", label: t("scopeMode.All"), testId: "ticket-source-mode-all" },
+                  { value: "Epics", label: t("scopeMode.Epics"), testId: "ticket-source-mode-epics" },
+                ]}
+              />
+            )}
             <div className="space-y-1.5" data-testid="ticket-source-intake">
               <p className="text-xs text-gray-300">{t("intakeLabel")}</p>
               <div className="flex flex-wrap gap-1.5">
@@ -719,7 +900,8 @@ export function TicketSourceCard({
             </div>
           </div>
 
-          {/* Epics */}
+          {/* Epics (GitHub has none) */}
+          {!isGitHub && (
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-gray-100">{t("epicsTitle")}</h3>
             <p className="text-xs text-gray-400">
@@ -811,12 +993,13 @@ export function TicketSourceCard({
               </div>
             )}
           </div>
+          )}
 
           {/* Routing */}
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-gray-100">{t("routingTitle")}</h3>
             <p className="text-xs text-gray-400" data-testid="ticket-source-routing-hint">
-              {t("routingHint")}
+              {isGitHub ? t("routingHintGithub") : t("routingHint")}
             </p>
             {rules.length > 0 && (
               <ol className="space-y-2" data-testid="ticket-source-rules">
@@ -937,6 +1120,7 @@ export function TicketSourceCard({
                 busy !== null ||
                 !connection ||
                 !scope ||
+                (isGitHub && !boardId) ||
                 intakeStatuses.length === 0 ||
                 (scopeMode === "Epics" && rows.length === 0)
               }
@@ -1085,23 +1269,27 @@ export function TicketSourceCard({
                   className="font-mono text-xs"
                 />
               </div>
-              <div className="space-y-1">
-                <Textarea
-                  label={t(`extraClauseLabel.${kind}`)}
-                  value={extraClause}
-                  onChange={(e) => setExtraClause(e.target.value)}
-                  rows={2}
-                  className="font-mono text-xs"
-                />
-                <p className="text-xs text-gray-400">{t("extraClauseHint")}</p>
-              </div>
-              <ToggleRow
-                label={t("includeDescendants")}
-                hint={t("includeDescendantsHint")}
-                checked={includeDescendants}
-                onChange={setIncludeDescendants}
-                disabled={!canManage}
-              />
+              {!isGitHub && (
+                <>
+                  <div className="space-y-1">
+                    <Textarea
+                      label={t(`extraClauseLabel.${kind}`)}
+                      value={extraClause}
+                      onChange={(e) => setExtraClause(e.target.value)}
+                      rows={2}
+                      className="font-mono text-xs"
+                    />
+                    <p className="text-xs text-gray-400">{t("extraClauseHint")}</p>
+                  </div>
+                  <ToggleRow
+                    label={t("includeDescendants")}
+                    hint={t("includeDescendantsHint")}
+                    checked={includeDescendants}
+                    onChange={setIncludeDescendants}
+                    disabled={!canManage}
+                  />
+                </>
+              )}
             </div>
           </details>
 
