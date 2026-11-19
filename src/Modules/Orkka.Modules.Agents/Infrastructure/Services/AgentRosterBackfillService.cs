@@ -25,7 +25,7 @@ internal sealed class AgentRosterBackfillService(
         {
             using var scope = scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AgentsDbContext>();
-            var providerReadiness = scope.ServiceProvider.GetRequiredService<IProviderReadiness>();
+            var workspaceProvider = scope.ServiceProvider.GetRequiredService<IWorkspaceAiProviderResolver>();
             var catalog = await scope.ServiceProvider
                 .GetRequiredService<IModelCatalog>().GetAsync(stoppingToken);
 
@@ -34,14 +34,26 @@ internal sealed class AgentRosterBackfillService(
                 .Select(a => new { a.ProjectId, a.OrgId, a.Role })
                 .ToListAsync(stoppingToken);
 
-            var provider = providerReadiness.PreferredProvider();
             var toppedUp = 0;
+            // The provider is per workspace (its AI provider choice + its runner), resolved once
+            // per workspace that actually needs a top-up.
+            var providers = new Dictionary<Ulid, AiProvider>();
 
             foreach (var project in rows.GroupBy(r => new { r.ProjectId, r.OrgId }))
             {
+                var roles = project.Select(r => r.Role).ToList();
+                if (AgentSeeder.Specialists.All(s => roles.Contains(s.Role)))
+                    continue;
+
+                if (!providers.TryGetValue(project.Key.OrgId, out var provider))
+                {
+                    provider = (await workspaceProvider.ResolveAsync(
+                        project.Key.OrgId, userId: null, stoppingToken)).Provider;
+                    providers[project.Key.OrgId] = provider;
+                }
+
                 var missing = AgentSeeder.CreateMissingSpecialists(
-                    project.Key.OrgId, project.Key.ProjectId,
-                    project.Select(r => r.Role).ToList(), provider, catalog);
+                    project.Key.OrgId, project.Key.ProjectId, roles, provider, catalog);
 
                 if (missing.Count == 0)
                     continue;

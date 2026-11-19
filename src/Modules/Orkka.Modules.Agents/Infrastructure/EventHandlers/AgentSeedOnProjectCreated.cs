@@ -11,16 +11,17 @@ using Orkka.SharedKernel.Events.Catalog;
 // Idempotent: a republished event only tops up missing roles.
 internal sealed class AgentSeedOnProjectCreated(
     AgentsDbContext db,
-    IProviderReadiness providerReadiness,
+    IWorkspaceAiProviderResolver workspaceProvider,
     IModelCatalog modelCatalog,
     ILogger<AgentSeedOnProjectCreated> logger) : IIntegrationEventHandler<ProjectCreated>
 {
     public async Task HandleAsync(ProjectCreated evt, CancellationToken ct)
     {
-        // Seed models from the preferred connected provider so a codex-only or
-        // gemini-only user gets a pod that can run. Hosted (always-ready default) and
-        // claude-connected local both resolve to Anthropic — today's exact models.
-        var provider = providerReadiness.PreferredProvider();
+        // Seed models from the workspace's provider: its AI provider choice when the creator's
+        // runner can run it (Copilot → copilot/auto on every tier), else the Automatic pick —
+        // Claude when it can run or nothing is known yet, else the first signed-in provider, so
+        // a codex-only or gemini-only developer gets a pod that can run. QA stays on Claude.
+        var provider = (await workspaceProvider.ResolveAsync(evt.OrgId, evt.CreatedByUserId, ct)).Provider;
         var catalog = await modelCatalog.GetAsync(ct);
 
         var existingRoles = await db.ProjectAgents

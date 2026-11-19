@@ -12,10 +12,11 @@ using Orkka.SharedKernel.Ai;
 /// own subscription, $0 — the only place customer utility calls run (there is no platform-key
 /// fallback).
 ///
-/// Provider-transparent: delegates to <see cref="RunnerAnthropicClient"/>, which runs on
-/// Claude when the runner has it and otherwise tier-maps onto the first connected provider
-/// (codex, gemini, copilot…) — a GPT-only or Copilot-only machine serves these calls just
-/// like a Claude one. A runner with NO authenticated provider is a miss.
+/// Provider-transparent: delegates to <see cref="RunnerAnthropicClient"/>, which runs on the
+/// workspace's chosen AI provider when the runner has it, else on Claude when the runner has
+/// it, and otherwise tier-maps onto the first connected provider (codex, gemini, copilot…) — a
+/// GPT-only or Copilot-only machine serves these calls just like a Claude one. A runner with
+/// NO authenticated provider is a miss.
 ///
 /// Every miss returns null, never throws — the caller takes its runner-offline path; a
 /// dependency analysis must not crash because a laptop lid closed mid-call.
@@ -43,8 +44,13 @@ public sealed class RunnerLinkUtility(
             // per call is cheap next to a model generation.
             await using var scope = scopeFactory.CreateAsyncScope();
             var catalog = scope.ServiceProvider.GetService<IModelCatalog>();
+            // The workspace's AI provider choice (Settings → Workspace): a Copilot workspace
+            // runs its titles and plans on Copilot too, when the runner has it signed in.
+            var workspaceChoice = scope.ServiceProvider.GetService<IWorkspaceAiProviderResolver>() is { } choices
+                ? await choices.GetChosenAsync(orgId, ct)
+                : null;
 
-            var client = new RunnerAnthropicClient(link, readiness, catalog);
+            var client = new RunnerAnthropicClient(link, readiness, catalog, workspaceChoice);
             return await client.CreateMessageAsync(request, ct);
         }
         catch (OperationCanceledException)

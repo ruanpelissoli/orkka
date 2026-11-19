@@ -29,6 +29,8 @@ public static class OrganizationsModuleExtensions
         services.AddScoped<IOrgMembershipService, OrgMembershipService>();
         // Org API keys (public REST + MCP): validated during authentication, before tenant context.
         services.AddScoped<IOrgApiKeyValidator, PublicApi.OrgApiKeyValidator>();
+        // The workspace's AI provider choice, read by agent seeding and system-picked work.
+        services.AddScoped<IWorkspaceAiSettings, WorkspaceAiSettings>();
 
         services.AddMemoryCache();
 

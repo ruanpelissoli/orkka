@@ -63,46 +63,16 @@ public sealed class SetAgentsModelEndpoint(
             ThrowError($"'{model}' is not a model you can pick.");
             return;
         }
-        // Store the catalog's own spelling, so ids compare equal everywhere downstream.
-        model = catalog.Find(model)?.ModelId ?? model;
-        var supportsMcp = catalog.SupportsMcp(model);
 
         var agents = await db.ProjectAgents
             .Where(a => a.ProjectId == projectId && a.OrgId == currentUser.OrgId)
             .ToListAsync(ct);
 
-        var changed = new List<(ProjectAgentSnapshot Agent, string From)>();
-        var unchanged = 0;
-        var skippedQa = 0;
-        foreach (var agent in agents)
-        {
-            if (agent.Role == AgentRole.QA && !supportsMcp)
-            {
-                skippedQa++;
-                continue;
-            }
-            if (string.Equals(agent.Model, model, StringComparison.Ordinal))
-            {
-                unchanged++;
-                continue;
-            }
+        var result = await AgentModelBulkUpdate.ApplyAsync(
+            db, audit, catalog, currentUser.OrgId, currentUser.UserId, agents,
+            _ => model, "team-wide model change", ct);
 
-            changed.Add((new ProjectAgentSnapshot(agent.Id, agent.Name, agent.Role), agent.Model));
-            agent.Model = model;
-        }
-
-        if (changed.Count > 0)
-            await db.SaveChangesAsync(ct);
-
-        foreach (var (agent, from) in changed)
-            await audit.RecordAsync(AgentAuditRecord.ByUser(
-                currentUser.OrgId, currentUser.UserId, AgentAuditEventType.AgentConfigChanged,
-                $"Agent \"{agent.Name}\" ({agent.Role}) reconfigured by {currentUser.UserId}: Model (team-wide model change)",
-                projectId: projectId, agentId: agent.Id,
-                metadata: new { changed = new { Model = new { from, to = model } }, bulk = true }), ct);
-
-        await Send.OkAsync(new SetAgentsModelResponse(changed.Count, unchanged, skippedQa), ct);
+        await Send.OkAsync(new SetAgentsModelResponse(
+            result.UpdatedCount, result.UnchangedCount, result.SkippedQaCount), ct);
     }
-
-    private sealed record ProjectAgentSnapshot(Ulid Id, string Name, AgentRole Role);
 }

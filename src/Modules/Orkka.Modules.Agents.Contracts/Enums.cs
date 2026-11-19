@@ -147,6 +147,9 @@ public enum AgentAuditEventType
     /// <summary>A tracker connection was added or removed from the settings page (kind and site
     /// only — never the token, which goes straight to the developer's machine).</summary>
     TrackerConnectionChanged,
+    /// <summary>A workspace-wide setting was changed (metadata: the setting, from, to — e.g. the
+    /// AI provider new teams are seeded on).</summary>
+    WorkspaceSettingsChanged,
 }
 
 public enum DesignAssetStatus
