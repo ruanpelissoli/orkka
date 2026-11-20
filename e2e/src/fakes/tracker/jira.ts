@@ -40,6 +40,8 @@ export interface JiraIssue {
   components: string[];
   /** "me" = the token's owner (currentUser()); any other string is someone else; null = unassigned. */
   assignee: string | null;
+  /** Keys this issue "is blocked by" (a "Blocks" link with this issue on its inward side). */
+  blockedBy: string[];
   updated: Date;
   comments: FakeComment[];
   attachments: FakeAttachment[];
@@ -147,6 +149,7 @@ export class FakeJira {
       parent: seed.parent?.toUpperCase() ?? null,
       components: seed.components ?? [],
       assignee: seed.assignee === undefined ? (seed.type === "Epic" ? null : "me") : seed.assignee,
+      blockedBy: (seed.blockedBy ?? []).map((k) => k.toUpperCase()),
       updated: new Date(),
       comments: [],
       attachments: [],
@@ -358,6 +361,16 @@ export class FakeJira {
         .map((c) => ({ id: c.id, key: c.key, fields: { summary: c.summary, status: { name: c.status, statusCategory: this.category(c.status) }, issuetype: this.typeJson(c.type) } }));
     }
     if (want("assignee")) f.assignee = this.assigneeJson(i.assignee);
+    // Jira lists a link on both issues: "is blocked by" on this one (inwardIssue), "blocks" on the blocker.
+    if (want("issuelinks")) {
+      const blocks = { id: "10000", name: "Blocks", inward: "is blocked by", outward: "blocks" };
+      f.issuelinks = [
+        ...i.blockedBy.map((k, n) => ({ id: `link-${i.id}-${n}`, type: blocks, inwardIssue: { key: k } })),
+        ...[...this.issues.values()]
+          .filter((o) => o.blockedBy.includes(i.key))
+          .map((o) => ({ id: `link-${o.id}-out`, type: blocks, outwardIssue: { key: o.key } })),
+      ];
+    }
     if (want("components")) f.components = i.components.map((name, n) => ({ id: String(10100 + n), name }));
     if (want("attachment")) {
       f.attachment = i.attachments.map((a) => ({

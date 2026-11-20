@@ -75,8 +75,56 @@ internal static class BoardBuilder
             })
             .ToList();
 
-        return new TaskBoardResponse(lanes);
+        return new TaskBoardResponse(lanes, await StoriesAsync(db, rows, ct));
     }
+
+    /// <summary>The Stories the board's cards belong to, in the order their first card appears.</summary>
+    internal static async Task<List<BoardStoryResponse>> StoriesAsync(
+        TasksDbContext db, IReadOnlyList<BoardTaskRow> rows, CancellationToken ct)
+    {
+        var groupIds = rows.Where(r => r.StoryKey is not null && r.GroupId is not null)
+            .Select(r => r.GroupId!.Value)
+            .Distinct()
+            .ToList();
+        if (groupIds.Count == 0)
+            return [];
+
+        var groups = await db.TaskGroups
+            .AsNoTracking()
+            .Where(g => groupIds.Contains(g.Id) && g.Kind == TaskGroupKind.Story)
+            .Select(g => new
+            {
+                g.Id,
+                g.ProjectId,
+                g.ExternalKey,
+                g.Title,
+                g.ExternalUrl,
+                g.BranchName,
+                g.ReadyAt,
+                g.Status,
+                Members = g.Tasks.Count(t => !t.IsArchived),
+                Done = g.Tasks.Count(t => !t.IsArchived && (t.Status == Contracts.TaskStatus.Completed || t.IsMerged)),
+                Branches = g.Branches
+                    .Where(b => b.ForgePrUrl != null)
+                    .Select(b => new BoardStoryPullRequest(b.RepoId, b.ForgePrUrl!, b.ForgePrDraft, b.ForgeState))
+                    .ToList(),
+            })
+            .ToDictionaryAsync(g => g.Id, ct);
+
+        return [.. groupIds
+            .Where(groups.ContainsKey)
+            .Select(id => groups[id])
+            .Select(g => new BoardStoryResponse(
+                g.Id, g.ProjectId, g.ExternalKey, StoryTitle(g.Title, g.ExternalKey), g.ExternalUrl, g.BranchName,
+                g.Members, g.Done, g.ReadyAt, g.Status.ToString(), g.Branches))];
+    }
+
+    /// <summary>A Story group is titled like its tracker task ("[SHOP-10] Checkout"); the
+    /// swimlane shows the key on its own.</summary>
+    internal static string StoryTitle(string title, string? key)
+        => key is not null && title.StartsWith($"[{key}] ", StringComparison.OrdinalIgnoreCase)
+            ? title[(key.Length + 3)..]
+            : title;
 
     /// <summary>
     /// Cards for board rows, in the rows' order. <paramref name="projects"/> must hold every row's

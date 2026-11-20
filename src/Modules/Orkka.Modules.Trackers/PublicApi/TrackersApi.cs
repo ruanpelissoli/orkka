@@ -313,8 +313,11 @@ internal sealed partial class TrackersApi(
         // (PlanIntake). Stories first: a Story and its sub-tasks arrive in one report in any
         // order, and a sub-task must become a member of its Story rather than a task of its own.
         var intakeStatuses = Features.ProjectConfig.ProjectTrackerMappers.ParseIntakeStatuses(config.IntakeStatusesJson);
-        var plan = PlanIntake(report.Tickets, links.Keys, intakeStatuses, config.StoryMode != 0);
         var stories = new StoryReport(report.Tickets, links, intakeStatuses);
+        // Tickets the developer asked for by key come first: imported whatever their status or
+        // assignee, so intake below sees them as linked.
+        created += await ProcessImportsAsync(router, stories, tracker, ct);
+        var plan = PlanIntake(report.Tickets, links.Keys, intakeStatuses, config.StoryMode != 0);
         if (config.StoryMode != 0)
             created += await IngestStoriesAsync(router, stories, plan.Stories, tracker, ct);
 
@@ -393,6 +396,9 @@ internal sealed partial class TrackersApi(
 
         await db.SaveChangesAsync(ct);
 
+        // After the save: the Tasks module writes through its own context.
+        await ReconcileDependenciesAsync(config, links, ct);
+
         if (created > 0)
             logger.LogInformation("Imported {Count} ticket(s) for source {ConfigId}", created, config.Id);
         return new TrackerReportAck(true);
@@ -411,6 +417,7 @@ internal sealed partial class TrackersApi(
         link.TicketUrl = ticket.Url;
         link.EpicKey = ticket.EpicKey ?? link.EpicKey;
         link.ParentKey = ticket.ParentKey ?? link.ParentKey;
+        ApplyHierarchy(link, ticket);
         if ((ticket.Status ?? ticket.Body?.Status) is { } status)
             link.RemoteStatus = Truncate(status, 200);
 
@@ -432,8 +439,9 @@ internal sealed partial class TrackersApi(
             await tasksApi.ReviveTrackerTaskAsync(link.TaskId,
                 $"{link.TicketKey} is assigned to you again in {tracker}.", ct);
         }
-        else if (link.AssignedToOwner && !ticket.AssignedToMe)
+        else if (link.AssignedToOwner && !ticket.AssignedToMe && !link.Pinned)
         {
+            // A pinned ticket (imported by hand) stays: the developer asked for it, whoever has it.
             link.AssignedToOwner = false;
             var outcome = await tasksApi.RetireTrackerTaskAsync(link.TaskId,
                 $"{link.TicketKey} was reassigned in {tracker} — it is no longer assigned to you.", ct);
@@ -542,6 +550,8 @@ internal sealed partial class TrackersApi(
             RemoteStatus = Truncate(ticket.Status ?? body.Status, 200),
             AttachmentsJson = JsonSerializer.Serialize(body.Attachments, Json),
             LastSeenAt = DateTimeOffset.UtcNow,
+            Level = ticket.Level,
+            BlockedByKeysJson = BlockedByJson(ticket),
         };
 
         var tracker = TrackerName(connection.Kind);

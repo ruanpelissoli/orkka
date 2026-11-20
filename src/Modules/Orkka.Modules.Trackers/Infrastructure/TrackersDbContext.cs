@@ -16,4 +16,5 @@ public sealed class TrackersDbContext(
     public DbSet<ProjectTrackerConfig> ProjectConfigs => Set<ProjectTrackerConfig>();
     public DbSet<TrackerEpicMapping> EpicMappings => Set<TrackerEpicMapping>();
     public DbSet<TicketLink> TicketLinks => Set<TicketLink>();
+    public DbSet<TrackerImport> Imports => Set<TrackerImport>();
 }

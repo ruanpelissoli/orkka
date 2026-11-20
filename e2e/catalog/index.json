@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-19T17:58:25.158Z",
+  "generatedAt": "2026-11-20T18:19:15.977Z",
   "counts": {
-    "total": 757,
+    "total": 763,
     "files": 38,
     "byArea": {
       "ONB": 4,
@@ -13,13 +13,13 @@
       "FRG": 13,
       "TSRC": 29,
       "TCLI": 15,
-      "BRD": 46,
+      "BRD": 47,
       "TSK": 52,
       "PLN": 16,
       "PR": 20,
       "RDK": 21,
       "SES": 15,
-      "TING": 30,
+      "TING": 34,
       "TWB": 15,
       "AIR": 7,
       "TEAM": 37,
@@ -32,7 +32,7 @@
       "DOC": 19,
       "ARC": 13,
       "REPO": 19,
-      "KEY": 18,
+      "KEY": 19,
       "AUD": 3,
       "RUN": 35,
       "SET": 32,
@@ -44,23 +44,23 @@
       "GRD": 8
     },
     "byAutomation": {
-      "planned": 676,
+      "planned": 682,
       "automated": 47,
       "manual": 33,
       "blocked": 1
     },
     "byPriority": {
-      "P1": 365,
-      "P2": 227,
-      "P0": 142,
+      "P1": 368,
+      "P2": 228,
+      "P0": 144,
       "P3": 23
     },
     "byMode": {
-      "all": 389,
+      "all": 391,
       "hybrid-repo": 227,
       "hybrid-folder": 64,
       "offline": 19,
-      "tracker": 90
+      "tracker": 94
     },
     "linkedToSpecs": 47
   },
@@ -157,6 +157,7 @@
       "GET /api/projects/{projectId}/tasks",
       "GET /api/projects/{projectId}/tasks/number/{number}",
       "GET /api/projects/{projectId}/tracker",
+      "GET /api/projects/{projectId}/tracker/import/{importId:ulid}",
       "GET /api/repos/{repoId}/pulls",
       "GET /api/repos/{repoId}/pulls/{number}",
       "GET /api/tasks/{id}",
@@ -242,6 +243,8 @@
       "POST /api/projects/{projectId}/task-groups/{id}/repo-requests",
       "POST /api/projects/{projectId}/tasks",
       "POST /api/projects/{projectId}/tasks/forecast",
+      "POST /api/projects/{projectId}/tracker/import",
+      "POST /api/projects/{projectId}/tracker/import/preview",
       "POST /api/projects/{projectId}/tracker/preview",
       "POST /api/repos/{repoId}/pulls/{number}/close",
       "POST /api/repos/{repoId}/pulls/{number}/comments",
@@ -390,6 +393,7 @@
       "forges",
       "fromFolder",
       "glossary",
+      "importTicket",
       "inbox",
       "interactiveSession",
       "localRepos",
@@ -4911,6 +4915,30 @@
       "tests": []
     },
     {
+      "id": "BRD-048",
+      "area": "BRD",
+      "title": "Group the board by Story: one collapsible swimlane per story",
+      "file": "catalog/20-board.md",
+      "line": 954,
+      "priority": "P1",
+      "modes": [
+        "all"
+      ],
+      "surface": [
+        "ui",
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/board",
+        "orkka-ui:/p/[projectId]/board",
+        "orkka-api:GET /api/board",
+        "i18n:boardPage"
+      ],
+      "since": "2026-11-20",
+      "tests": []
+    },
+    {
       "id": "TSK-001",
       "area": "TSK",
       "title": "Render the tasks list page with header, filter bar and list",
@@ -8434,6 +8462,102 @@
         "orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.cs"
       ],
       "since": "2026-11-19",
+      "tests": []
+    },
+    {
+      "id": "TING-031",
+      "area": "TING",
+      "title": "Only a story-level ticket with open sub-tasks is a Story; epics never import",
+      "file": "catalog/27-tracker-ingestion.md",
+      "line": 523,
+      "priority": "P0",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:POST /api/projects/{projectId}/tracker/preview",
+        "orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.Intake.cs",
+        "orkka-api:src/Orkka.LocalRunner.Contracts/TrackerContracts.cs"
+      ],
+      "since": "2026-11-20",
+      "tests": []
+    },
+    {
+      "id": "TING-032",
+      "area": "TING",
+      "title": "Tracker \"blocked by\" links become dependencies, or a note when outside Orkka",
+      "file": "catalog/27-tracker-ingestion.md",
+      "line": 543,
+      "priority": "P1",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "api",
+        "ui"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:GET /api/board",
+        "orkka-api:GET /api/tasks/{taskId}",
+        "orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.Dependencies.cs",
+        "orkka-api:src/Modules/Orkka.Modules.Tasks/PublicApi/TasksApi.TrackerDependencies.cs"
+      ],
+      "since": "2026-11-20",
+      "tests": []
+    },
+    {
+      "id": "TING-033",
+      "area": "TING",
+      "title": "Import a ticket by key: preview with sub-tasks, then a pinned Story or task",
+      "file": "catalog/27-tracker-ingestion.md",
+      "line": 565,
+      "priority": "P0",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "ui",
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-ui:/p/[projectId]/board",
+        "orkka-ui:/board",
+        "orkka-api:POST /api/projects/{projectId}/tracker/import/preview",
+        "orkka-api:POST /api/projects/{projectId}/tracker/import",
+        "orkka-api:GET /api/projects/{projectId}/tracker/import/{importId:ulid}",
+        "orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.Import.cs",
+        "i18n:importTicket"
+      ],
+      "since": "2026-11-20",
+      "tests": []
+    },
+    {
+      "id": "TING-034",
+      "area": "TING",
+      "title": "Import refusals: not this tracker's key, not found, an epic, not the owner, before Start",
+      "file": "catalog/27-tracker-ingestion.md",
+      "line": 595,
+      "priority": "P1",
+      "modes": [
+        "tracker"
+      ],
+      "surface": [
+        "ui",
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:POST /api/projects/{projectId}/tracker/import/preview",
+        "orkka-api:POST /api/projects/{projectId}/tracker/import",
+        "i18n:importTicket"
+      ],
+      "since": "2026-11-20",
       "tests": []
     },
     {
@@ -13769,6 +13893,26 @@
       "refs": [
         "orkka-api:POST /mcp"
       ],
+      "tests": []
+    },
+    {
+      "id": "KEY-030",
+      "area": "KEY",
+      "title": "MCP: preview and import a tracker ticket by key",
+      "file": "catalog/42-api-keys-mcp.md",
+      "line": 351,
+      "priority": "P2",
+      "modes": [
+        "all"
+      ],
+      "surface": [
+        "api"
+      ],
+      "automation": "planned",
+      "refs": [
+        "orkka-api:src/Modules/Orkka.Modules.Agents/Features/Mcp/OrkkaMcpToolServer.cs"
+      ],
+      "since": "2026-11-20",
       "tests": []
     },
     {

@@ -21,6 +21,8 @@ import type {
 import { LANES, LANE_KEYS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { LaneColumn } from "./LaneColumn";
+import { BoardSwimlanes } from "./BoardSwimlanes";
+import { buildStorySwimlanes, type BoardGroupBy } from "./story-swimlanes";
 import { laneLabel } from "./lane-label";
 import { TaskCard } from "./TaskCard";
 import { TaskDetailModal } from "./TaskDetailModal";
@@ -151,6 +153,22 @@ function TaskBoard({
     [milestoneFilter, epicFilter]
   );
 
+  // ── Group by ────────────────────────────────────────────────────────
+  // A view preference per board (this project's board, or the workspace board and its project
+  // filter), kept in the browser — not a project setting.
+  const boardScopeKey = isWorkspace ? `workspace:${workspaceProject ?? "all"}` : projectUlid;
+  const groupByKey = `orkka.board.groupBy:${boardScopeKey}`;
+  const [groupBy, setGroupBy] = useState<BoardGroupBy>(() =>
+    typeof window !== "undefined" && window.localStorage.getItem(groupByKey) === "story" ? "story" : "none"
+  );
+  useEffect(() => {
+    window.localStorage.setItem(groupByKey, groupBy);
+  }, [groupBy, groupByKey]);
+  const hasStories = useMemo(
+    () => (boardData.stories?.length ?? 0) > 0 || lanes.some((l) => l.tasks.some((t) => t.storyKey)),
+    [boardData.stories, lanes]
+  );
+
   // ── Metrics ─────────────────────────────────────────────────────────
   const [metricsWindow, setMetricsWindow] = useState<AgentStatsWindow>(
     initialMetrics?.window ?? "7d"
@@ -209,6 +227,11 @@ function TaskBoard({
         ? milestoneLanes
         : milestoneLanes.map((lane) => ({ ...lane, tasks: lane.tasks.filter(matchesFilters) })),
     [milestoneLanes, activeFilters, matchesFilters]
+  );
+
+  const swimlanes = useMemo(
+    () => (groupBy === "story" ? buildStorySwimlanes(displayLanes, boardData.stories) : []),
+    [groupBy, displayLanes, boardData.stories]
   );
 
   const shownCount = useMemo(
@@ -332,7 +355,8 @@ function TaskBoard({
       if (!over) return;
 
       const taskId = active.id as string;
-      const targetLane = over.id as string;
+      // A swimlane column's drop target is "{swimlane}:{lane}" and names its lane in its data.
+      const targetLane = (over.data.current?.laneKey as string | undefined) ?? (over.id as string);
 
       // Find which lane the task is currently in
       let sourceLane: string | null = null;
@@ -489,6 +513,20 @@ function TaskBoard({
               </Select>
             </div>
           )}
+          {(hasStories || groupBy !== "none") && (
+            <div className="shrink-0">
+              <Select
+                size="sm"
+                value={groupBy}
+                onChange={(e) => setGroupBy(e.target.value === "story" ? "story" : "none")}
+                aria-label={t("boardPage.groupBy")}
+                data-testid="board-group-by"
+              >
+                <option value="none">{t("boardPage.groupByNone")}</option>
+                <option value="story">{`${t("boardPage.groupBy")}: ${t("boardPage.groupByStory")}`}</option>
+              </Select>
+            </div>
+          )}
           {!isWorkspace && (
             <StatsWindowSelector
               value={metricsWindow}
@@ -544,6 +582,16 @@ function TaskBoard({
               ))}
             </div>
           )
+        ) : groupBy === "story" ? (
+          <BoardSwimlanes
+            swimlanes={swimlanes}
+            columns={displayLanes.map((lane) => ({ key: lane.key, label: laneLabel(lane.key, tCommon, t, lane.label) }))}
+            onTaskClick={handleTaskClick}
+            activeTask={activeTask}
+            milestoneNames={milestoneNames}
+            showProject={showProject}
+            storageKey={`orkka.board.collapsedStories:${boardScopeKey}`}
+          />
         ) : (
           <div
             className="flex flex-1 min-h-0 gap-3 overflow-x-auto pb-4 px-4 lg:px-6 snap-x snap-mandatory md:snap-none"

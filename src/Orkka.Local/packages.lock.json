@@ -540,6 +540,7 @@
           "Orkka.Modules.Runners.Contracts": "[1.0.0, )",
           "Orkka.Modules.SourceControl.Contracts": "[1.0.0, )",
           "Orkka.Modules.Tasks.Contracts": "[1.0.0, )",
+          "Orkka.Modules.Trackers.Contracts": "[1.0.0, )",
           "Orkka.Modules.Usage.Contracts": "[1.0.0, )",
           "Orkka.SharedKernel": "[1.0.0, )",
           "ih0.Claude.Agent.SDK": "[0.1.6, )"

@@ -19,6 +19,8 @@ vi.mock("@/components/board", () => ({
   BoardViewSwitch: (props: { active: string }) => `BoardViewSwitch:active=${props.active}`,
   TicketSourceStatusLine: (props: { config: { scope: string } | null }) =>
     `TicketSourceStatusLine:${props.config?.scope ?? "none"}`,
+  ImportTicketButton: (props: { projects: { slug: string }[] }) =>
+    `ImportTicketButton:${props.projects.map((p) => p.slug).join(",")}`,
 }));
 
 vi.mock("@/components/code-view", () => ({
@@ -92,13 +94,16 @@ describe("BoardPage", () => {
 
   it("shows the ticket-source line only when the project has a tracker", async () => {
     mockApi.trackers.getProjectConfig.mockResolvedValueOnce({ scope: "SHOP" });
-    const withSource = await renderPage(<BoardPage />);
+    const withSource = await renderPageWithPermissions(<BoardPage />);
     expect(withSource.container.textContent).toContain("TicketSourceStatusLine:SHOP");
+    // Importing a ticket by its key needs a ticket source to read it from.
+    expect(withSource.container.textContent).toContain("ImportTicketButton:");
     withSource.unmount();
 
     mockApi.trackers.getProjectConfig.mockResolvedValueOnce(null);
-    const without = await renderPage(<BoardPage />);
+    const without = await renderPageWithPermissions(<BoardPage />);
     expect(without.container.textContent).not.toContain("TicketSourceStatusLine");
+    expect(without.container.textContent).not.toContain("ImportTicketButton");
   });
 
   it("shows Finish setup while the project's setup was left before Start", async () => {

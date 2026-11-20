@@ -49,6 +49,8 @@ export interface GhIssue {
   issueType: string | null;
   /** Sub-issue keys (owner/repo#n), in GitHub's order. */
   subIssues: string[];
+  /** Issues this one is blocked by (owner/repo#n) — GitHub's issue dependencies. */
+  blockedBy: string[];
   comments: GhComment[];
   updatedAt: Date;
 }
@@ -178,6 +180,7 @@ export class FakeGitHub {
       labels: i.labels ?? [],
       issueType: i.issueType ?? null,
       subIssues: i.subIssues ?? [],
+      blockedBy: i.blockedBy ?? [],
       comments: (i.comments ?? []).map((c) => ({ ...c, id: `IC_${this.seq++}` })),
       updatedAt: new Date(),
     };
@@ -363,9 +366,21 @@ export class FakeGitHub {
       assignees: { nodes: issue.assignees.map((login) => ({ login })) },
       labels: { nodes: issue.labels.map((name) => ({ name })) },
       issueType: issue.issueType ? { name: issue.issueType } : null,
-      parent: parent ? { number: Number(pNum), repository: { nameWithOwner: pRepo } } : null,
+      parent: parent
+        ? {
+            number: Number(pNum),
+            repository: { nameWithOwner: pRepo },
+            issueType: this.issues.get(parent)?.issueType ? { name: this.issues.get(parent)!.issueType } : null,
+          }
+        : null,
       subIssues: {
         nodes: issue.subIssues.map((k) => {
+          const [repo, n] = k.split("#");
+          return { number: Number(n), repository: { nameWithOwner: repo }, subIssuesSummary: { total: this.issues.get(k)?.subIssues.length ?? 0 } };
+        }),
+      },
+      blockedBy: {
+        nodes: issue.blockedBy.map((k) => {
           const [repo, n] = k.split("#");
           return { number: Number(n), repository: { nameWithOwner: repo } };
         }),

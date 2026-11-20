@@ -17,7 +17,7 @@ async function gql(s: FakeTrackerServer, query: string, variables: Record<string
   return { status: res.status, headers: res.headers, json: text ? JSON.parse(text) : undefined };
 }
 
-const ISSUE_FIELDS = `fragment IssueFields on Issue { id number title url body state updatedAt repository { nameWithOwner url } assignees(first: 20) { nodes { login } } labels(first: 30) { nodes { name } } issueType { name } parent { number repository { nameWithOwner } } subIssues(first: 50) { nodes { number repository { nameWithOwner } } } }`;
+const ISSUE_FIELDS = `fragment IssueFields on Issue { id number title url body state updatedAt repository { nameWithOwner url } assignees(first: 20) { nodes { login } } labels(first: 30) { nodes { name } } issueType { name } parent { number repository { nameWithOwner } issueType { name } } subIssues(first: 100) { nodes { number repository { nameWithOwner } subIssuesSummary { total } } } blockedBy(first: 50) { nodes { number repository { nameWithOwner } } } }`;
 
 const seed = (s: FakeTrackerServer) => {
   const g = s.github;
@@ -26,7 +26,7 @@ const seed = (s: FakeTrackerServer) => {
   g.addIssue({ repo: "e2e-local/app", number: 1, title: "Mine, Todo", body: "Do it.\n<!-- template -->", labels: ["bug"] });
   g.addIssue({ repo: "e2e-local/app", number: 2, title: "Colleague's", assignees: ["colleague"] });
   g.addIssue({ repo: "e2e-local/api", number: 3, title: "Other repo" });
-  g.addIssue({ repo: "e2e-local/app", number: 4, title: "Story", subIssues: ["e2e-local/app#5", "e2e-local/app#6"] });
+  g.addIssue({ repo: "e2e-local/app", number: 4, title: "Story", issueType: "Feature", subIssues: ["e2e-local/app#5", "e2e-local/app#6"], blockedBy: ["e2e-local/api#3"] });
   g.addIssue({ repo: "e2e-local/app", number: 5, title: "Sub mine" });
   g.addIssue({ repo: "e2e-local/app", number: 6, title: "Sub colleague", assignees: ["colleague"] });
   for (const [key, status] of [["e2e-local/app#1", "Todo"], ["e2e-local/app#2", "Todo"], ["e2e-local/api#3", "Todo"], ["e2e-local/app#4", "Todo"], ["e2e-local/app#5", "Todo"]] as const)
@@ -80,8 +80,13 @@ test.describe("fake GitHub GraphQL @offline", () => {
     expect(nodes[5].content).toEqual({});
     expect(nodes[0].fieldValueByName).toEqual({ name: "Todo", optionId: expect.any(String) });
     expect(nodes[0].content).toMatchObject({ number: 1, body: "Do it.\n<!-- template -->", repository: { nameWithOwner: "e2e-local/app" }, assignees: { nodes: [{ login: s.github.login }] }, labels: { nodes: [{ name: "bug" }] } });
-    expect(nodes[3].content.subIssues.nodes).toEqual([{ number: 5, repository: { nameWithOwner: "e2e-local/app" } }, { number: 6, repository: { nameWithOwner: "e2e-local/app" } }]);
-    expect(nodes[4].content.parent).toEqual({ number: 4, repository: { nameWithOwner: "e2e-local/app" } });
+    // Each sub-issue's own count is what the runner's depth rule reads; the parent's type is the hint.
+    expect(nodes[3].content.subIssues.nodes).toEqual([
+      { number: 5, repository: { nameWithOwner: "e2e-local/app" }, subIssuesSummary: { total: 0 } },
+      { number: 6, repository: { nameWithOwner: "e2e-local/app" }, subIssuesSummary: { total: 0 } },
+    ]);
+    expect(nodes[3].content.blockedBy.nodes).toEqual([{ number: 3, repository: { nameWithOwner: "e2e-local/api" } }]);
+    expect(nodes[4].content.parent).toEqual({ number: 4, repository: { nameWithOwner: "e2e-local/app" }, issueType: { name: "Feature" } });
   });
 
   test("issues by key: aliased batch; unknown repository or number → null + NOT_FOUND; status on the project", async ({ fakeTracker: s }) => {

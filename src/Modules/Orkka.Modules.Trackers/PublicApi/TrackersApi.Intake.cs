@@ -35,7 +35,10 @@ internal sealed partial class TrackersApi
 
     /// <summary>A ticket the board does not track yet becomes a task only from intake, and only
     /// when it is assigned to the developer.</summary>
-    internal static bool IsNewTaskCandidate(TrackerTicket ticket) => ticket.InIntake && ticket.AssignedToMe;
+    /// <summary>Above-story tickets (an epic, a feature) are never work of their own — the
+    /// runners exclude them already; this keeps an odd query from importing one.</summary>
+    internal static bool IsNewTaskCandidate(TrackerTicket ticket)
+        => ticket.InIntake && ticket.AssignedToMe && ticket.Level != TicketLevel.Above;
 
     /// <summary>
     /// The intake decision for one report. <paramref name="linkedKeys"/> are the keys the
@@ -89,9 +92,14 @@ internal sealed partial class TrackersApi
     }
 
     /// <summary>A ticket that may be imported as a Story: in intake, assigned to the developer,
-    /// with sub-tasks (which of them are members is <see cref="StoryReport.MemberChildren"/>).</summary>
+    /// at the story level (Jira hierarchy level 0, an Azure DevOps requirement, a GitHub issue
+    /// whose sub-issues have none — <see cref="TicketLevel"/>; unknown from an older runner), with
+    /// sub-tasks (which of them are members is <see cref="StoryReport.MemberChildren"/>). A
+    /// sub-task with children of its own is worked as a task.</summary>
     internal static bool IsStoryCandidate(TrackerTicket ticket)
-        => IsNewTaskCandidate(ticket) && ticket.ChildKeys is { Length: > 0 };
+        => IsNewTaskCandidate(ticket)
+            && ticket.Level is TicketLevel.Story or TicketLevel.Unknown
+            && ticket.ChildKeys is { Length: > 0 };
 
     // ── The dry run ─────────────────────────────────────────────────────────
 
@@ -163,7 +171,9 @@ internal sealed partial class TrackersApi
             [.. plan.Tracked.Select(t => PreviewOf(t, t.AssignedToMe ? assignee : null, null, "tracked", null, []))],
             [.. plan.Ignored.Select(t => new TrackerPreviewSkipped(
                 t.Key, TitleOf(t), t.Status ?? t.Body?.Status, t.Url,
-                !t.AssignedToMe ? TrackerPreviewSkipReasons.NotAssignedToMe : TrackerPreviewSkipReasons.NotInIntake))]);
+                !t.AssignedToMe ? TrackerPreviewSkipReasons.NotAssignedToMe
+                : t.Level == TicketLevel.Above ? TrackerPreviewSkipReasons.AboveStory
+                : TrackerPreviewSkipReasons.NotInIntake))]);
     }
 
     private async Task<TrackerPreviewTicket> PreviewTicketAsync(
@@ -186,7 +196,15 @@ internal sealed partial class TrackersApi
     private static TrackerPreviewTicket PreviewOf(
         TrackerTicket ticket, string? assignee, RepoRef? repo, string route, string? reason, string[] spans)
         => new(ticket.Key, TitleOf(ticket), ticket.Body?.Type, ticket.Status ?? ticket.Body?.Status, ticket.Url,
-            assignee, repo?.Id, repo?.Name, spans, route, reason);
+            assignee, repo?.Id, repo?.Name, spans, route, reason, LevelName(ticket.Level));
+
+    internal static string LevelName(TicketLevel level) => level switch
+    {
+        TicketLevel.Above => "above",
+        TicketLevel.Story => "story",
+        TicketLevel.SubTask => "subTask",
+        _ => "unknown",
+    };
 
     private static string TitleOf(TrackerTicket ticket) => ticket.Body?.Title.Trim() ?? ticket.Key;
 }

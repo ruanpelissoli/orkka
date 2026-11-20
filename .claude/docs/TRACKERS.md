@@ -227,10 +227,107 @@ posts "Moved SHOP-12 to “In Progress”"; five failures give up with a thread 
 (`TrackerPrCheck`, at most every 10 minutes, only when "Merged" is mapped; the repo is the task's
 current one).
 
+## Hierarchy levels — what is a Story
+
+The unit Orkka works is the **Story**: one feature, split into small sub-tasks that build on each
+other's code on one branch, with one pull request. Epics are too broad (one epic holds many
+unrelated features), so they are never grouped, imported or branched. Every runner reports each
+ticket's normalized `TicketLevel` (`Level`, `ParentLevel` on `TrackerTicket`; stored on
+`TicketLink.Level`):
+
+| Level | Jira Cloud | Azure DevOps | GitHub Projects |
+|---|---|---|---|
+| `Above` (never imported) | `issuetype.hierarchyLevel` ≥ 1 (Epic, Initiative) | Epic / Feature category (and hidden types) | issue type Epic/Feature/Initiative, or an issue whose sub-issue has sub-issues |
+| `Story` (one branch, one PR) | `hierarchyLevel` 0 (Story, Task, Bug) | Requirement category (User Story, PBI, Issue, Requirement); a Bug not under a story | an issue whose sub-issues have none, or with none |
+| `SubTask` (one Orkka task) | `hierarchyLevel` −1 (`subtask`) | Task category; a Bug under a story | a sub-issue of a story |
+| children order (= build order) | `subtasks[]` | StackRank, then BacklogPriority, then id | `subIssues` (100 per parent) |
+| dependency link | `issuelinks` type "Blocks", `inwardIssue` = "is blocked by" | `System.LinkTypes.Dependency-Reverse` (Predecessor) | `blockedBy` |
+
+ADO levels come from `workitemtypecategories` (`AzureDevOpsClient.LevelsOf`), so they are the
+same in every process. Bugs are the exception: whether a bug is a requirement or a task is a team
+setting, so it is read from where the bug sits. GitHub levels go by depth, with the issue type as
+a hint (`GitHubProjects.LevelOf`). `Unknown` is what a runner that predates levels sends, and it
+keeps the old behaviour.
+
+- `IsStoryCandidate` = in intake, mine, level `Story` (or `Unknown`), with children. A sub-task
+  with children of its own is a plain task, and an `Above` ticket is never a task
+  (`IsNewTaskCandidate`). Runners already keep containers out of intake, and the host drops them
+  too.
+- `WantsParentContext` follows `ParentLevel` (an `Above` parent is no story context, whatever its
+  name). With `Unknown`, the old rule applies: type names containing epic / feature / initiative
+  are not story context.
+- The dry run lists each ticket's `level`, and an `Above` ticket assigned to me is skipped with
+  reason `aboveStory`.
+
+### Dependency links
+
+The runner reports `BlockedByKeys`, which are stored as `TicketLink.BlockedByKeysJson`. After every
+report, `TrackersApi.ReconcileDependenciesAsync` → `ITasksApi.ReconcileTrackerDependenciesAsync`
+keeps the project's `DependencySource.Tracker` edges equal to the links whose two ends are both
+worked in the project:
+- **The blocked ticket is a Story:** the edge goes on its first live member.
+- **The blocker is a Story:** the edge points at its last member, which merges with the Story's
+  PR. Members are met by merge, like any edge.
+- **Skipped:**
+  - a link inside one story, because the story order already chains it;
+  - a link that would close a cycle, which becomes a "KEY (circular)" note instead.
+- **Removed:** edges whose link went away. AI and manual edges are never touched.
+- **Blockers Orkka does not work** (another project, not mine) are written to
+  `TaskEntity.ExternalBlockedBy`. They show as a "Blocked by KEY" note on the card and are never
+  waited for.
+
+## Importing a ticket by its key
+
+For work the tracker does not hand Orkka on its own: assigned to someone else or nobody, not in
+an intake status, or sub-tasks never linked the way intake expects. Entry points are the board's
+**"Import ticket"** button (project board when the project has a ticket source; workspace board,
+which asks for the project) and the MCP tools `preview_tracker_ticket` / `import_tracker_ticket`.
+All of them go through `ITrackerImports` (`Features/Imports/TrackerImportService`); TasksCreate is
+required, and only the source's owner can import.
+
+- **The tracker is the project's ticket source.** `SourceKindAsync` picks the parser, and
+  `NormalizeKey` accepts a key, an id or a link:
+  - Jira: `SHOP-10` or `…/browse/SHOP-10`;
+  - ADO: `4567`, `#4567` or `…/_workitems/edit/4567`;
+  - GitHub: `owner/repo#12` or the issue URL.
+- **Preview** (`POST /api/projects/{id}/tracker/import/preview {key}`, nothing created). Two
+  dry runs go through the loopback relay to the owner's runner (`tracker-query` / `dry-run`) with
+  a `TrackerPollAssignment` that has `KeysOnly = true`: no intake, board or epics, only the known
+  keys (Jira `key in`, ADO by id, GitHub by key with `viewer` asked separately). The first run
+  reads the ticket; the second reads the ticket plus up to 100 of its `ChildKeys`.
+  `PreviewImportAsync` answers with `TrackerImportPreview`:
+  - the ticket's level, assignee-is-me, description, attachment metadata and route;
+  - each sub-task with its status and assignee, ticked when it is not done and not on the board;
+  - `existingTaskId` when the ticket is already linked.
+
+  An `Above` ticket is refused. A runner that is offline or too old → `supported: false`.
+- **Request** (`POST /api/projects/{id}/tracker/import {key, subTaskKeys}`). It writes a
+  `trackers.tracker_imports` row (pending) and sets `LastPolledAt = null`, so the runner's next
+  30-second cycle polls this source; `ExtraKnownKeysAsync` adds the key and the picked sub-tasks
+  to that poll's known keys. The answer is 202 `pending`. A ticket already linked and tracked is
+  pinned and answered 200 `done` at once.
+- **The poll** (`ProcessImportsAsync`, before intake in `ReportAsync`). Because it is a real
+  poll, the attachments are cached on the machine and the comments are fetched as for intake.
+  - With picked sub-tasks: `ImportStoryAsync` makes a Story with exactly those members. The rest
+    of the children go to `TicketLink.ExcludedChildKeysJson`: never members, never counted as
+    pending, never read again.
+  - Without picked sub-tasks: `ImportAsync` makes a task.
+  - Whatever its status or assignee, every link made is **pinned** (`TicketLink.Pinned`):
+    `ApplyToTrackedTicketAsync` never retires it for a reassignment, and
+    `ReleaseNotMineMembersAsync` never releases a pinned member. Closing it in the tracker before
+    work started still retires it.
+  - A linked ticket that Orkka had let go is revived and pinned.
+  - An `Above` ticket fails. A ticket absent from `MaxImportAttempts` (3) successful reports
+    fails with "not found".
+- **Status.** `GET /api/projects/{id}/tracker/import/{importId}` returns
+  `pending | done (taskId) | failed (error)`. The dialog polls it every 3 s and then opens the task.
+- **Cleanup.** A deleted project's import rows go with its ticket source
+  (`TrackerCleanupOnProjectDeleted`).
+
 ## Stories — one branch, one pull request
 
-With `storyMode` on, a ticket **assigned to me, in intake, with at least one open sub-task assigned
-to me that has not been started** is a Story (`TrackersApi.Stories`, `TasksApi.Stories`):
+With `storyMode` on, a ticket **assigned to me, in intake, at the story level (above), with at least
+one open sub-task assigned to me that has not been started** is a Story (`TrackersApi.Stories`, `TasksApi.Stories`):
 
 - **Members are mine and not started — USER RULE: Orkka only ever works tickets assigned to the
   developer.** The tracking read carries the children of every intake ticket whoever they are
@@ -442,6 +539,9 @@ the message — a poll records it as `LastPollError` and the next poll tries aga
 - **Status category** (`GitHubProjects.Category`): a closed issue is `done`; no status, an intake
   status or a to-do-like name (Todo, Ready, Backlog, New, Triage) is `todo`; a done-like name
   (Done, Closed, Complete, Shipped, Released) is `done`; anything else `inprogress`.
+- **Levels** (see Hierarchy levels): an issue typed Epic/Feature/Initiative, or one whose sub-issue
+  has sub-issues (`subIssuesSummary.total`), is above a story and never in intake; `blockedBy`
+  (50) gives its dependency links.
 - **Stories**: an issue with **sub-issues** reports them as `ChildKeys` in GitHub's own order;
   the host's Story rules apply unchanged — members are sub-issues assigned to me and not started
   (`IsMemberCandidate`), none qualifying = a plain task, and the cleanup / late sub-task rules

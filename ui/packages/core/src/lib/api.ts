@@ -3,6 +3,8 @@ import type {
   ProjectSetupStep,
   RepoCommandsCheck,
   IntakePreviewResponse,
+  TrackerImportPreviewResponse,
+  TrackerImportStatus,
   MergePrResult,
   SyncPrResult,
   Task,
@@ -1654,6 +1656,21 @@ export const api = {
      * Creates nothing; 404 when the project has no ticket source. */
     previewIntake: (projectId: string, token: string) =>
       fetchApi<IntakePreviewResponse>(`/api/projects/${projectId}/tracker/preview`, token, { method: "POST" }),
+    /** Read a ticket (key, id or link) and its sub-tasks through the project's ticket source,
+     * on the owner's runner. Creates nothing. */
+    previewImport: (projectId: string, key: string, token: string) =>
+      fetchApi<TrackerImportPreviewResponse>(`/api/projects/${projectId}/tracker/import/preview`, token, {
+        method: "POST",
+        body: JSON.stringify({ key }),
+      }),
+    /** Queue the import (with the picked sub-tasks) for the next poll — pending until it lands. */
+    requestImport: (projectId: string, key: string, subTaskKeys: string[], token: string) =>
+      fetchApi<TrackerImportStatus>(`/api/projects/${projectId}/tracker/import`, token, {
+        method: "POST",
+        body: JSON.stringify({ key, subTaskKeys }),
+      }),
+    getImport: (projectId: string, importId: string, token: string) =>
+      fetchApi<TrackerImportStatus>(`/api/projects/${projectId}/tracker/import/${importId}`, token),
   },
 
   repoPulls: {

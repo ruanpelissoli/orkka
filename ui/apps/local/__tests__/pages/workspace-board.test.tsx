@@ -16,6 +16,8 @@ vi.mock("@/components/board", () => ({
     workspace?: { project: string | null; projectUlids: readonly string[] };
   }) =>
     `TaskBoard:lanes=${props.boardData.lanes.length}:project=${props.workspace?.project ?? "all"}:groups=${props.workspace?.projectUlids.join(",")}`,
+  ImportTicketButton: (props: { projects: { slug: string }[] }) =>
+    `ImportTicketButton:${props.projects.map((p) => p.slug).join(",")}`,
 }));
 
 import WorkspaceBoardPage from "@/app/[locale]/(dashboard)/board/page";

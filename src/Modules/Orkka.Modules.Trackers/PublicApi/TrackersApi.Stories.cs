@@ -62,8 +62,10 @@ internal sealed partial class TrackersApi
         /// read and not the developer's never becomes a member, so it is not waited for. A key
         /// asked for last time and still not reported does not exist.
         /// </summary>
-        public int PendingCount(TrackerTicket story, IReadOnlyCollection<string> previousChildren)
+        public int PendingCount(TrackerTicket story, IReadOnlyCollection<string> previousChildren,
+            IReadOnlyCollection<string>? excluded = null)
             => (story.ChildKeys ?? []).Count(k => !Links.ContainsKey(k)
+                && excluded?.Contains(k, StringComparer.OrdinalIgnoreCase) != true
                 && (ByKey.TryGetValue(k, out var c)
                     ? IsCandidate(c)
                     : !previousChildren.Contains(k, StringComparer.OrdinalIgnoreCase)));
@@ -128,9 +130,11 @@ internal sealed partial class TrackersApi
         return count;
     }
 
+    /// <param name="excluded">An import by hand: the sub-tasks the developer left unticked —
+    /// never members, never waited for. Null for intake.</param>
     private async Task<bool> ImportStoryAsync(
         ImportContext router, TrackerTicket ticket, IReadOnlyList<TrackerTicket> open,
-        StoryReport stories, string tracker, CancellationToken ct)
+        StoryReport stories, string tracker, CancellationToken ct, IReadOnlyCollection<string>? excluded = null)
     {
         if (ticket.Body is not { } body)
             return false;
@@ -163,6 +167,8 @@ internal sealed partial class TrackersApi
         var storyLink = NewLink(router, ticket, body, result.Members[0].TaskId, TicketRole.Story, null, null);
         storyLink.GroupId = result.GroupId;
         storyLink.ChildKeysJson = JsonSerializer.Serialize(ticket.ChildKeys ?? [], Json);
+        if (excluded is { Count: > 0 })
+            storyLink.ExcludedChildKeysJson = JsonSerializer.Serialize(excluded.ToArray(), Json);
         db.TicketLinks.Add(storyLink);
         stories.Links[ticket.Key] = storyLink;
         stories.JustImported.Add(ticket.Key);
@@ -176,12 +182,16 @@ internal sealed partial class TrackersApi
                 await LinkSubTaskAsync(router, child, members, result.GroupId, stories, tracker, ct, revived.Contains(child.Key));
         }
 
-        await tasksApi.SetStoryPendingChildrenAsync(result.GroupId, stories.PendingCount(ticket, []), ct);
+        await tasksApi.SetStoryPendingChildrenAsync(result.GroupId, stories.PendingCount(ticket, [], excluded), ct);
         await tasksApi.AddTaskMessageAsync(result.Members[0].TaskId, "system",
-            $"{ticket.Key} is a Story with {open.Count} sub-task(s) assigned to you in {tracker} that have not been started "
-            + "(sub-tasks of other people, and ones already under way, are left alone). Yours are worked in order on "
-            + $"`{branch}`, one pull request for the whole story: a draft after the first lands, ready for review "
-            + "after the last.",
+            excluded is null
+                ? $"{ticket.Key} is a Story with {open.Count} sub-task(s) assigned to you in {tracker} that have not been started "
+                    + "(sub-tasks of other people, and ones already under way, are left alone). Yours are worked in order on "
+                    + $"`{branch}`, one pull request for the whole story: a draft after the first lands, ready for review "
+                    + "after the last."
+                : $"{ticket.Key} was imported from {tracker} as a Story with the {open.Count} sub-task(s) you picked. They are "
+                    + $"worked in order on `{branch}`, one pull request for the whole story: a draft after the first lands, "
+                    + "ready for review after the last.",
             MessageType.SystemEvent, ct: ct);
         return true;
     }
@@ -193,12 +203,15 @@ internal sealed partial class TrackersApi
     {
         var groupId = link.GroupId!.Value;
         var previous = ParseKeys(link.ChildKeysJson);
+        var excluded = ParseKeys(link.ExcludedChildKeysJson);
         if (ticket.ChildKeys is { } reported)
             link.ChildKeysJson = JsonSerializer.Serialize(reported, Json);
 
         var added = 0;
         foreach (var key in ticket.ChildKeys ?? [])
         {
+            if (excluded.Contains(key, StringComparer.OrdinalIgnoreCase))
+                continue; // left unticked when the Story was imported by hand
             if (!stories.ByKey.TryGetValue(key, out var child) || child.Body is null || !stories.IsCandidate(child))
                 continue;
             // Linked already: tracked, or archived by a person (left alone). Only a sub-task Orkka
@@ -266,7 +279,7 @@ internal sealed partial class TrackersApi
             added++;
         }
 
-        await tasksApi.SetStoryPendingChildrenAsync(groupId, stories.PendingCount(ticket, previous), ct);
+        await tasksApi.SetStoryPendingChildrenAsync(groupId, stories.PendingCount(ticket, previous, excluded), ct);
         return added;
     }
 
@@ -357,6 +370,8 @@ internal sealed partial class TrackersApi
         {
             if (!stories.ByKey.TryGetValue(link.TicketKey, out var child) || child.StatusCategory == "done")
                 continue; // not read this poll, or done (the main pass retires it if nothing started)
+            if (link.Pinned)
+                continue; // imported by hand: the developer chose it, whoever has it
 
             var mine = child.AssignedToMe;
             // Orkka's own write-back moves a member's ticket along, so its status only says
@@ -471,7 +486,23 @@ internal sealed partial class TrackersApi
         RemoteStatus = Truncate(ticket.Status ?? body.Status, 200),
         AttachmentsJson = JsonSerializer.Serialize(body.Attachments, Json),
         LastSeenAt = DateTimeOffset.UtcNow,
+        Level = ticket.Level,
+        BlockedByKeysJson = BlockedByJson(ticket),
     };
+
+    /// <summary>The hierarchy and dependency links as of this report — refreshed on every poll of
+    /// a tracked ticket.</summary>
+    private static void ApplyHierarchy(TicketLink link, TrackerTicket ticket)
+    {
+        if (ticket.Level != TicketLevel.Unknown)
+            link.Level = ticket.Level;
+        link.BlockedByKeysJson = BlockedByJson(ticket);
+    }
+
+    private static string? BlockedByJson(TrackerTicket ticket)
+        => ticket.BlockedByKeys is { Length: > 0 } keys
+            ? JsonSerializer.Serialize(keys.Distinct(StringComparer.OrdinalIgnoreCase).Take(100).ToArray(), Json)
+            : null;
 
     private static string? EpicLabel(ProjectTrackerConfig config, TrackerTicket ticket)
     {
@@ -490,11 +521,14 @@ internal sealed partial class TrackersApi
         link.TicketUrl = ticket.Url;
         link.EpicKey = ticket.EpicKey ?? link.EpicKey;
         link.ParentKey = ticket.ParentKey ?? link.ParentKey;
+        ApplyHierarchy(link, ticket);
         if ((ticket.Status ?? ticket.Body?.Status) is { } status)
             link.RemoteStatus = Truncate(status, 200);
 
         if (ticket.Body is { } body && ticket.ContentHash != link.ContentHash)
         {
+            if (link.GroupId is { } groupId)
+                await tasksApi.SetStoryTitleAsync(groupId, TaskTitle(ticket.Key, body.Title), ct);
             link.AttachmentsJson = JsonSerializer.Serialize(body.Attachments, Json);
             await tasksApi.AddTaskMessageAsync(link.TaskId, "system",
                 Truncate($"The story {ticket.Key} was updated in {tracker}. It now reads:\n\n### {body.Title}\n\n{TaskDescription(body)}",
@@ -514,7 +548,12 @@ internal sealed partial class TrackersApi
     {
         var rows = await db.TicketLinks.IgnoreQueryFilters().AsNoTracking()
             .Where(l => l.ConfigId == configId)
-            .Select(l => new { l.TicketKey, l.Role, l.ChildKeysJson, l.ParentKey, l.ParentTitle, l.TrackingEndedAt, l.AssignedToOwner })
+            .Select(l => new { l.TicketKey, l.Role, l.ChildKeysJson, l.ExcludedChildKeysJson, l.ParentKey, l.ParentTitle, l.TrackingEndedAt, l.AssignedToOwner })
+            .ToListAsync(ct);
+        // Tickets asked for by key, with the sub-tasks picked for them — read on the very next poll.
+        var imports = await db.Imports.IgnoreQueryFilters().AsNoTracking()
+            .Where(i => i.ConfigId == configId && i.CompletedAt == null)
+            .Select(i => new { i.TicketKey, i.SubTaskKeysJson })
             .ToListAsync(ct);
         // A link Orkka itself ended (AssignedToOwner false) does not cover its key; one a person
         // archived, or that merged, does.
@@ -522,11 +561,15 @@ internal sealed partial class TrackersApi
             .Select(r => r.TicketKey).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var live = rows.Where(r => r.TrackingEndedAt == null).ToList();
 
-        return [.. live.Where(r => r.Role == TicketRole.Story).SelectMany(r => ParseKeys(r.ChildKeysJson))
-            .Concat(live.Where(r => r.ParentTitle == "" && r.ParentKey is not null).Select(r => r.ParentKey!))
-            .Where(k => !linked.Contains(k))
+        var wanted = imports.SelectMany(i => ParseKeys(i.SubTaskKeysJson).Prepend(i.TicketKey))
+            .Concat(live.Where(r => r.Role == TicketRole.Story)
+                .SelectMany(r => ParseKeys(r.ChildKeysJson).Except(ParseKeys(r.ExcludedChildKeysJson), StringComparer.OrdinalIgnoreCase))
+                .Where(k => !linked.Contains(k)))
+            .Concat(live.Where(r => r.ParentTitle == "" && r.ParentKey is not null).Select(r => r.ParentKey!)
+                .Where(k => !linked.Contains(k)));
+        return [.. wanted
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Take(200)];
+            .Take(300)];
     }
 
     /// <summary>The report carried a Story read for a sub-task's context: store it on the links
@@ -543,14 +586,20 @@ internal sealed partial class TrackersApi
         }
     }
 
-    /// <summary>A ticket whose direct parent is a Story (not an epic / feature / initiative).</summary>
+    /// <summary>A ticket whose direct parent is a Story (not an epic / feature / initiative): by
+    /// the parent's level, or — from a runner that predates levels — by its type name.</summary>
     internal static bool WantsParentContext(TrackerTicket ticket)
         => ticket.ParentKey is { Length: > 0 } parent
             && !string.Equals(parent, ticket.EpicKey, StringComparison.OrdinalIgnoreCase)
             && ticket.ParentType is { Length: > 0 } type
-            && !type.Contains("epic", StringComparison.OrdinalIgnoreCase)
-            && !type.Contains("feature", StringComparison.OrdinalIgnoreCase)
-            && !type.Contains("initiative", StringComparison.OrdinalIgnoreCase);
+            && ticket.ParentLevel switch
+            {
+                TicketLevel.Above => false,
+                TicketLevel.Unknown => !type.Contains("epic", StringComparison.OrdinalIgnoreCase)
+                    && !type.Contains("feature", StringComparison.OrdinalIgnoreCase)
+                    && !type.Contains("initiative", StringComparison.OrdinalIgnoreCase),
+                _ => true,
+            };
 
     private async Task<Dictionary<Ulid, TrackerGroupState>> GroupStatesAsync(IEnumerable<TicketLink> links, CancellationToken ct)
     {

@@ -263,6 +263,21 @@ public interface ITasksApi
     /// <summary>Sub-tasks the last poll saw under the Story that have no member yet.</summary>
     Task SetStoryPendingChildrenAsync(Ulid groupId, int count, CancellationToken ct = default);
 
+    /// <summary>
+    /// Brings the project's tracker dependencies (<see cref="DependencySource.Tracker"/>) in line
+    /// with the tracker's dependency links: <paramref name="edges"/> are every link whose both
+    /// ends are worked in the project; tracker edges not among them are removed, AI and manual
+    /// edges are never touched. A Story end is its first member when blocked and its last member
+    /// when blocking; a link inside one Story is skipped (its order already chains it), and one
+    /// that would close a cycle becomes a note instead. <paramref name="externalBlockedBy"/> sets
+    /// each listed task's "blocked by (not in Orkka)" note (null clears it).
+    /// </summary>
+    Task ReconcileTrackerDependenciesAsync(Ulid projectId, IReadOnlyList<TrackerBlockEdge> edges,
+        IReadOnlyDictionary<Ulid, IReadOnlyList<string>> externalBlockedBy, CancellationToken ct = default);
+
+    /// <summary>The Story ticket was retitled in the tracker: the group's title follows.</summary>
+    Task SetStoryTitleAsync(Ulid groupId, string title, CancellationToken ct = default);
+
     /// <summary>The Story the task is a member of, with every member and branch; null otherwise.</summary>
     Task<StoryContext?> GetStoryForTaskAsync(Ulid taskId, CancellationToken ct = default);
 

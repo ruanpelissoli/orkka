@@ -519,3 +519,99 @@ since: 2026-11-19
 **Expected**:
 - No assignment for the source; `lastPollError` says the polling Orkka is too old to know GitHub and to update it (`git pull`, then `./orkka start`). A current runner gets the assignment with `boardId`, `statusField` and `repoFilter`.
 **Notes**: covered at unit level by `tests/Orkka.IntegrationTests/TrackerGitHubEndpointTests.cs` (Poll_HandsTheSourceOnlyToARunnerThatKnowsGitHub).
+
+## TING-031 Only a story-level ticket with open sub-tasks is a Story; epics never import
+```yaml
+priority: P0
+surface: [api]
+automation: planned
+refs:
+  - orkka-api:POST /api/projects/{projectId}/tracker/preview
+  - orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.Intake.cs
+  - orkka-api:src/Orkka.LocalRunner.Contracts/TrackerContracts.cs
+since: 2026-11-20
+```
+**Preconditions**: A started project on the fake. Jira: Epic `SHOP-1` (hierarchyLevel 1) → Story `SHOP-10` (0) → Sub-tasks `SHOP-11`, `SHOP-12` (−1), all assigned to me in To Do; and Sub-task `SHOP-21` under `SHOP-20`, which is someone else's story. ADO: Feature 100 → User Story 101 → Tasks 102, 103, and a Bug 104 under 101. GitHub: issue `#1` → `#7` → sub-issues `#8`, `#9` (`#1`'s sub-issue has sub-issues).
+**Steps**:
+1. `POST …/tracker/preview`.
+2. Let a poll run; `GET /api/projects/{projectId}/tasks`.
+**Expected**:
+- 1: exactly one story per tracker (`SHOP-10` with members 11, 12; `101` with 102, 103, 104 in backlog order; `#7` with `#8`, `#9`). The epic, feature and `#1` are listed as skipped with reason `aboveStory` when assigned to me. `SHOP-21` is a plain task with level `subTask` ("a sub-task whose story is not yours").
+- 2: the same tasks are created. No task exists for the epic/feature/`#1`. Each ticket link stores its level.
+**Notes**: unit level: `tests/Orkka.Tests/Services/TrackerHierarchyTests.cs`.
+
+## TING-032 Tracker "blocked by" links become dependencies, or a note when outside Orkka
+```yaml
+priority: P1
+surface: [api, ui]
+automation: planned
+refs:
+  - orkka-api:GET /api/board
+  - orkka-api:GET /api/tasks/{taskId}
+  - orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.Dependencies.cs
+  - orkka-api:src/Modules/Orkka.Modules.Tasks/PublicApi/TasksApi.TrackerDependencies.cs
+since: 2026-11-20
+```
+**Preconditions**: As TING-031, plus Story `SHOP-30` (sub-tasks 31, 32) that "is blocked by" `SHOP-10`, task `SHOP-40` blocked by `SHOP-41` (mine), and `SHOP-50` blocked by `OPS-9` (another project, not mine).
+**Steps**:
+1. Let a poll run; read each task (`dependsOn`) and the board.
+2. In the fake, remove the `SHOP-40` → `SHOP-41` link; let a poll run.
+**Expected**:
+- 1: `SHOP-31` depends on `SHOP-12` (source `Tracker`, reason "Blocked by SHOP-10 in the tracker.") and stays out of the queue until the SHOP-10 pull request merges. `SHOP-40` depends on `SHOP-41`. A link between two sub-tasks of one story adds nothing. `SHOP-50` has no dependency; its card shows "Blocked by OPS-9" (`externalBlockedBy`).
+- 2: the `SHOP-40` dependency is gone. AI and manual dependencies are never removed.
+- ADO Predecessor links and GitHub `blockedBy` behave the same way.
+**Notes**: a link that would close a cycle is not added; the card notes "KEY (circular)". Unit level: `tests/Orkka.Tests/Features/Tasks/TrackerDependencyTests.cs`; SQLite: `tests/Orkka.IntegrationTests/BoardStoryLanesTests.cs`.
+
+## TING-033 Import a ticket by key: preview with sub-tasks, then a pinned Story or task
+```yaml
+priority: P0
+surface: [ui, api]
+automation: planned
+refs:
+  - orkka-ui:/p/[projectId]/board
+  - orkka-ui:/board
+  - orkka-api:POST /api/projects/{projectId}/tracker/import/preview
+  - orkka-api:POST /api/projects/{projectId}/tracker/import
+  - orkka-api:GET /api/projects/{projectId}/tracker/import/{importId:ulid}
+  - orkka-api:src/Modules/Orkka.Modules.Trackers/PublicApi/TrackersApi.Import.cs
+  - i18n:importTicket
+since: 2026-11-20
+```
+**Preconditions**: a started project with a Jira source on the fake. Story `SHOP-10` is assigned to "colleague" and In Progress, so intake never takes it. Its sub-tasks: `SHOP-11` (To Do, colleague), `SHOP-12` (Done), `SHOP-13` (To Do, mine). `SHOP-10` carries one attachment and two comments.
+**Steps**:
+1. On the project board, click "Import ticket". Type `https://<fake>/browse/shop-10` and click "Read ticket".
+2. Leave `SHOP-11` and `SHOP-13` ticked and click "Import".
+3. Wait for the dialog to say it is on the board, then click "Open task".
+4. In the fake, reassign `SHOP-11` to someone else and move it to In Progress. Let two polls run.
+5. Import `SHOP-10` again.
+**Expected**:
+- 1: the preview (`POST …/import/preview`, read keys-only on the runner, nothing created) shows `SHOP-10`, its type, status, "not assigned to you" and "1 attachment". The sub-tasks are listed with `SHOP-11` and `SHOP-13` ticked, `SHOP-12` (Done) unticked. The footer reads "A story with 2 sub-tasks".
+- 2: `POST …/import` answers 202 `pending` and the source is due now. Within about 30 s the next poll reads the keys, and `GET …/import/{id}` turns `done` with the story's first member as `taskId`.
+- 3: the task detail opens. It is a Story on one branch with members `SHOP-11` and `SHOP-13`, and carries the description, the attachment and both comments. Every link is `pinned`. `SHOP-12` is excluded, so it is never waited for and never joins.
+- 4: nothing is released or retired, because the members are pinned.
+- 5: answers 200 `done` at once with the existing task.
+**Notes**: unit level: `tests/Orkka.Tests/Features/Trackers/TrackerImportTests.cs`; UI: `ui/apps/local/__tests__/components/import-ticket.test.tsx`.
+
+## TING-034 Import refusals: not this tracker's key, not found, an epic, not the owner, before Start
+```yaml
+priority: P1
+surface: [ui, api]
+automation: planned
+refs:
+  - orkka-api:POST /api/projects/{projectId}/tracker/import/preview
+  - orkka-api:POST /api/projects/{projectId}/tracker/import
+  - i18n:importTicket
+since: 2026-11-20
+```
+**Preconditions**: as TING-033; a second project whose setup was not started; a project with no ticket source.
+**Steps**:
+1. Preview `4567` on the Jira source; preview `SHOP-999` (not in the fake); preview the Epic `SHOP-1`.
+2. `POST …/import` for a project whose setup was not started, and with a key on a project with no ticket source.
+3. Stop the runner and preview `SHOP-10`.
+4. Request an import of a key the fake never returns, then let three polls run.
+**Expected**:
+- 1: the dialog error reads "'4567' is not a Jira issue key (like SHOP-10) or issue link.". For `SHOP-999`: "SHOP-999 was not found with your account …". For `SHOP-1`: "SHOP-1 is above a story (an epic or a feature) …".
+- 2: 409 with the setup-pending message; 404 "This project has no ticket source yet — set one up first.".
+- 3: `supported: false`; the dialog says the runner is offline (`./orkka start`).
+- 4: the import turns `failed` with "… was not found in Jira with your account …".
+- ADO accepts `4567`, `#4567` and `…/_workitems/edit/4567`. GitHub accepts `owner/repo#12` and the issue URL.

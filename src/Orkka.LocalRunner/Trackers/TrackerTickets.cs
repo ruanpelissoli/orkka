@@ -29,6 +29,13 @@ public sealed record RawTicket(
     public string? ParentKey { get; init; }
     public string? ParentType { get; init; }
 
+    /// <summary>Where this ticket and its parent sit in the hierarchy (see <see cref="TicketLevel"/>).</summary>
+    public TicketLevel Level { get; init; }
+    public TicketLevel ParentLevel { get; init; }
+
+    /// <summary>Keys of the tickets that block this one (dependency links).</summary>
+    public string[] BlockedByKeys { get; init; } = [];
+
     /// <summary>Direct children in the tracker's order (Jira's sub-task order, ADO's backlog rank).</summary>
     public string[] ChildKeys { get; init; } = [];
 

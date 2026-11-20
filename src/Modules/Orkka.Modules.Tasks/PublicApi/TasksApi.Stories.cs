@@ -371,6 +371,17 @@ public sealed partial class TasksApi
         await _db.SaveChangesAsync(ct);
     }
 
+    public async Task SetStoryTitleAsync(Ulid groupId, string title, CancellationToken ct = default)
+    {
+        var group = await _db.TaskGroups.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(g => g.Id == groupId && g.Kind == TaskGroupKind.Story, ct);
+        var trimmed = TrimTitle(title);
+        if (group is null || string.IsNullOrWhiteSpace(title) || group.Title == trimmed)
+            return;
+        group.Title = trimmed;
+        await _db.SaveChangesAsync(ct);
+    }
+
     public async Task<TrackerTaskRetirement> ReleaseStoryMemberAsync(Ulid taskId, string reason, CancellationToken ct = default)
     {
         var task = await _db.Tasks.IgnoreQueryFilters().FirstOrDefaultAsync(t => t.Id == taskId, ct);

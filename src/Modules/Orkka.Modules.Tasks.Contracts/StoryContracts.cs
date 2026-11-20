@@ -1,5 +1,13 @@
 namespace Orkka.Modules.Tasks.Contracts;
 
+/// <summary>One end of a tracker dependency link: a task, or a Story group (then
+/// <see cref="TaskId"/> is null).</summary>
+public sealed record TrackerBlockEnd(Ulid? TaskId, Ulid? GroupId);
+
+/// <summary><paramref name="Blocked"/> waits for <paramref name="Blocker"/> (the ticket
+/// <paramref name="BlockerKey"/>) to merge.</summary>
+public sealed record TrackerBlockEdge(TrackerBlockEnd Blocked, TrackerBlockEnd Blocker, string BlockerKey);
+
 /// <summary>
 /// One sub-task of a tracker Story, as intake hands it to the Tasks module. A sub-task the repo
 /// router placed in several repositories becomes one member per repository, kept in order.

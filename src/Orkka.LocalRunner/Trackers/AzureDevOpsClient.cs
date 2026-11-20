@@ -157,6 +157,8 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
         new(StringComparer.OrdinalIgnoreCase);
     private const string AttachedFile = "AttachedFile";
     private const string HierarchyReverse = "System.LinkTypes.Hierarchy-Reverse";
+    // "Predecessor": the linked item must finish before this one.
+    private const string DependencyReverse = "System.LinkTypes.Dependency-Reverse";
 
     private const string Name = "Azure DevOps";
     private const string ApiVersion = "api-version=7.1";
@@ -360,11 +362,13 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
         var epicSet = epics.ToHashSet();
         var scope = a.Scope;
         // Intake only, like the extra clause: tracked tickets are read by id below, on the board or not.
-        var boardCondition = await BoardConditionAsync(c, scope, TrackerBoardRef.From(a.BoardId, a.BoardName), ct);
+        // Keys only (importing a ticket by its id): no intake, so no board either.
+        var boardCondition = a.KeysOnly ? null
+            : await BoardConditionAsync(c, scope, TrackerBoardRef.From(a.BoardId, a.BoardName), ct);
 
         var parentOf = new Dictionary<int, int>();
         List<int>? candidates = null;
-        if (epics.Count > 0)
+        if (epics.Count > 0 && !a.KeysOnly)
         {
             var linkQuery = AdoQueries.DescendantsWiql(epics.Distinct(), a.IncludeDescendants);
             var links = await PostAsync(c, $"{c.SiteUrl}/{Uri.EscapeDataString(scope)}/_apis/wit/wiql?{ApiVersion}",
@@ -388,7 +392,7 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
         var me = await MyIdentityAsync(c, ct);
 
         List<int> intakeIds = [];
-        if (candidates is not { Count: 0 })
+        if (candidates is not { Count: 0 } && !a.KeysOnly)
         {
             var wiql = AdoQueries.IntakeWiql(IntakeStates(a.IntakeStatuses, states), states.ContainerTypes, candidates, a.ExtraClause,
                 boardCondition) + " ORDER BY [System.Id]";
@@ -422,7 +426,8 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
         var tickets = new List<RawTicket>(items.Count);
         foreach (var id in intakeIds.Where(intakeSet.Contains).Concat(trackIds.Where(items.ContainsKey)))
         {
-            if (ParseWorkItem(c, scope, items[id], epicSet, parentOf, states.Categories, me, intakeSet.Contains(id), Info) is { } ticket)
+            if (ParseWorkItem(c, scope, items[id], epicSet, parentOf, states.Categories, me, intakeSet.Contains(id), Info,
+                    states.Levels) is { } ticket)
                 tickets.Add(ticket);
         }
         return tickets;
@@ -518,7 +523,8 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
 
     internal static RawTicket? ParseWorkItem(TrackerCredential c, string scope, JsonElement item, HashSet<int> epicSet,
         Dictionary<int, int> parentOf, Dictionary<string, string?> categories,
-        (string? Id, string? Account) me = default, bool inIntake = false, Func<int, WorkItemInfo>? info = null)
+        (string? Id, string? Account) me = default, bool inIntake = false, Func<int, WorkItemInfo>? info = null,
+        TypeLevels? levels = null)
     {
         if (item.Prop("id") is not { ValueKind: JsonValueKind.Number } idElement)
             return null;
@@ -570,6 +576,14 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
 
         var type = f.Str("System.WorkItemType");
         var state = f.Str("System.State");
+        levels ??= TypeLevels.None;
+        var parentLevel = directParent is null ? TicketLevel.Unknown
+            : levels.IsBug(parentType) ? TicketLevel.Story : levels.Of(parentType);
+        // A Bug sits at the requirement or the task level depending on the team's setting: under a
+        // story it is that story's sub-task, anywhere else a story of its own.
+        var level = levels.IsBug(type)
+            ? parentLevel == TicketLevel.Story ? TicketLevel.SubTask : TicketLevel.Story
+            : levels.Of(type);
         var project = f.Str("System.TeamProject") ?? scope;
         var priority = f.Prop("Microsoft.VSTS.Common.Priority") switch
         {
@@ -608,7 +622,25 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
             AssignedToMe = assignedToMe,
             InIntake = inIntake,
             AreaPath = f.Str("System.AreaPath"),
+            Level = level,
+            ParentLevel = parentLevel,
+            BlockedByKeys = [.. RelatedIds(item, DependencyReverse).Distinct()
+                .Select(p => p.ToString(CultureInfo.InvariantCulture))],
         };
+    }
+
+    /// <summary>A project's work item types by level, from <c>workitemtypecategories</c> — the
+    /// same for every process (Agile, Scrum, Basic, CMMI). Bug types are kept apart: whether a
+    /// bug is a story or a task is a team setting, so it is read from where the bug sits.</summary>
+    internal sealed record TypeLevels(IReadOnlyDictionary<string, TicketLevel> Levels, IReadOnlySet<string> BugTypes)
+    {
+        public static readonly TypeLevels None = new(new Dictionary<string, TicketLevel>(),
+            new HashSet<string>(["Bug"], StringComparer.OrdinalIgnoreCase));
+
+        public TicketLevel Of(string? type)
+            => type is not null && Levels.TryGetValue(type, out var level) ? level : TicketLevel.Unknown;
+
+        public bool IsBug(string? type) => type is not null && BugTypes.Contains(type);
     }
 
     private static DateTimeOffset? ParseDate(string? text)
@@ -637,7 +669,8 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
         // The Proposed-category states of the ticket types — the default intake.
         string[] ProposedStates,
         // Epic / Feature / hidden types: containers of work, never picked up as tickets.
-        string[] ContainerTypes);
+        string[] ContainerTypes,
+        TypeLevels Levels);
 
     /// <summary>The selectable statuses (ticket types only), every done/removed state name in
     /// the project — what a preview has to exclude — the Proposed states (the default intake)
@@ -694,7 +727,27 @@ public sealed class AzureDevOpsClient(HttpClient http) : ITrackerClient, ITracke
                 }
             }
         }
-        return new ProjectStates([.. statuses], [.. done], categories, [.. proposed], [.. containerTypes]);
+        return new ProjectStates([.. statuses], [.. done], categories, [.. proposed], [.. containerTypes],
+            LevelsOf(byCategory));
+    }
+
+    internal static TypeLevels LevelsOf(IReadOnlyDictionary<string, List<string>> byCategory)
+    {
+        var levels = new Dictionary<string, TicketLevel>(StringComparer.OrdinalIgnoreCase);
+        void Put(string category, TicketLevel level)
+        {
+            foreach (var type in byCategory.GetValueOrDefault(category) ?? [])
+                levels.TryAdd(type, level);
+        }
+        Put("Microsoft.EpicCategory", TicketLevel.Above);
+        Put("Microsoft.FeatureCategory", TicketLevel.Above);
+        Put("Microsoft.RequirementCategory", TicketLevel.Story);
+        Put("Microsoft.TaskCategory", TicketLevel.SubTask);
+        Put("Microsoft.HiddenCategory", TicketLevel.Above);
+        var bugs = (byCategory.GetValueOrDefault("Microsoft.BugCategory") ?? ["Bug"])
+            .Where(b => !levels.ContainsKey(b))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return new TypeLevels(levels, bugs);
     }
 
     private async Task<List<int>> WiqlIdsAsync(TrackerCredential c, string scope, string wiql, int? top, CancellationToken ct)

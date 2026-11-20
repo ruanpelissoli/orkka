@@ -179,7 +179,10 @@ public sealed record TaskSummaryResponse(
     int? StoryCount = null,
     // The card's project. Set on every board card (project and workspace board, board search) so
     // the workspace board can badge a card and link it to /p/{slug}/tasks/{n}.
-    BoardProjectRef? Project = null);
+    BoardProjectRef? Project = null,
+    // Tickets that block this one in the tracker but are not worked here ("SHOP-9, SHOP-12") —
+    // a note on the card, never waited for.
+    string? ExternalBlockedBy = null);
 
 /// <summary>
 /// The project a board card belongs to. <see cref="HasTesting"/> says whether that project has
@@ -218,8 +221,31 @@ public sealed record TaskDependenciesResponse(
     List<TaskDependencyItem> DependsOn,
     List<TaskDependencyItem> Dependents);
 
+/// <param name="Stories">Every Story with a card on the board — the "Group by: Story" swimlane
+/// headers, in the order their first card appears.</param>
 public sealed record TaskBoardResponse(
-    List<BoardLaneResponse> Lanes);
+    List<BoardLaneResponse> Lanes,
+    List<BoardStoryResponse>? Stories = null);
+
+/// <summary>
+/// A tracker Story on the board: one feature split into sub-tasks on one branch and one pull
+/// request. <see cref="DoneCount"/> counts members whose work is complete.
+/// </summary>
+public sealed record BoardStoryResponse(
+    Ulid GroupId,
+    Ulid ProjectId,
+    string? Key,
+    string Title,
+    string? Url,
+    string? BranchName,
+    int MemberCount,
+    int DoneCount,
+    DateTimeOffset? ReadyAt,
+    string Status,
+    List<BoardStoryPullRequest> PullRequests);
+
+/// <param name="State">The forge's state as last read ("open", "merged", "closed"), null before.</param>
+public sealed record BoardStoryPullRequest(Ulid RepoId, string Url, bool Draft, string? State);
 
 public sealed record BoardLaneResponse(
     string Key,

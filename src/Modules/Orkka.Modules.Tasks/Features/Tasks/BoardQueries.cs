@@ -46,7 +46,8 @@ internal sealed record BoardTaskRow(
     // "SHOP-10 · 2/3" chip).
     int? StoryOrder = null,
     string? StoryKey = null,
-    int? StoryCount = null);
+    int? StoryCount = null,
+    string? ExternalBlockedBy = null);
 
 /// <summary>Shared auxiliary queries for the board and board-search endpoints.</summary>
 internal static class BoardQueries
@@ -84,7 +85,8 @@ internal static class BoardQueries
             t.Group != null && t.Group.Kind == TaskGroupKind.Story ? t.Group.ExternalKey : null,
             t.Group != null && t.Group.Kind == TaskGroupKind.Story
                 ? t.Group.Tasks.Count(x => !x.IsArchived)
-                : (int?)null));
+                : (int?)null,
+            t.ExternalBlockedBy));
 
     /// <summary>
     /// Latest agent-authored message per task, truncated for card previews. "Latest" is an

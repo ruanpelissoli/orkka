@@ -30,6 +30,8 @@ interface TaskCardProps {
   atRest?: boolean;
   /** Badge the card with its project — the workspace board showing every project. */
   showProject?: boolean;
+  /** Leave the story chip out — the card sits in its story's swimlane, which already says it. */
+  hideStoryChip?: boolean;
 }
 
 function TaskTypeIcon({ type }: { type: string }) {
@@ -93,7 +95,7 @@ const ATTENTION_STATUSES: Record<string, { labelKey: string; color: string }> = 
   ReasoningTimeout: { labelKey: "attentionTimeout", color: "#f59e0b" }, // warning
 };
 
-function TaskCard({ task, onTaskClick, dragDisabled, milestoneName, atRest, showProject }: TaskCardProps) {
+function TaskCard({ task, onTaskClick, dragDisabled, milestoneName, atRest, showProject, hideStoryChip }: TaskCardProps) {
   const project = showProject ? task.project : null;
   const t = useTranslations("dashboard");
   const labels = useLabels();
@@ -239,7 +241,7 @@ function TaskCard({ task, onTaskClick, dragDisabled, milestoneName, atRest, show
         </AnimatePresence>
 
         {/* Repo name, cross-repo marker, and the tracker ticket the task came from */}
-        {(project || task.repoName || task.groupId || task.externalKey) && (
+        {(project || task.repoName || task.groupId || task.externalKey || task.externalBlockedBy) && (
           <div className="mb-1.5 flex flex-wrap items-center gap-1">
             {/* The workspace board mixes projects: the card says which one it belongs to. */}
             {project && (
@@ -271,6 +273,16 @@ function TaskCard({ task, onTaskClick, dragDisabled, milestoneName, atRest, show
                 </svg>
               </span>
             )}
+            {/* Blocked in the tracker by tickets Orkka does not work here — a note, not a wait. */}
+            {task.externalBlockedBy && (
+              <span
+                className="inline-flex items-center rounded-full border border-white/[0.08] px-1.5 py-0.5 text-label text-gray-400"
+                title={t("taskCard.externalBlockedByTitle", { keys: task.externalBlockedBy })}
+                data-testid="external-blocked-by"
+              >
+                {t("taskCard.externalBlockedBy", { keys: task.externalBlockedBy })}
+              </span>
+            )}
             {task.repoName && (
               <Badge
                 size="sm"
@@ -286,7 +298,7 @@ function TaskCard({ task, onTaskClick, dragDisabled, milestoneName, atRest, show
                 pull request is deliberately being held for its other half. */}
             {/* A Story member: the story's key and its place in it. Every card of one story
                 shares the chip's colour, so a story reads as one piece of work across lanes. */}
-            {task.groupId && task.storyKey ? (
+            {task.groupId && task.storyKey ? (hideStoryChip ? null : (
               <span
                 className="inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-label"
                 style={{ borderColor: `${storyColor(task.groupId)}66`, color: storyColor(task.groupId) }}
@@ -303,7 +315,7 @@ function TaskCard({ task, onTaskClick, dragDisabled, milestoneName, atRest, show
                   count: task.storyCount ?? 0,
                 })}
               </span>
-            ) : task.groupId ? (
+            )) : task.groupId ? (
               <Badge size="sm" className="text-amber-300/80">
                 {t("taskGroup.crossRepo")}
               </Badge>
@@ -466,4 +478,4 @@ function TaskCard({ task, onTaskClick, dragDisabled, milestoneName, atRest, show
   );
 }
 
-export { TaskCard };
+export { TaskCard, storyColor };

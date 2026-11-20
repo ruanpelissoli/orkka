@@ -859,7 +859,8 @@ export interface TaskDependencyItem {
    */
   sameGroup: boolean;
   reason: string | null;
-  source: "Ai" | "Manual";
+  /** Tracker = a dependency link in the ticket's tracker ("is blocked by"), kept in step on every poll. */
+  source: "Ai" | "Manual" | "Tracker";
 }
 
 /** Lightweight blocker reference carried on board cards and realtime events */
@@ -937,6 +938,9 @@ export interface TaskSummary {
   /** The card's project — set on every board and board-search card, so the workspace board can
    * badge it and link it to `/p/{slug}/tasks/{n}`. Absent on cards built from a live event. */
   project?: BoardProjectRef | null;
+  /** Tickets blocking this one in the tracker that are not worked here ("SHOP-9, SHOP-12") — a
+   * note on the card, never waited for. */
+  externalBlockedBy?: string | null;
 }
 
 /** The project a board card belongs to. */
@@ -966,6 +970,35 @@ export interface BoardLaneResponse {
 
 export interface TaskBoardResponse {
   lanes: BoardLaneResponse[];
+  /** Every Story with a card on the board, in the order its first card appears — the
+   * "Group by: Story" swimlane headers. */
+  stories?: BoardStory[] | null;
+}
+
+/** A tracker Story on the board: one feature, split into sub-tasks on one branch and one PR. */
+export interface BoardStory {
+  groupId: string;
+  projectId: string;
+  /** The Story ticket's key ("SHOP-10"). */
+  key: string | null;
+  title: string;
+  url: string | null;
+  branchName: string | null;
+  memberCount: number;
+  /** Members whose work is complete. */
+  doneCount: number;
+  /** Set once the last member landed and the pull request was marked ready for review. */
+  readyAt: string | null;
+  status: string;
+  pullRequests: BoardStoryPullRequest[];
+}
+
+export interface BoardStoryPullRequest {
+  repoId: string;
+  url: string;
+  draft: boolean;
+  /** "open", "merged", "closed" as last read from the forge; null before the first check. */
+  state: string | null;
 }
 
 export interface TaskAttachment {
@@ -2889,6 +2922,8 @@ export interface IntakePreviewTicket {
    * story / tracked. */
   route: string;
   reason: string | null;
+  /** The ticket's level in its tracker; a "subTask" here is one whose story is not yours. */
+  level?: "above" | "story" | "subTask" | "unknown";
 }
 
 export interface IntakePreviewStory {
@@ -2903,7 +2938,63 @@ export interface IntakePreviewSkipped {
   title: string;
   status: string | null;
   url: string | null;
-  reason: "notAssignedToMe" | "notInIntake";
+  reason: "notAssignedToMe" | "notInIntake" | "aboveStory";
+}
+
+/** A ticket read by key for the "Import ticket" dialog — nothing created yet. */
+export interface TrackerImportPreview {
+  /** "jira" | "ado" | "github" — the project's ticket source. */
+  kind: string;
+  key: string;
+  title: string;
+  type: string | null;
+  status: string | null;
+  url: string | null;
+  /** "above" (an epic/feature — refused), "story", "subTask", "unknown". */
+  level: string;
+  assignedToMe: boolean;
+  description: string;
+  attachments: { fileName: string; size: number; mimeType: string | null; cached: boolean }[];
+  subTasks: TrackerImportSubTask[];
+  repoName: string | null;
+  route: string;
+  parentKey: string | null;
+  /** Already on the board: its task (a story's first member). */
+  existingTaskId: string | null;
+  /** "story" | "task" with the default picks. */
+  willBe: string;
+}
+
+export interface TrackerImportSubTask {
+  key: string;
+  title: string;
+  status: string | null;
+  statusCategory: string | null;
+  assignedToMe: boolean;
+  /** Ticked by default: not done and not on the board yet. */
+  selected: boolean;
+  /** False when the tracker no longer returns it. */
+  found: boolean;
+  existingTaskId: string | null;
+}
+
+/** supported=false: the owner's runner is offline; ok=false: refused, error says why. */
+export interface TrackerImportPreviewResponse {
+  supported: boolean;
+  ok: boolean;
+  error: string | null;
+  preview: TrackerImportPreview | null;
+}
+
+export interface TrackerImportStatus {
+  id: string;
+  ticketKey: string;
+  subTaskKeys: string[];
+  state: "pending" | "done" | "failed";
+  taskId: string | null;
+  error: string | null;
+  requestedAt: string;
+  completedAt: string | null;
 }
 
 /** What the next poll would add to the board — decided by the real poll's own rules, nothing created. */

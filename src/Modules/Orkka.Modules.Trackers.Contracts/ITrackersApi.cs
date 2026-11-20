@@ -50,7 +50,100 @@ public interface ITrackersApi
     /// without the repo router, and creating nothing. Null when the project has no ticket source.</summary>
     Task<TrackerIntakePreview?> PreviewIntakeAsync(
         Ulid projectId, IReadOnlyList<TrackerTicket> tickets, CancellationToken ct = default);
+
+    // ── Importing a ticket by its key ───────────────────────────────────
+
+    /// <summary>The keys-only read of <paramref name="keys"/> through the project's ticket source,
+    /// for its owner's runner (the import preview). Null when the project has no ticket source.</summary>
+    Task<TrackerPreviewAssignment?> BuildImportAssignmentAsync(Ulid projectId, IReadOnlyList<string> keys, CancellationToken ct = default);
+
+    /// <summary>The tracker kind of the project's ticket source (jira / ado / github), or null.</summary>
+    Task<string?> SourceKindAsync(Ulid projectId, CancellationToken ct = default);
+
+    /// <summary>A key as the developer typed or pasted it (a key, an id, a ticket URL) in the form
+    /// the source's tracker uses (SHOP-10, 4567, owner/repo#12); null when it is not one.</summary>
+    string? NormalizeTicketKey(string kind, string input);
+
+    /// <summary>What importing <paramref name="key"/> would create, from the tickets the keys-only
+    /// read returned (the ticket and its sub-tasks). Creates nothing.</summary>
+    Task<TrackerImportPreview?> PreviewImportAsync(Ulid projectId, string key, IReadOnlyList<TrackerTicket> tickets, CancellationToken ct = default);
+
+    /// <summary>Queues the import of <paramref name="key"/> with the picked sub-tasks for the next
+    /// poll (which is made due now). A ticket already on the board is pinned and answered at once.</summary>
+    Task<TrackerImportResult> RequestImportAsync(Ulid projectId, string userId, string key,
+        IReadOnlyList<string> subTaskKeys, CancellationToken ct = default);
+
+    /// <summary>An import request and how it went; null when unknown in this project.</summary>
+    Task<TrackerImportStatus?> GetImportAsync(Ulid projectId, Ulid importId, CancellationToken ct = default);
 }
+
+/// <summary>
+/// Importing a ticket by its key (or link), for the board's "Import ticket" dialog and the MCP
+/// tools alike: the preview reads the ticket and its sub-tasks on the source owner's runner; the
+/// import is queued for the next poll.
+/// </summary>
+public interface ITrackerImports
+{
+    Task<TrackerImportPreviewOutcome> PreviewAsync(Ulid orgId, string userId, Ulid projectId, string input, CancellationToken ct = default);
+
+    Task<TrackerImportResult> RequestAsync(Ulid projectId, string userId, string key, IReadOnlyList<string> subTaskKeys,
+        CancellationToken ct = default);
+
+    Task<TrackerImportStatus?> GetAsync(Ulid projectId, Ulid importId, CancellationToken ct = default);
+}
+
+/// <summary>Supported=false: the owner's runner is offline (or too old). Ok=false: refused — Error
+/// says why (not found, an epic, not this tracker's key, no ticket source).</summary>
+public sealed record TrackerImportPreviewOutcome(
+    bool Supported, bool Ok, string? Error = null, TrackerImportPreview? Preview = null);
+
+/// <summary>A ticket and its sub-tasks as the import dialog shows them before anything is created.</summary>
+/// <param name="Level">"above" (refused: an epic or feature), "story", "subTask", "unknown".</param>
+/// <param name="ExistingTaskId">Already on the board: the task (a Story's first member).</param>
+/// <param name="WillBe">"story" when sub-tasks are picked, else "task" — with the default picks.</param>
+public sealed record TrackerImportPreview(
+    string Kind,
+    string Key,
+    string Title,
+    string? Type,
+    string? Status,
+    string? Url,
+    string Level,
+    bool AssignedToMe,
+    string Description,
+    TrackerAttachmentMeta[] Attachments,
+    TrackerImportSubTask[] SubTasks,
+    string? RepoName,
+    string Route,
+    string? ParentKey,
+    Ulid? ExistingTaskId,
+    string WillBe);
+
+/// <param name="Selected">Ticked by default: not done and not on the board yet.</param>
+/// <param name="Found">False when the tracker no longer has it (or this account cannot see it).</param>
+public sealed record TrackerImportSubTask(
+    string Key,
+    string Title,
+    string? Status,
+    string? StatusCategory,
+    bool AssignedToMe,
+    bool Selected,
+    bool Found,
+    Ulid? ExistingTaskId);
+
+/// <param name="State">"pending" (waiting for the poll), "done" or "failed".</param>
+public sealed record TrackerImportStatus(
+    Ulid Id,
+    string TicketKey,
+    string[] SubTaskKeys,
+    string State,
+    Ulid? TaskId,
+    string? Error,
+    DateTimeOffset RequestedAt,
+    DateTimeOffset? CompletedAt);
+
+/// <summary>Either the queued (or already answered) import, or why it was refused.</summary>
+public sealed record TrackerImportResult(TrackerImportStatus? Import, string? Error = null, int StatusCode = 200);
 
 /// <param name="OwnerUserId">The source's owner — only their runner holds the token.</param>
 /// <param name="ConnectionId">The connection row's id.</param>
@@ -87,7 +180,9 @@ public sealed record TrackerPreviewTicket(
     string? RepoName,
     string[] SpansRepos,
     string Route,
-    string? Reason);
+    string? Reason,
+    // The ticket's level in the tracker: "above" (epic, feature), "story", "subTask", "unknown".
+    string Level = "unknown");
 
 /// <param name="Branch">The one branch the Story's members are worked on.</param>
 public sealed record TrackerPreviewStory(TrackerPreviewTicket Story, string Branch, TrackerPreviewTicket[] Members);
@@ -102,6 +197,10 @@ public static class TrackerPreviewSkipReasons
 
     /// <summary>Not in an intake status (already under way, in review, done).</summary>
     public const string NotInIntake = "notInIntake";
+
+    /// <summary>Above a story (an epic, a feature): Orkka works the stories under it, never the
+    /// container itself.</summary>
+    public const string AboveStory = "aboveStory";
 }
 
 /// <param name="ConnectionKey">The runner's id for the connection holding the cached attachments.</param>

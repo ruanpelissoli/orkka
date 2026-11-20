@@ -46,6 +46,8 @@ export interface AdoWorkItem {
   priority: number | null;
   /** `Shop\Web`; default: the project itself. */
   areaPath: string;
+  /** Predecessors: work items that must finish first (System.LinkTypes.Dependency-Reverse). */
+  predecessors: number[];
   changed: Date;
   rev: number;
   comments: FakeComment[];
@@ -171,6 +173,7 @@ export class FakeAdo {
       tags: seed.tags ?? [],
       priority: seed.priority ?? 2,
       areaPath: seed.areaPath ?? seed.project ?? this.projects[0],
+      predecessors: seed.predecessors ?? [],
       changed: new Date(),
       rev: 1,
       comments: [],
@@ -361,6 +364,9 @@ export class FakeAdo {
       if (i.parentId) rels.push({ rel: HIERARCHY_REVERSE, url: `${base}/_apis/wit/workItems/${i.parentId}`, attributes: { isLocked: false, name: "Parent" } });
       for (const child of this.items.values()) {
         if (child.parentId === i.id) rels.push({ rel: HIERARCHY_FORWARD, url: `${base}/_apis/wit/workItems/${child.id}`, attributes: { isLocked: false, name: "Child" } });
+      }
+      for (const p of i.predecessors) {
+        rels.push({ rel: "System.LinkTypes.Dependency-Reverse", url: `${base}/_apis/wit/workItems/${p}`, attributes: { isLocked: false, name: "Predecessor" } });
       }
       for (const a of i.attachments) {
         rels.push({ rel: "AttachedFile", url: `${base}/_apis/wit/attachments/${a.guid}?fileName=${encodeURIComponent(a.filename)}`, attributes: { name: a.filename, resourceSize: a.content.length } });

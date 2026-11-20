@@ -636,6 +636,10 @@ namespace Orkka.Modules.Tasks.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ExternalBlockedBy")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ExternalEpic")
                         .HasMaxLength(600)
                         .HasColumnType("TEXT");

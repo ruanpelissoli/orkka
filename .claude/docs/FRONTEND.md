@@ -197,6 +197,39 @@ not per group: one `useBoardSignalR` call joins one project (`projectId`) or sev
 (`projectIds`) with ONE set of handlers — never call it once per project — and with no project it
 joins and listens to nothing.
 
+### Import ticket
+`ImportTicketButton` (board package) sits next to "New task":
+- **Where:** on the project board only when the project has a ticket source; on the workspace
+  board with every project in view, where the dialog asks which project.
+- **Flow:** the user types a key, id or link, then "Read ticket" (`api.trackers.previewImport`),
+  which shows the ticket and its sub-tasks with checkboxes (open ones ticked; done, missing or
+  already-on-the-board ones disabled), then "Import" (`api.trackers.requestImport`).
+- **Waiting:** the dialog polls `api.trackers.getImport` every 3 s while the import is pending
+  (an effect, stopped by closing), then offers "Open task", which sets `?task=<id>`.
+- **Errors:** they come from the API in its own words. A runner that is offline or too old is
+  `supported: false`, which shows the `./orkka start` hint.
+- **Copy:** `dashboard.importTicket` in all 5 locales.
+
+### Group by Story — swimlanes
+A board with at least one Story offers **"Group by: Story"** in the toolbar (`TaskBoard`,
+`BoardSwimlanes`, `story-swimlanes.ts`). The choice is a browser view preference, not a project
+setting: `localStorage` `orkka.board.groupBy:{projectUlid | workspace:{project|all}}`. Grouped,
+the column headers show once, then:
+- one collapsible row per Story, in the order of `TaskBoardResponse.stories` (`GET /api/board`
+  and the project board: `BoardStoryResponse` — key, title without the key, `memberCount`,
+  `doneCount`, branch, a PR per repo with draft/state), then stories first seen in a live card;
+- each row holds that story's cards in `storyOrder`, without the story chip; the header shows
+  the key, the title, "{done}/{total} done", the PR state (No PR yet / Draft PR / PR ready /
+  merged / closed, linking the PR) and the tracker link;
+- a final row, "Not part of a story", holds every other card. Cross-repo groups are not stories.
+
+A row's column is its own drop target (`{swimlane}:{lane}`, `useDroppable` data `{ laneKey }`;
+`handleDragEnd` reads the lane from the data), so a card still moves back between columns inside
+its row. A row is not a drop target, because the story a card belongs to comes from the tracker.
+Collapsed rows are remembered per board (`orkka.board.collapsedStories:{scope}`). Rows the
+filters emptied are left out. A card blocked in the tracker by a ticket Orkka does not work shows
+"Blocked by KEY" (`externalBlockedBy`), as a note only.
+
 ### Workspace board
 `/{locale}/board` (`app/[locale]/(dashboard)/board/page.tsx`) is the landing page: `/`, a workspace
 switch and a new workspace all go there; `/dashboard` still opens the last project. It shows every

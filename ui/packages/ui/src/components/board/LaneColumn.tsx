@@ -30,6 +30,15 @@ interface LaneColumnProps {
   activeDragAllowsTesting?: boolean;
   /** Cards name their project — the workspace board showing every project. */
   showProject?: boolean;
+  /** The drop target's id when one lane shows more than once (a column per swimlane); drops
+   * still name the lane through the droppable's data. Defaults to the lane key. */
+  droppableId?: string;
+  /** Leave the header out — swimlanes put one header row above every story's columns. */
+  hideHeader?: boolean;
+  /** Cards leave out their story chip (they sit in their story's swimlane). */
+  hideStoryChip?: boolean;
+  /** No minimum height: a swimlane row is as tall as its cards. */
+  compact?: boolean;
 }
 
 function LaneColumn({
@@ -43,9 +52,13 @@ function LaneColumn({
   metric,
   activeDragAllowsTesting = true,
   showProject = false,
+  droppableId,
+  hideHeader = false,
+  hideStoryChip = false,
+  compact = false,
 }: LaneColumnProps) {
   const t = useTranslations("dashboard.boardMetrics");
-  const { setNodeRef, isOver } = useDroppable({ id: laneKey });
+  const { setNodeRef, isOver } = useDroppable({ id: droppableId ?? laneKey, data: { laneKey } });
   const lane = LANE_MAP[laneKey as keyof typeof LANE_MAP];
   const color = lane?.color ?? "var(--color-lane-drafting)";
   // Lane names are configurable per project, but the keys are fixed — so the hover
@@ -77,6 +90,7 @@ function LaneColumn({
       )}
     >
       {/* Lane header */}
+      {!hideHeader && (
       <div className="mb-3 flex items-center gap-2 px-1">
         <span
           className="h-2.5 w-2.5 rounded-full shrink-0"
@@ -107,12 +121,14 @@ function LaneColumn({
           </span>
         )}
       </div>
+      )}
 
       {/* Drop zone */}
       <div
         ref={setNodeRef}
         className={cn(
-          "flex-1 space-y-2 overflow-y-auto rounded-xl p-2 min-h-[120px]",
+          "flex-1 space-y-2 overflow-y-auto rounded-xl p-2",
+          compact ? "min-h-[56px]" : "min-h-[120px]",
           "border border-transparent transition-all duration-200",
           showDropHighlight && "border-dashed bg-white/[0.02]",
           isDragging && !isValidTarget && "opacity-40",
@@ -141,6 +157,7 @@ function LaneColumn({
               onTaskClick={onTaskClick}
               milestoneName={task.milestoneId ? milestoneNames?.[task.milestoneId] : null}
               showProject={showProject}
+              hideStoryChip={hideStoryChip}
             />
           ))}
         </AnimatePresence>

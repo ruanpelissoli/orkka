@@ -44,6 +44,7 @@ public sealed class TaskEntityConfiguration : IEntityTypeConfiguration<TaskEntit
         builder.Property(x => x.ExternalKey).HasMaxLength(160);
         builder.Property(x => x.ExternalUrl).HasMaxLength(2048);
         builder.Property(x => x.ExternalEpic).HasMaxLength(600);
+        builder.Property(x => x.ExternalBlockedBy).HasMaxLength(1000);
         builder.Property(x => x.WorkingSubpath).HasMaxLength(500);
         builder.Property(x => x.ExternalSyncError).HasMaxLength(500);
         builder.HasIndex(x => new { x.OrgId, x.ProjectId, x.ExternalRef }).IsUnique().HasFilter("\"ExternalRef\" IS NOT NULL");

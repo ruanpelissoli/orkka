@@ -13,6 +13,7 @@ using Orkka.Modules.Agents.Infrastructure;
 using Orkka.Modules.Documents.Contracts;
 using Orkka.Modules.Projects.Contracts;
 using Orkka.Modules.Tasks.Contracts;
+using Orkka.Modules.Trackers.Contracts;
 using Orkka.SharedKernel.Security;
 using TaskStatus = Orkka.Modules.Tasks.Contracts.TaskStatus;
 
@@ -77,6 +78,8 @@ public sealed class OrkkaMcpToolServer(
         new(GetInboxTool, null),
         new(GetAutopilotStatusTool, null),
         new(CreateTasksTool, Permission.TasksCreate),
+        new(PreviewTrackerTicketTool, Permission.TasksCreate),
+        new(ImportTrackerTicketTool, Permission.TasksCreate),
         new(SubmitTaskTool, Permission.TasksExecute),
         new(AnswerTaskTool, Permission.TasksExecute),
         new(ApprovePlanTool, Permission.PlansReview),
@@ -138,6 +141,8 @@ public sealed class OrkkaMcpToolServer(
                 "get_inbox" => await GetInboxAsync(services, arguments, ct),
                 "get_autopilot_status" => await GetAutopilotStatusAsync(services, arguments, ct),
                 "create_tasks" => await CreateTasksAsync(services, arguments, ct),
+                "preview_tracker_ticket" => await PreviewTrackerTicketAsync(services, arguments, ct),
+                "import_tracker_ticket" => await ImportTrackerTicketAsync(services, arguments, ct),
                 "submit_task" => await SubmitTaskAsync(services, arguments, ct),
                 "answer_task" => await AnswerTaskAsync(services, arguments, ct),
                 "approve_plan" => await ReviewPlanAsync(services, arguments, approve: true, ct),
@@ -400,6 +405,66 @@ public sealed class OrkkaMcpToolServer(
 
     private sealed record NewTaskArgs(string Title, string? Description = null, string? Priority = null, string? Type = null, string? Repo = null, string? Milestone = null, List<string>? Tags = null);
     private sealed record CreateTasksArgs(List<NewTaskArgs> Tasks);
+
+    // ── importing a tracker ticket by its key ───────────────────────────
+
+    private async Task<ChatToolResult> PreviewTrackerTicketAsync(IServiceProvider services, JsonElement arguments, CancellationToken ct)
+    {
+        var (projectId, error) = await ResolveProjectAsync(services, arguments, ct);
+        if (projectId is null) return Error(error!);
+        if (StringArg(arguments, "key") is not { } key) return Error("Provide \"key\": the ticket key, id or link (SHOP-10, 4567, owner/repo#12).");
+        var outcome = await services.GetRequiredService<ITrackerImports>().PreviewAsync(caller.OrgId, caller.UserId, projectId.Value, key, ct);
+        if (!outcome.Supported) return Error("Your runner is offline or too old to read the tracker — run `./orkka start`.");
+        if (outcome.Preview is not { } p) return Error(outcome.Error ?? "The ticket could not be read.");
+        var sb = new StringBuilder();
+        sb.AppendLine($"{p.Key} — {p.Title} ({p.Type ?? "ticket"}, {p.Status ?? "no status"}, level {p.Level}){(p.AssignedToMe ? "" : ", not assigned to you")}");
+        if (p.ExistingTaskId is { } existing) sb.AppendLine($"Already on the board (task_id: {existing}).");
+        sb.AppendLine($"Would become: a {p.WillBe}{(p.RepoName is null ? "" : $" in {p.RepoName}")}; {p.Attachments.Length} attachment(s).");
+        if (p.SubTasks.Length > 0)
+        {
+            sb.AppendLine("Sub-tasks ([x] = imported by default):");
+            foreach (var s in p.SubTasks)
+                sb.AppendLine($"  [{(s.Selected ? "x" : " ")}] {s.Key} {s.Title} — {s.Status ?? "?"}{(s.AssignedToMe ? "" : ", not yours")}"
+                    + (s.ExistingTaskId is null ? "" : ", already on the board") + (s.Found ? "" : ", not found"));
+        }
+        if (p.Description.Length > 0) sb.AppendLine().AppendLine(Truncate(p.Description, 3000));
+        return new ChatToolResult(sb.ToString());
+    }
+
+    private async Task<ChatToolResult> ImportTrackerTicketAsync(IServiceProvider services, JsonElement arguments, CancellationToken ct)
+    {
+        var (projectId, error) = await ResolveProjectAsync(services, arguments, ct);
+        if (projectId is null) return Error(error!);
+        if (StringArg(arguments, "key") is not { } key) return Error("Provide \"key\": the ticket key, id or link (SHOP-10, 4567, owner/repo#12).");
+        var imports = services.GetRequiredService<ITrackerImports>();
+
+        List<string> subTasks;
+        if (arguments.TryGetProperty("sub_task_keys", out var given) && given.ValueKind == JsonValueKind.Array)
+        {
+            subTasks = [.. given.EnumerateArray().Where(e => e.ValueKind == JsonValueKind.String).Select(e => e.GetString()!)];
+        }
+        else
+        {
+            // Not given: what the dialog ticks by default — every open sub-task not on the board yet.
+            var outcome = await imports.PreviewAsync(caller.OrgId, caller.UserId, projectId.Value, key, ct);
+            if (!outcome.Supported) return Error("Your runner is offline or too old to read the tracker — run `./orkka start`.");
+            if (outcome.Preview is not { } p) return Error(outcome.Error ?? "The ticket could not be read.");
+            key = p.Key;
+            subTasks = [.. p.SubTasks.Where(s => s.Selected).Select(s => s.Key)];
+        }
+
+        var result = await imports.RequestAsync(projectId.Value, caller.UserId, key, subTasks, ct);
+        if (result.Import is not { } import) return Error(result.Error ?? "The ticket could not be imported.");
+        return new ChatToolResult(import.State == "done"
+            ? $"{import.TicketKey} is already on the board (task_id: {import.TaskId}); it is now kept whoever it is assigned to."
+            : $"{import.TicketKey} is queued ({(subTasks.Count > 0 ? $"a story with {subTasks.Count} sub-task(s)" : "a task")}): the next poll "
+              + $"(within about 30 seconds) brings it in with its description, attachments and comments. import_id: {import.Id}");
+    }
+
+    private static string? StringArg(JsonElement arguments, string name)
+        => arguments.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(v.GetString())
+            ? v.GetString()!.Trim()
+            : null;
 
     private async Task<ChatToolResult> CreateTasksAsync(IServiceProvider services, JsonElement arguments, CancellationToken ct)
     {
@@ -677,6 +742,12 @@ public sealed class OrkkaMcpToolServer(
               "tags": { "type": "array", "items": { "type": "string" } } }, "required": ["title"] } } },
           "required": ["tasks"] }
         """);
+    private static readonly ChatToolDefinition PreviewTrackerTicketTool = new("preview_tracker_ticket",
+        "Read a ticket from the project's tracker (Jira, Azure DevOps or GitHub Projects) by its key, id or link — title, status, level, description, attachments and its sub-tasks — and say what importing it would create. Creates nothing.",
+        $$"""{ "type": "object", "properties": { {{ProjectProp}}, "key": { "type": "string", "description": "SHOP-10, 4567, owner/repo#12, or the ticket's URL" } }, "required": ["key"] }""");
+    private static readonly ChatToolDefinition ImportTrackerTicketTool = new("import_tracker_ticket",
+        "Import a ticket from the project's tracker by its key as a task — or, with sub-tasks, a Story (one branch, one PR) — whoever it is assigned to. Omit sub_task_keys to take every open sub-task not on the board yet; pass [] for the ticket alone. The next poll brings in its description, attachments and comments.",
+        $$"""{ "type": "object", "properties": { {{ProjectProp}}, "key": { "type": "string" }, "sub_task_keys": { "type": "array", "items": { "type": "string" } } }, "required": ["key"] }""");
     private static readonly ChatToolDefinition SubmitTaskTool = new("submit_task",
         "Submit a Drafting task so the agents start on it.",
         $$"""{ "type": "object", "properties": { {{TaskIdProp}} }, "required": ["task_id"] }""");

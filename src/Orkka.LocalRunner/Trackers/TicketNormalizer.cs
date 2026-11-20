@@ -62,7 +62,12 @@ public static partial class TicketNormalizer
         // a ticket through In Progress and beyond, and retires or revives on these alone.
         return new TrackerTicket(raw.Key, raw.Id, raw.Url, raw.EpicKey, hash, body, comments,
             raw.Status, raw.StatusCategory, raw.AssignedToMe, raw.InIntake,
-            raw.ParentKey, raw.ParentType, raw.ChildKeys);
+            raw.ParentKey, raw.ParentType, raw.ChildKeys)
+        {
+            Level = raw.Level,
+            ParentLevel = raw.ParentLevel,
+            BlockedByKeys = raw.BlockedByKeys,
+        };
     }
 
     /// <summary>SHA-256 (lowercase hex) over the normalized title, type, priority, description,

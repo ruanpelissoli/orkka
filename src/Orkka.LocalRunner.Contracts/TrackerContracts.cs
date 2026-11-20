@@ -296,7 +296,11 @@ public sealed record TrackerPollAssignment(
     // GitHub: the single-select field holding the status (null = "Status").
     string? StatusField = null,
     // GitHub: intake only from these repositories ("owner/name"); empty = every repository.
-    string[]? RepoFilter = null);
+    string[]? RepoFilter = null,
+    // Read ONLY the Known keys — no intake query, no board, no epics (importing a ticket by its
+    // key: the preview reads the ticket, then the ticket and its sub-tasks). A runner that
+    // predates it reads intake too; the host only looks at the keys it asked for.
+    bool KeysOnly = false);
 
 public sealed record TrackerKnownTicket(string Key, string? ContentHash, DateTimeOffset? LastCommentAt);
 
@@ -344,7 +348,47 @@ public sealed record TrackerTicket(
     bool InIntake = false,
     string? ParentKey = null,
     string? ParentType = null,
-    string[]? ChildKeys = null);
+    string[]? ChildKeys = null)
+{
+    /// <summary>Where the ticket sits in the tracker's hierarchy — what decides a Story.
+    /// <see cref="TicketLevel.Unknown"/> from a runner that predates levels.</summary>
+    public TicketLevel Level { get; init; }
+
+    /// <summary>The level of <see cref="ParentKey"/>, when there is a parent.</summary>
+    public TicketLevel ParentLevel { get; init; }
+
+    /// <summary>Tickets this one is blocked by (Jira "is blocked by", Azure DevOps Predecessor,
+    /// GitHub "blocked by"). Keys in the same form as <see cref="Key"/>.</summary>
+    public string[] BlockedByKeys { get; init; } = [];
+}
+
+/// <summary>
+/// A ticket's level, normalized across trackers. Orkka's unit of work is the Story — one feature
+/// split into small sub-tasks that build on each other's code on one branch, one PR.
+/// <list type="table">
+/// <listheader><term>Level</term><description>Jira Cloud · Azure DevOps · GitHub</description></listheader>
+/// <item><term><see cref="Above"/></term><description>hierarchyLevel ≥ 1 (Epic, Initiative) ·
+/// Epic/Feature category · issue type Epic/Feature/Initiative, or an issue whose sub-issues have
+/// sub-issues of their own. Never imported.</description></item>
+/// <item><term><see cref="Story"/></term><description>hierarchyLevel 0 (Story, Task, Bug) ·
+/// Requirement category (User Story, PBI, Issue, Requirement; Bug when bugs are requirements) ·
+/// an issue whose sub-issues have none. With open children assigned to me it becomes a Story
+/// group; without, a standalone task.</description></item>
+/// <item><term><see cref="SubTask"/></term><description>hierarchyLevel −1 (Sub-task) · Task
+/// category (Task; Bug when bugs are tasks) · a sub-issue of a story. One Orkka task, a Story
+/// member when its story is mine.</description></item>
+/// </list>
+/// Children order is the build order: Jira's sub-task order, Azure DevOps' StackRank /
+/// BacklogPriority, GitHub's sub-issue order. Dependency links: Jira "Blocks", Azure DevOps
+/// Dependency-Reverse (Predecessor), GitHub blockedBy.
+/// </summary>
+public enum TicketLevel
+{
+    Unknown = 0,
+    Above = 1,
+    Story = 2,
+    SubTask = 3,
+}
 
 /// <param name="Type">The tracker's own type name ("Bug", "Story", "Task", "User Story").</param>
 /// <param name="Priority">The tracker's own priority name ("Highest", "1", …).</param>

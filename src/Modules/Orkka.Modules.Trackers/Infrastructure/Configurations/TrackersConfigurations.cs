@@ -58,6 +58,20 @@ public sealed class ProjectTrackerConfigConfiguration : IEntityTypeConfiguration
     }
 }
 
+public sealed class TrackerImportConfiguration : IEntityTypeConfiguration<TrackerImport>
+{
+    public void Configure(EntityTypeBuilder<TrackerImport> builder)
+    {
+        builder.ToTable("tracker_imports");
+        builder.Property(i => i.TicketKey).HasMaxLength(160);
+        builder.Property(i => i.SubTaskKeysJson).HasMaxLength(20000);
+        builder.Property(i => i.RequestedByUserId).HasMaxLength(200);
+        builder.Property(i => i.Error).HasMaxLength(2000);
+        builder.HasIndex(i => new { i.ConfigId, i.CompletedAt });
+        builder.HasIndex(i => i.ProjectId);
+    }
+}
+
 public sealed class TicketLinkConfiguration : IEntityTypeConfiguration<TicketLink>
 {
     public void Configure(EntityTypeBuilder<TicketLink> builder)
@@ -81,6 +95,10 @@ public sealed class TicketLinkConfiguration : IEntityTypeConfiguration<TicketLin
         builder.Property(l => l.Role).HasConversion<string>().HasMaxLength(20)
             .HasDefaultValue(TicketRole.Standalone);
         builder.Property(l => l.ParentTitle).HasMaxLength(500);
+        builder.Property(l => l.Level).HasConversion<string>().HasMaxLength(20)
+            .HasDefaultValue(Orkka.LocalRunner.Contracts.TicketLevel.Unknown);
+        builder.Property(l => l.BlockedByKeysJson).HasMaxLength(8000);
+        builder.Property(l => l.ExcludedChildKeysJson).HasMaxLength(20000);
         builder.Property(l => l.ParentDescription).HasMaxLength(20000);
 
         builder.HasIndex(l => new { l.ConfigId, l.TicketKey }).IsUnique();

@@ -1,7 +1,7 @@
-import { useParams, useSearchParams } from "@/lib/navigation";
+import { useParams, useSearchParams, useUpdateSearchParams } from "@/lib/navigation";
 import { useTranslations } from "use-intl";
 import { Link } from "@/i18n/navigation";
-import { TaskBoard, AutopilotToggle, BoardViewSwitch, TicketSourceStatusLine } from "@/components/board";
+import { TaskBoard, AutopilotToggle, BoardViewSwitch, TicketSourceStatusLine, ImportTicketButton } from "@/components/board";
 import { CodeView } from "@/components/code-view";
 import { Button } from "@/components/ui";
 import { RequirePermission } from "@/components/permissions/RequirePermission";
@@ -29,6 +29,7 @@ export default function BoardPage() {
   const view = searchParams.get("view");
   const taskParam = searchParams.get("task");
   const showKanban = view !== "code";
+  const updateSearchParams = useUpdateSearchParams();
   const t = useTranslations("dashboard");
   useDocumentTitle(t("meta.board"));
 
@@ -150,6 +151,15 @@ export default function BoardPage() {
           <RequirePermission permission="TasksExecute">
             <StartSessionButton projectId={projectId} repos={repos} />
           </RequirePermission>
+          {/* Start from a ticket's key in the project's tracker, whoever it is assigned to. */}
+          {ticketSource && (
+            <RequirePermission permission="TasksCreate">
+              <ImportTicketButton
+                projects={[{ slug: projectId, name: projectResult.status === "fulfilled" ? projectResult.value.name : projectId }]}
+                onImported={(taskId) => updateSearchParams((p) => p.set("task", taskId))}
+              />
+            </RequirePermission>
+          )}
           <RequirePermission permission="TasksCreate">
             <Link href={`/p/${projectId}/tasks/new?from=board`}>
               <Button size="sm">

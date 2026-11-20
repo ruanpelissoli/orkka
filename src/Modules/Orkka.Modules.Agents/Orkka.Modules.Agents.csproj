@@ -17,6 +17,7 @@
     <ProjectReference Include="..\Orkka.Modules.Projects.Contracts\Orkka.Modules.Projects.Contracts.csproj" />
     <ProjectReference Include="..\Orkka.Modules.Organizations.Contracts\Orkka.Modules.Organizations.Contracts.csproj" />
     <ProjectReference Include="..\Orkka.Modules.Tasks.Contracts\Orkka.Modules.Tasks.Contracts.csproj" />
+    <ProjectReference Include="..\Orkka.Modules.Trackers.Contracts\Orkka.Modules.Trackers.Contracts.csproj" />
     <ProjectReference Include="..\Orkka.Modules.Runners.Contracts\Orkka.Modules.Runners.Contracts.csproj" />
     <ProjectReference Include="..\Orkka.Modules.SourceControl.Contracts\Orkka.Modules.SourceControl.Contracts.csproj" />
     <ProjectReference Include="..\Orkka.Modules.Usage.Contracts\Orkka.Modules.Usage.Contracts.csproj" />

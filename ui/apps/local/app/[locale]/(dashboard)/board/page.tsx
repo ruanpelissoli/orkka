@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useTranslations } from "use-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useSearchParams, useUpdateSearchParams } from "@/lib/navigation";
-import { TaskBoard } from "@/components/board";
+import { TaskBoard, ImportTicketButton } from "@/components/board";
 import { Button, Dropdown, EmptyState, Select } from "@/components/ui";
 import { RequirePermission } from "@/components/permissions/RequirePermission";
 import { BoardSkeleton, PageError } from "@/components/page";
@@ -119,6 +119,14 @@ export default function WorkspaceBoardPage() {
               {t("workspaceBoard.openProjectBoard")}
             </Link>
           )}
+          {/* Start from a ticket's key in a project's tracker (the dialog asks which project
+              when every project is in view). */}
+          <RequirePermission permission="TasksCreate">
+            <ImportTicketButton
+              projects={(selected ? [selected] : projects).map((p) => ({ slug: p.slug, name: p.name }))}
+              onImported={(taskId) => updateSearchParams((p) => p.set("task", taskId))}
+            />
+          </RequirePermission>
           <RequirePermission permission="TasksCreate">
             {selected || projects.length === 1 ? (
               // One project in view: a new task goes there, as on its own board.

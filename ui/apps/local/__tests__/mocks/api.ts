@@ -383,6 +383,9 @@ export const mockApi = {
     saveProjectConfig: vi.fn(),
     deleteProjectConfig: vi.fn().mockResolvedValue(undefined),
     previewIntake: vi.fn().mockResolvedValue({ supported: false, ok: false }),
+    previewImport: vi.fn().mockResolvedValue({ supported: false, ok: false, error: null, preview: null }),
+    requestImport: vi.fn(),
+    getImport: vi.fn(),
   },
   runConfig: {
     get: vi.fn().mockResolvedValue({

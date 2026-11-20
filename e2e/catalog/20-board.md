@@ -950,3 +950,29 @@ since: 2026-11-19
 1. Open `/p/{slug}/board`; click "Workspace board" next to the view switch.
 **Expected**:
 - Lands on `/board` showing every project of the workspace. The link is hidden below the `sm` breakpoint (the sidebar item "Workspace board" remains).
+
+## BRD-048 Group the board by Story: one collapsible swimlane per story
+```yaml
+priority: P1
+surface: [ui, api]
+automation: planned
+refs:
+  - orkka-ui:/board
+  - orkka-ui:/p/[projectId]/board
+  - orkka-api:GET /api/board
+  - i18n:boardPage
+since: 2026-11-20
+```
+**Preconditions**: A project with Story `SHOP-10` (members `SHOP-11` Developing, `SHOP-12` Drafting; a draft PR is open) and a plain task.
+**Steps**:
+1. Open the board and pick "Group by: Story" in the toolbar.
+2. Collapse the `SHOP-10` swimlane, then reload.
+3. Drag `SHOP-11` back from Developing to Drafting inside its swimlane.
+4. Pick "No grouping".
+**Expected**:
+- `GET /api/board` returns `stories[]` (`key`, `title` without the key, `memberCount`, `doneCount`, `branchName`, `pullRequests` with draft/state).
+- 1: column headers appear once. A `SHOP-10` row shows its key, title, "{done}/{total} done", the "Draft PR" link and the tracker link, with its cards in story order. A last row, "Not part of a story", holds the plain task. Cards in a story row have no story chip. The toggle only appears when the board has a story.
+- 2: the grouping and the collapsed row are remembered for this board (localStorage), separately for each project board and for the workspace board filter.
+- 3: the move works as on the flat board, and the card stays in its row.
+- 4: the flat board returns.
+**Notes**: unit level: `ui/apps/local/__tests__/components/board-swimlanes.test.tsx`.

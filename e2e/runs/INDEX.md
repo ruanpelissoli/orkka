@@ -66,3 +66,5 @@ Every run of the harness appends one row. Reports live next to this file.
 | 2026-11-19 14:56 | offline | offline | 28/36 passed, 8 skipped | — | [20261119-1456-offline](20261119-1456-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |
 | 2026-11-19 14:59 | smoke | http://127.0.0.1:6760 | 14/14 passed | — | [20261119-1459-smoke](20261119-1459-smoke/report.md) |  |
 | 2026-11-19 14:59 | offline | http://127.0.0.1:6760 | 36/36 passed | — | [20261119-1459-offline](20261119-1459-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |
+| 2026-11-20 14:15 | offline | http://127.0.0.1:6760 | 35/36 passed, 1 failed | — | [20261120-1415-offline](20261120-1415-offline/report.md) | Playwright overall status: failed |
+| 2026-11-20 14:16 | offline | http://127.0.0.1:6760 | 36/36 passed | — | [20261120-1416-offline](20261120-1416-offline/report.md) | Offline run: only offline specs ran; environment-bound specs were skipped. |

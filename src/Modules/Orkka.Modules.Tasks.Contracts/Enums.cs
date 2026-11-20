@@ -5,7 +5,10 @@ namespace Orkka.Modules.Tasks.Contracts;
 public enum DependencySource
 {
     Ai,
-    Manual
+    Manual,
+    /// <summary>A dependency link in the tracker (Jira "is blocked by", Azure DevOps Predecessor,
+    /// GitHub "blocked by"); kept in step with the tracker on every poll.</summary>
+    Tracker,
 }
 
 /// <summary>

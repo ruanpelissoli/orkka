@@ -149,7 +149,14 @@ function TicketTable({ tickets, testId }: { tickets: IntakePreviewTicket[]; test
                   <span className="text-cyan-400">{ticket.key}</span>
                 )}
               </td>
-              <td className="max-w-xs truncate px-3 py-2 text-gray-200">{ticket.title}</td>
+              <td className="max-w-xs truncate px-3 py-2 text-gray-200">
+                {ticket.title}
+                {ticket.level === "subTask" && (
+                  <span className="ml-1.5 text-gray-400" data-testid="setup-preview-subtask-alone">
+                    {t("subTaskAlone")}
+                  </span>
+                )}
+              </td>
               <td className="px-3 py-2 text-gray-300">{ticket.status ?? "—"}</td>
               <td className="px-3 py-2 text-gray-300">{ticket.assignee ?? t("you")}</td>
               <td className="px-3 py-2">

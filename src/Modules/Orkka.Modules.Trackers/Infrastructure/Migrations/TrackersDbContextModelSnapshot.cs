@@ -147,6 +147,10 @@ namespace Orkka.Modules.Trackers.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("BlockedByKeysJson")
+                        .HasMaxLength(8000)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ChildKeysJson")
                         .HasColumnType("TEXT");
 
@@ -162,6 +166,10 @@ namespace Orkka.Modules.Trackers.Infrastructure.Migrations
 
                     b.Property<string>("EpicKey")
                         .HasMaxLength(160)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExcludedChildKeysJson")
+                        .HasMaxLength(20000)
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("GroupId")
@@ -181,6 +189,13 @@ namespace Orkka.Modules.Trackers.Infrastructure.Migrations
                     b.Property<string>("LastTransitionError")
                         .HasMaxLength(1000)
                         .HasColumnType("TEXT");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Unknown");
 
                     b.Property<Guid>("OrgId")
                         .HasColumnType("TEXT");
@@ -202,6 +217,9 @@ namespace Orkka.Modules.Trackers.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<long?>("PendingSince")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Pinned")
                         .HasColumnType("INTEGER");
 
                     b.Property<long?>("PrCheckedAt")
@@ -410,6 +428,65 @@ namespace Orkka.Modules.Trackers.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("epic_mappings", (string)null);
+                });
+
+            modelBuilder.Entity("Orkka.Modules.Trackers.Domain.TrackerImport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("CompletedAt")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("ConfigId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("CreatedAt")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OrgId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("RequestedAt")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RequestedByUserId")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SubTaskKeysJson")
+                        .IsRequired()
+                        .HasMaxLength(20000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("TaskId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TicketKey")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("UpdatedAt")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("ConfigId", "CompletedAt");
+
+                    b.ToTable("tracker_imports", (string)null);
                 });
 
             modelBuilder.Entity("Orkka.Modules.Trackers.Domain.TrackerEpicMapping", b =>

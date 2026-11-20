@@ -347,3 +347,22 @@ refs:
 **Expected**:
 - Both → 401; no tool list leaks.
 **Notes**: none.
+
+## KEY-030 MCP: preview and import a tracker ticket by key
+```yaml
+priority: P2
+surface: [api]
+automation: planned
+refs:
+  - orkka-api:src/Modules/Orkka.Modules.Agents/Features/Mcp/OrkkaMcpToolServer.cs
+since: 2026-11-20
+```
+**Preconditions**: an API key with TasksCreate, and a project with a ticket source (TING-033).
+**Steps**:
+1. `tools/list`; then `tools/call preview_tracker_ticket {project, key: "SHOP-10"}`.
+2. `tools/call import_tracker_ticket {project, key: "SHOP-10"}` with no `sub_task_keys`; then call it again for `SHOP-20` with `sub_task_keys: []`.
+3. Repeat step 1 with a key that lacks TasksCreate.
+**Expected**:
+- 1: both tools are listed. The preview text names the ticket, its level, "Would become: a story …" and the sub-tasks with `[x]` on the default picks.
+- 2: SHOP-10 is queued with the default picks ("a story with N sub-task(s)", plus an `import_id`). SHOP-20 is queued as a task. Both are audited as MCP writes.
+- 3: neither tool is listed, and a call is refused with the TasksCreate message.

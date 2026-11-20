@@ -78,6 +78,9 @@ public sealed class TaskEntity : TenantEntity
     public string? ExternalUrl { get; set; }
     /// <summary>The configured epic the ticket sits under ("SHOP-1 Checkout").</summary>
     public string? ExternalEpic { get; set; }
+    /// <summary>Tickets that block this one in the tracker but are not worked in this project
+    /// (comma-separated keys) — shown as a note, never waited for.</summary>
+    public string? ExternalBlockedBy { get; set; }
     /// <summary>The folder inside the repository the ticket's epic is mapped to (a monorepo
     /// package). Agents are told to keep their changes inside it.</summary>
     public string? WorkingSubpath { get; set; }

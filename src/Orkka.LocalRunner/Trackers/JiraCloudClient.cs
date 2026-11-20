@@ -206,7 +206,7 @@ public sealed partial class JiraCloudClient(HttpClient http) : ITrackerClient, I
 
     private static readonly string[] TicketFields =
         ["summary", "issuetype", "status", "priority", "labels", "description", "attachment", "updated", "parent",
-         "subtasks", "assignee", "components"];
+         "subtasks", "assignee", "components", "issuelinks"];
 
     // Site + email → the token owner's accountId and when it was asked.
     private readonly ConcurrentDictionary<string, (string? AccountId, DateTimeOffset At)> _myself = new(StringComparer.OrdinalIgnoreCase);
@@ -374,6 +374,8 @@ public sealed partial class JiraCloudClient(HttpClient http) : ITrackerClient, I
     /// </summary>
     public async Task<IReadOnlyList<RawTicket>> FetchTicketsAsync(TrackerCredential c, TrackerPollAssignment a, CancellationToken ct)
     {
+        if (a.KeysOnly)
+            return await FetchKnownOnlyAsync(c, a, ct);
         var epicsMode = TrackerScopeModes.IsEpics(a.ScopeMode);
         // Epics mode: the epics ARE the scope, so a malformed one is an error. All mode: they only
         // name the epic a ticket sits under, for routing — a malformed one is skipped.
@@ -429,6 +431,23 @@ public sealed partial class JiraCloudClient(HttpClient http) : ITrackerClient, I
             .ToList();
         var tracked = await FetchByKeysAsync(context, trackKeys, fields, ct);
         return [.. intake, .. tracked];
+    }
+
+    /// <summary>Only the asked-for keys (<see cref="TrackerPollAssignment.KeysOnly"/>): importing
+    /// a ticket by its key reads it — and its sub-tasks — wherever it is and whoever has it.</summary>
+    private async Task<IReadOnlyList<RawTicket>> FetchKnownOnlyAsync(TrackerCredential c, TrackerPollAssignment a, CancellationToken ct)
+    {
+        var epicSet = a.EpicKeys.Select(k => k.Trim().ToUpperInvariant()).Where(JiraQueries.LooksLikeIssueKey)
+            .ToHashSet(StringComparer.Ordinal);
+        var me = await MyAccountIdAsync(c, ct);
+        var acceptanceField = await AcceptanceCriteriaFieldAsync(c, ct);
+        string[] fields = acceptanceField is null ? TicketFields : [.. TicketFields, acceptanceField];
+        var context = new ParseContext(c, acceptanceField, epicSet, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), me);
+        var keys = a.Known.Select(k => k.Key.Trim().ToUpperInvariant())
+            .Where(JiraQueries.LooksLikeIssueKey)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+        return await FetchByKeysAsync(context, keys, fields, ct);
     }
 
     /// <summary>The tracking read, 100 keys a query. Jira fails a whole <c>key in (…)</c> query
@@ -502,12 +521,32 @@ public sealed partial class JiraCloudClient(HttpClient http) : ITrackerClient, I
 
     /// <summary>An epic (hierarchy level 1 or above) — a container of work, not a ticket.</summary>
     private static bool IsContainer(JsonElement issue)
+        => LevelOf(issue.Prop("fields").Prop("issuetype")) == TicketLevel.Above;
+
+    /// <summary>An issue type's level: <c>hierarchyLevel</c> ≥ 1 (Epic, Initiative) is above a
+    /// story, 0 (Story, Task, Bug) a story, −1 a sub-task; older payloads without the number fall
+    /// back to <c>subtask</c> and the name "Epic".</summary>
+    internal static TicketLevel LevelOf(JsonElement issueType)
     {
-        var type = issue.Prop("fields").Prop("issuetype");
-        return type.Prop("hierarchyLevel") is { ValueKind: JsonValueKind.Number } level
-            ? level.GetInt32() >= 1
-            : string.Equals(type.Str("name"), "Epic", StringComparison.OrdinalIgnoreCase);
+        if (issueType.ValueKind != JsonValueKind.Object)
+            return TicketLevel.Unknown;
+        if (issueType.Prop("hierarchyLevel") is { ValueKind: JsonValueKind.Number } level)
+            return level.GetInt32() switch { >= 1 => TicketLevel.Above, 0 => TicketLevel.Story, _ => TicketLevel.SubTask };
+        if (issueType.Prop("subtask") is { ValueKind: JsonValueKind.True })
+            return TicketLevel.SubTask;
+        if (string.Equals(issueType.Str("name"), "Epic", StringComparison.OrdinalIgnoreCase))
+            return TicketLevel.Above;
+        return issueType.Str("name") is null ? TicketLevel.Unknown : TicketLevel.Story;
     }
+
+    /// <summary>The keys this issue "is blocked by": a <c>Blocks</c> link listed on the issue with
+    /// an <c>inwardIssue</c> reads "this is blocked by inwardIssue".</summary>
+    internal static string[] BlockedBy(JsonElement fields)
+        => [.. fields.Prop("issuelinks").Items()
+            .Where(l => string.Equals(l.Prop("type").Str("name"), "Blocks", StringComparison.OrdinalIgnoreCase))
+            .Select(l => l.Prop("inwardIssue").Str("key")?.ToUpperInvariant())
+            .OfType<string>()
+            .Distinct(StringComparer.Ordinal)];
     /// <summary>The newest comments first (<c>orderBy=-created</c>), so one page of
     /// <paramref name="max"/> holds exactly the ones that matter; returned oldest first.</summary>
     public async Task<IReadOnlyList<RawComment>> FetchCommentsAsync(TrackerCredential c, RawTicket ticket,
@@ -563,9 +602,8 @@ public sealed partial class JiraCloudClient(HttpClient http) : ITrackerClient, I
         var parent = f.Prop("parent");
         var parentKey = parent.Str("key")?.ToUpperInvariant();
         var parentType = parent.Prop("fields").Prop("issuetype");
-        var parentIsEpic = parentType.Prop("hierarchyLevel") is { ValueKind: JsonValueKind.Number } level
-            ? level.GetInt32() >= 1
-            : string.Equals(parentType.Str("name"), "Epic", StringComparison.OrdinalIgnoreCase);
+        var parentLevel = parentKey is null ? TicketLevel.Unknown : LevelOf(parentType);
+        var parentIsEpic = parentLevel == TicketLevel.Above;
         string? epicKey = null;
         if (parentKey is not null)
         {
@@ -621,6 +659,9 @@ public sealed partial class JiraCloudClient(HttpClient http) : ITrackerClient, I
         {
             ParentKey = parentKey,
             ParentType = parentKey is null ? null : parentType.Str("name"),
+            Level = LevelOf(f.Prop("issuetype")),
+            ParentLevel = parentLevel,
+            BlockedByKeys = BlockedBy(f),
             // Jira lists a story's sub-tasks in their board order.
             ChildKeys = [.. f.Prop("subtasks").Items().Select(s => s.Str("key")).OfType<string>()],
             AssignedToMe = assignedToMe,

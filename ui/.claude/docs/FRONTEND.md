@@ -200,6 +200,18 @@ narrowed (or only) project, otherwise a menu asks which project. The global nav 
 "Workspace board"; the project board links to it. Full notes: the repository root's
 `.claude/docs/FRONTEND.md` → Workspace board.
 
+### Import ticket
+"Import ticket" (next to "New task"; on the project board only with a ticket source) imports a
+ticket by its key or link from the project's tracker. It previews the ticket and its sub-tasks
+(open ones ticked), queues the import, polls until the next tracker poll makes it, then opens the
+task. Full notes: the repository root's `.claude/docs/FRONTEND.md` → Import ticket.
+
+### Group by Story
+A board with a Story offers "Group by: Story": one collapsible swimlane per story (its sub-tasks in
+story order over the same columns; a header with progress, PR state and the tracker link), then
+"Not part of a story". The choice and the collapsed rows are kept in `localStorage` per board. Full
+notes: the repository root's `.claude/docs/FRONTEND.md` → Group by Story.
+
 ---
 
 ## Design System

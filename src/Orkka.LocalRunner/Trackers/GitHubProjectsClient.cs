@@ -58,6 +58,31 @@ public static partial class GitHubProjects
         return TodoName().IsMatch(status) ? "todo" : "inprogress";
     }
 
+    private static readonly string[] AboveStoryTypes = ["Epic", "Feature", "Initiative"];
+
+    private static bool IsAboveStoryType(string? type)
+        => type is not null && AboveStoryTypes.Contains(type.Trim(), StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// An issue's level and its parent's, by depth with the issue type as a hint (GitHub has no
+    /// fixed hierarchy): typed Epic/Feature/Initiative, or holding a sub-issue that has sub-issues
+    /// of its own → above a story; holding sub-issues → a story; a sub-issue of a story → a
+    /// sub-task; anything else (alone, or under an epic) → a story. A parent is above a story
+    /// when typed so, else the story this issue belongs to.
+    /// </summary>
+    public static (TicketLevel Level, TicketLevel ParentLevel) LevelOf(string? type, bool hasParent, string? parentType,
+        int childCount, bool childrenHaveChildren)
+    {
+        var parentLevel = !hasParent ? TicketLevel.Unknown
+            : IsAboveStoryType(parentType) ? TicketLevel.Above
+            : TicketLevel.Story;
+        var level = IsAboveStoryType(type) || childrenHaveChildren ? TicketLevel.Above
+            : childCount > 0 ? TicketLevel.Story
+            : parentLevel == TicketLevel.Story ? TicketLevel.SubTask
+            : TicketLevel.Story;
+        return (level, parentLevel);
+    }
+
     /// <summary>The statuses an issue must be in to be picked up: the configured ones, or — none
     /// set — the to-do-like ones.</summary>
     public static bool IsIntakeStatus(string? status, IReadOnlyCollection<string>? intakeStatuses)
@@ -114,7 +139,8 @@ public sealed partial class GitHubProjectsClient(HttpClient http, TimeProvider? 
 
     private readonly TimeProvider _time = timeProvider ?? TimeProvider.System;
 
-    // Issue fields every read needs. Sub-issues come in GitHub's own (priority) order.
+    // Issue fields every read needs. Sub-issues come in GitHub's own (priority) order; each one's
+    // own sub-issue count and the parent's type decide the level (GitHub.LevelOf).
     private const string IssueFields = """
         fragment IssueFields on Issue {
           id number title url body state updatedAt
@@ -122,8 +148,9 @@ public sealed partial class GitHubProjectsClient(HttpClient http, TimeProvider? 
           assignees(first: 20) { nodes { login } }
           labels(first: 30) { nodes { name } }
           issueType { name }
-          parent { number repository { nameWithOwner } }
-          subIssues(first: 50) { nodes { number repository { nameWithOwner } } }
+          parent { number repository { nameWithOwner } issueType { name } }
+          subIssues(first: 100) { nodes { number repository { nameWithOwner } subIssuesSummary { total } } }
+          blockedBy(first: 50) { nodes { number repository { nameWithOwner } } }
         }
         """;
 
@@ -264,12 +291,21 @@ public sealed partial class GitHubProjectsClient(HttpClient http, TimeProvider? 
         var project = await ProjectAsync(c, assignment.Scope, board, ct);
         var field = project.StatusField(assignment.StatusField);
         var intakeStatuses = assignment.IntakeStatuses ?? [];
-        var items = await ItemsAsync(c, project, field.Name, ct);
-        var viewer = items.Viewer;
-
         var tickets = new Dictionary<string, RawTicket>(StringComparer.OrdinalIgnoreCase);
-        foreach (var item in items.Where(i => i.InIntake(intakeStatuses, assignment.RepoFilter)))
-            tickets[item.Issue.Key] = ToRaw(item.Issue, item.Status, viewer, intakeStatuses, inIntake: true);
+        string viewer;
+        if (assignment.KeysOnly)
+        {
+            // Importing an issue by its key: no need to read the whole project.
+            var (me, _) = await GraphQLWithHeadersAsync(c, "query { viewer { login } }", null, "your account", ct);
+            viewer = me.Prop("viewer").Str("login") ?? throw new TrackerException("GitHub did not say who this token belongs to.");
+        }
+        else
+        {
+            var items = await ItemsAsync(c, project, field.Name, ct);
+            viewer = items.Viewer;
+            foreach (var item in items.Where(i => i.InIntake(intakeStatuses, assignment.RepoFilter)))
+                tickets[item.Issue.Key] = ToRaw(item.Issue, item.Status, viewer, intakeStatuses, inIntake: true);
+        }
 
         // Tracked keys and the intake tickets' sub-issues, whatever their status or project.
         var wanted = assignment.Known.Select(k => k.Key)
@@ -308,7 +344,10 @@ public sealed partial class GitHubProjectsClient(HttpClient http, TimeProvider? 
             issue.Body, null, null, issue.Labels, [], issue.UpdatedAt)
         {
             ParentKey = issue.ParentKey,
-            ParentType = issue.ParentKey is null ? null : "Issue",
+            ParentType = issue.ParentKey is null ? null : issue.ParentType ?? "Issue",
+            Level = issue.Level,
+            ParentLevel = issue.ParentLevel,
+            BlockedByKeys = issue.BlockedByKeys,
             ChildKeys = issue.ChildKeys,
             AssignedToMe = issue.Assignees.Contains(viewer, StringComparer.OrdinalIgnoreCase),
             InIntake = inIntake && !issue.Closed && issue.Assignees.Contains(viewer, StringComparer.OrdinalIgnoreCase),
@@ -396,12 +435,19 @@ public sealed partial class GitHubProjectsClient(HttpClient http, TimeProvider? 
     internal sealed record Issue(
         string Id, string Key, string Repository, string RepositoryUrl, string Title, string Url, string? Body,
         bool Closed, DateTimeOffset? UpdatedAt, string[] Assignees, string[] Labels, string? Type,
-        string? ParentKey, string[] ChildKeys);
+        string? ParentKey, string[] ChildKeys)
+    {
+        public string? ParentType { get; init; }
+        public TicketLevel Level { get; init; }
+        public TicketLevel ParentLevel { get; init; }
+        public string[] BlockedByKeys { get; init; } = [];
+    }
 
     internal sealed record Item(string Id, string? Status, Issue Issue, string Viewer)
     {
         public bool InIntake(IReadOnlyCollection<string>? intakeStatuses, IReadOnlyCollection<string>? repoFilter)
             => !Issue.Closed
+                && Issue.Level != TicketLevel.Above
                 && Issue.Assignees.Contains(Viewer, StringComparer.OrdinalIgnoreCase)
                 && GitHubProjects.IsIntakeStatus(Status, intakeStatuses)
                 && GitHubProjects.InRepoFilter(Issue.Repository, repoFilter);
@@ -524,10 +570,23 @@ public sealed partial class GitHubProjectsClient(HttpClient http, TimeProvider? 
         var parentKey = parent.Prop("repository").Str("nameWithOwner") is { } parentRepo && IntOrNull(parent.Prop("number")) is { } parentNumber
             ? GitHubProjects.Key(parentRepo, parentNumber)
             : null;
-        string[] children = [.. n.Prop("subIssues").Prop("nodes").Items()
+        var subIssues = n.Prop("subIssues").Prop("nodes").Items().ToList();
+        string[] children = [.. subIssues
             .Select(s => s.Prop("repository").Str("nameWithOwner") is { } r && IntOrNull(s.Prop("number")) is { } num
                 ? GitHubProjects.Key(r, num) : null)
             .OfType<string>()];
+        string[] blockedBy = [.. n.Prop("blockedBy").Prop("nodes").Items()
+            .Select(b => b.Prop("repository").Str("nameWithOwner") is { } r && IntOrNull(b.Prop("number")) is { } num
+                ? GitHubProjects.Key(r, num) : null)
+            .OfType<string>()
+            .Distinct(StringComparer.OrdinalIgnoreCase)];
+        var parentType = parent.Prop("issueType").Str("name");
+        var (level, parentLevel) = GitHubProjects.LevelOf(
+            n.Prop("issueType").Str("name"),
+            hasParent: parentKey is not null,
+            parentType,
+            childCount: children.Length,
+            childrenHaveChildren: subIssues.Any(s => IntOrNull(s.Prop("subIssuesSummary").Prop("total")) is > 0));
         // GitHub's issue type when the organization uses them, else a "bug" label.
         var type = n.Prop("issueType").Str("name")
             ?? (labels.Any(l => l.Contains("bug", StringComparison.OrdinalIgnoreCase)) ? "Bug" : null);
@@ -536,7 +595,13 @@ public sealed partial class GitHubProjectsClient(HttpClient http, TimeProvider? 
             string.Equals(n.Str("state"), "CLOSED", StringComparison.OrdinalIgnoreCase),
             DateOrNull(n.Str("updatedAt")),
             [.. n.Prop("assignees").Prop("nodes").Items().Select(a => a.Str("login")).OfType<string>()],
-            labels, type, parentKey, children);
+            labels, type, parentKey, children)
+        {
+            ParentType = parentType,
+            Level = level,
+            ParentLevel = parentLevel,
+            BlockedByKeys = blockedBy,
+        };
     }
 
     // ── GraphQL plumbing ────────────────────────────────────────────────────

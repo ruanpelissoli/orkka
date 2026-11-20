@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-11-19T17:26:04.362Z",
+  "generatedAt": "2026-11-20T18:19:13.081Z",
   "sources": {
     "ui": {
-      "path": "C:\\Projects\\orkka\\orkka\\.claude\\worktrees\\agent-af78789da211c5d73\\ui",
-      "sha": "8f5ded50e012"
+      "path": "C:\\Projects\\orkka\\orkka\\ui",
+      "sha": "347e7dff5718"
     },
     "api": {
-      "path": "C:\\Projects\\orkka\\orkka\\.claude\\worktrees\\agent-af78789da211c5d73",
-      "sha": "8f5ded50e012"
+      "path": "C:\\Projects\\orkka\\orkka",
+      "sha": "347e7dff5718"
     }
   },
   "uiPages": [
@@ -1603,6 +1603,34 @@
     },
     {
       "method": "POST",
+      "path": "/api/projects/{projectId}/tracker/import",
+      "file": "src/Modules/Orkka.Modules.Trackers/Features/Imports/TrackerImportEndpoints.cs",
+      "class": "RequestTrackerImportEndpoint",
+      "permissions": [
+        "TasksCreate"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{projectId}/tracker/import/{importId:ulid}",
+      "file": "src/Modules/Orkka.Modules.Trackers/Features/Imports/TrackerImportEndpoints.cs",
+      "class": "GetTrackerImportEndpoint",
+      "permissions": [],
+      "host": "api"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects/{projectId}/tracker/import/preview",
+      "file": "src/Modules/Orkka.Modules.Trackers/Features/Imports/TrackerImportEndpoints.cs",
+      "class": "PreviewTrackerImportEndpoint",
+      "permissions": [
+        "TasksCreate"
+      ],
+      "host": "api"
+    },
+    {
+      "method": "POST",
       "path": "/api/projects/{projectId}/tracker/preview",
       "file": "src/Modules/Orkka.Modules.Trackers/Features/ProjectConfig/TrackerIntakePreviewEndpoint.cs",
       "class": "TrackerIntakePreviewEndpoint",
@@ -2656,6 +2684,7 @@
         "forgePr",
         "forges",
         "fromFolder",
+        "importTicket",
         "inbox",
         "interactiveSession",
         "localRepos",
@@ -2723,13 +2752,13 @@
         "workspaces"
       ]
     },
-    "leafCount": 2521
+    "leafCount": 2567
   },
   "counts": {
     "uiPages": 41,
-    "apiRoutes": 263,
+    "apiRoutes": 266,
     "hubEvents": 20,
     "cliVerbs": 15,
-    "i18nNamespaces": 115
+    "i18nNamespaces": 116
   }
 }

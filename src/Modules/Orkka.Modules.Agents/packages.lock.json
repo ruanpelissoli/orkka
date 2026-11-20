@@ -412,6 +412,13 @@
           "Orkka.SharedKernel": "[1.0.0, )"
         }
       },
+      "orkka.modules.trackers.contracts": {
+        "type": "Project",
+        "dependencies": {
+          "Orkka.LocalRunner.Contracts": "[1.0.0, )",
+          "Orkka.SharedKernel": "[1.0.0, )"
+        }
+      },
       "orkka.modules.usage.contracts": {
         "type": "Project",
         "dependencies": {

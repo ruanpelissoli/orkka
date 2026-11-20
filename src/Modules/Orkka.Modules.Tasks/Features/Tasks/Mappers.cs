@@ -181,7 +181,8 @@ internal static class Mappers
             row.StoryOrder,
             row.StoryKey,
             row.StoryCount,
-            project);
+            project,
+            row.ExternalBlockedBy);
     }
 
     /// <summary>

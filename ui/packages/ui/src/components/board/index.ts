@@ -10,4 +10,5 @@ export type { BoardFilterKey, BoardFilterDef } from "./board-filters";
 export { AutopilotToggle } from "./AutopilotToggle";
 export { BoardViewSwitch } from "./BoardViewSwitch";
 export { TicketSourceStatusLine } from "./TicketSourceStatusLine";
+export { ImportTicketButton } from "./ImportTicketButton";
 export type { BoardViewKey } from "./BoardViewSwitch";

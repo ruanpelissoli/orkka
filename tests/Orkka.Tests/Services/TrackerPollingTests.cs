@@ -320,6 +320,30 @@ public sealed class JiraTicketFetchTests
     }
 
     [Fact]
+    public async Task KeysOnly_ReadsJustTheAskedForKeys_WithNoIntakeQuery_WhoeverHasThem()
+    {
+        var subtasks = """[{"key":"SHOP-21"}]""";
+        var issue = Issue("SHOP-20", "SHOP-100", assignee: "acc-priya", status: "In Progress", category: "indeterminate", subtasks: subtasks);
+        var handler = new FakeTrackerHandler()
+            .On(HttpMethod.Get, "/rest/api/3/myself", Myself)
+            .On(HttpMethod.Get, "/rest/api/3/field", "[]")
+            .On(HttpMethod.Post, "/rest/api/3/search/jql", body => IsTracking(body)
+                ? Json($$"""{"issues":[{{issue}}],"isLast":true}""")
+                : throw new InvalidOperationException("no intake query when importing by key"));
+        var client = new JiraCloudClient(new HttpClient(handler));
+
+        var tickets = await client.FetchTicketsAsync(Credential,
+            Assignment(scopeMode: TrackerScopeModes.All, known: ["shop-20"]) with { KeysOnly = true }, CancellationToken.None);
+
+        var ticket = tickets.Should().ContainSingle().Subject;
+        ticket.Key.Should().Be("SHOP-20");
+        ticket.AssignedToMe.Should().BeFalse("a teammate's ticket is read all the same");
+        ticket.ChildKeys.Should().Equal(["SHOP-21"]);
+        handler.Requests.Where(r => r.Url.Contains("/search/jql")).Should().ContainSingle()
+            .Which.Body.Should().Contain("key in");
+    }
+
+    [Fact]
     public async Task AStorysSubTasks_AreListedInOrder_AndReadAlong_ButOnlyInIntakeIfTheyMatchIt()
     {
         var subtasks = """[{"key":"SHOP-22"},{"key":"SHOP-21"}]""";

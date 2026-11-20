@@ -30,6 +30,7 @@ public static class TrackersModuleExtensions
     {
         services.AddTrackersPersistence(configuration);
         services.AddScoped<ITrackersApi, TrackersApi>();
+        services.AddScoped<ITrackerImports, Features.Imports.TrackerImportService>();
         services.AddScoped<IRepoRouter, RunnerRepoRouter>();
         services.AddIntegrationEventHandler<ProjectDeleted, TrackerCleanupOnProjectDeleted>();
         return services;
